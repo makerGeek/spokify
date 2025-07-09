@@ -21,7 +21,7 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
 - **Runtime**: Node.js with ESM modules
-- **Database**: PostgreSQL with Drizzle ORM
+- **Database**: PostgreSQL with Drizzle ORM (migrated from in-memory storage on July 9, 2025)
 - **Database Provider**: Neon Database (@neondatabase/serverless)
 - **AI Integration**: OpenAI API for translations and difficulty assessment
 - **Session Management**: PostgreSQL session store with connect-pg-simple
@@ -94,5 +94,14 @@ Preferred communication style: Simple, everyday language.
 - **AI Services**: OpenAI API calls with error handling and rate limiting
 - **Caching**: Service worker provides offline functionality
 - **Mobile**: PWA installation for native-like experience
+
+## Recent Changes
+
+### July 9, 2025 - Database Migration
+- Migrated from in-memory storage to PostgreSQL database for data persistence
+- Updated storage layer from MemStorage to DatabaseStorage class
+- Populated database with 12 multilingual songs across 7 genres
+- All song data now persists between application restarts
+- YouTube video IDs verified and working for audio playback
 
 The application architecture prioritizes user experience with offline support, real-time translations, and a mobile-first design that makes language learning through music both engaging and accessible.
