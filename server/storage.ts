@@ -92,7 +92,7 @@ export class MemStorage implements IStorage {
         difficulty: "B2",
         rating: 49,
         albumCover: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "kFzViYkZAz4",
+        audioUrl: "3Ba_WoSZXvw",
         duration: 205,
         lyrics: [
           { text: "Quand il me prend dans ses bras", timestamp: 0, translation: "When he takes me in his arms" },
@@ -109,7 +109,7 @@ export class MemStorage implements IStorage {
         difficulty: "A2",
         rating: 47,
         albumCover: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "CAMWdvo71ls",
+        audioUrl: "7-yQ-QsF5CY",
         duration: 212,
         lyrics: [
           { text: "Alors on danse", timestamp: 0, translation: "So we dance" },
@@ -201,6 +201,74 @@ export class MemStorage implements IStorage {
           { text: "강남스타일", timestamp: 4, translation: "Gangnam style" },
           { text: "낮에는 따사로운 인간적인 여자", timestamp: 8, translation: "A girl who is warm and humanlike during the day" },
           { text: "커피 한잔의 여유를 아는 품격 있는 여자", timestamp: 12, translation: "A classy girl who knows how to enjoy the freedom of a cup of coffee" }
+        ]
+      },
+      {
+        title: "Shape of You",
+        artist: "Ed Sheeran",
+        genre: "Pop",
+        language: "en",
+        difficulty: "A2",
+        rating: 50,
+        albumCover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
+        audioUrl: "JGwWNGJdvx8",
+        duration: 233,
+        lyrics: [
+          { text: "The club isn't the best place to find a lover", timestamp: 0, translation: "The club isn't the best place to find a lover" },
+          { text: "So the bar is where I go", timestamp: 4, translation: "So the bar is where I go" },
+          { text: "Me and my friends at the table doing shots", timestamp: 8, translation: "Me and my friends at the table doing shots" },
+          { text: "Drinking fast and then we talk slow", timestamp: 12, translation: "Drinking fast and then we talk slow" }
+        ]
+      },
+      {
+        title: "Bella Ciao",
+        artist: "Traditional",
+        genre: "World",
+        language: "it",
+        difficulty: "A2",
+        rating: 45,
+        albumCover: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
+        audioUrl: "4CI3lhyNKfo",
+        duration: 189,
+        lyrics: [
+          { text: "Una mattina mi sono svegliato", timestamp: 0, translation: "One morning I woke up" },
+          { text: "O bella ciao, bella ciao", timestamp: 4, translation: "Oh goodbye beautiful, goodbye beautiful" },
+          { text: "Bella ciao ciao ciao", timestamp: 8, translation: "Goodbye beautiful, goodbye, goodbye" },
+          { text: "Una mattina mi sono svegliato", timestamp: 12, translation: "One morning I woke up" }
+        ]
+      },
+      {
+        title: "Bésame Mucho",
+        artist: "Consuelo Velázquez",
+        genre: "Latin",
+        language: "es",
+        difficulty: "B1",
+        rating: 46,
+        albumCover: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
+        audioUrl: "nUDPBJM9VOU",
+        duration: 210,
+        lyrics: [
+          { text: "Bésame, bésame mucho", timestamp: 0, translation: "Kiss me, kiss me a lot" },
+          { text: "Como si fuera esta noche", timestamp: 4, translation: "As if tonight were" },
+          { text: "La última vez", timestamp: 8, translation: "The last time" },
+          { text: "Bésame, bésame mucho", timestamp: 12, translation: "Kiss me, kiss me a lot" }
+        ]
+      },
+      {
+        title: "Sous le ciel de Paris",
+        artist: "Édith Piaf",
+        genre: "Classic",
+        language: "fr",
+        difficulty: "B2",
+        rating: 47,
+        albumCover: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
+        audioUrl: "qKigQzJgBTw",
+        duration: 185,
+        lyrics: [
+          { text: "Sous le ciel de Paris", timestamp: 0, translation: "Under the sky of Paris" },
+          { text: "S'envole une chanson", timestamp: 4, translation: "A song flies away" },
+          { text: "Hum hum", timestamp: 8, translation: "Hum hum" },
+          { text: "Elle est née d'aujourd'hui", timestamp: 12, translation: "It was born today" }
         ]
       }
     ];
