@@ -58,7 +58,7 @@ export class MemStorage implements IStorage {
         difficulty: "A2",
         rating: 48,
         albumCover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "kJQP7kiw5Fk",
         duration: 227,
         lyrics: [
           { text: "Sí, sabes que ya llevo un rato mirándote", timestamp: 0, translation: "Yes, you know I've been watching you for a while" },
@@ -75,7 +75,7 @@ export class MemStorage implements IStorage {
         difficulty: "B1",
         rating: 46,
         albumCover: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "t4WdKY3VOKs",
         duration: 185,
         lyrics: [
           { text: "Volare, oh oh", timestamp: 0, translation: "To fly, oh oh" },
@@ -92,7 +92,7 @@ export class MemStorage implements IStorage {
         difficulty: "B2",
         rating: 49,
         albumCover: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "kFzViYkZAz4",
         duration: 205,
         lyrics: [
           { text: "Quand il me prend dans ses bras", timestamp: 0, translation: "When he takes me in his arms" },
@@ -109,7 +109,7 @@ export class MemStorage implements IStorage {
         difficulty: "A2",
         rating: 47,
         albumCover: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "CAMWdvo71ls",
         duration: 212,
         lyrics: [
           { text: "Alors on danse", timestamp: 0, translation: "So we dance" },
@@ -126,7 +126,7 @@ export class MemStorage implements IStorage {
         difficulty: "B1",
         rating: 46,
         albumCover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "DkFJE8ZdeG8",
         duration: 218,
         lyrics: [
           { text: "No fighting", timestamp: 0, translation: "No fighting" },
@@ -143,7 +143,7 @@ export class MemStorage implements IStorage {
         difficulty: "A2",
         rating: 45,
         albumCover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "pRpeEdMmmQ0",
         duration: 201,
         lyrics: [
           { text: "Waka waka, eh eh", timestamp: 0, translation: "Waka waka, eh eh" },
@@ -160,7 +160,7 @@ export class MemStorage implements IStorage {
         difficulty: "B2",
         rating: 42,
         albumCover: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "La4Dcd1aUcE",
         duration: 235,
         lyrics: [
           { text: "Hast du etwas Zeit für mich", timestamp: 0, translation: "Do you have some time for me" },
@@ -177,7 +177,7 @@ export class MemStorage implements IStorage {
         difficulty: "A1",
         rating: 43,
         albumCover: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "EK_LN3XEcnw",
         duration: 219,
         lyrics: [
           { text: "One, two, three, four, five", timestamp: 0, translation: "One, two, three, four, five" },
@@ -194,7 +194,7 @@ export class MemStorage implements IStorage {
         difficulty: "B1",
         rating: 44,
         albumCover: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400",
-        audioUrl: "",
+        audioUrl: "9bZkp7q19f0",
         duration: 219,
         lyrics: [
           { text: "오빤 강남스타일", timestamp: 0, translation: "Big brother is Gangnam style" },
