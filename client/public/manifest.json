@@ -1,0 +1,36 @@
+{
+  "name": "LyricLingo - Learn Languages Through Music",
+  "short_name": "LyricLingo",
+  "description": "Learn languages through interactive song lyrics with AI-powered translations",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#1DB954",
+  "orientation": "portrait-primary",
+  "categories": ["education", "music", "language"],
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxMjEyMTIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMURCOTU0Ij4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KPHBhdGggZD0iTTkgMThoLTNhMiAyIDAgMCAxLTItMlY4YTIgMiAwIDAgMSAyLTJoM20zIDBoNmEyIDIgMCAwIDEgMiAydjhhMiAyIDAgMCAxLTIgMmgtNiIvPgo8cGF0aCBkPSJNMTIgMTRsNC00bS00IDBsNC00Ii8+Cjwvc3ZnPgo8L3N2Zz4KPC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiMxMjEyMTIiLz4KPHN2ZyB4PSIxMjgiIHk9IjEyOCIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFEQjk1NCI+Cjxzdmcgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik05IDE4aC0zYTIgMiAwIDAgMS0yLTJWOGEyIDIgMCAwIDEgMi0yaDNtMyAwaDE2YTIgMiAwIDAgMSAyIDJ2OGEyIDIgMCAwIDEtMiAyaC02Ii8+CjxwYXRoIGQ9Ik0xMiAxNGw0LTRtLTQgMGw0LTQiLz4KPC9zdmc+Cjwvc3ZnPgo8L3N2Zz4=",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTQwIiBoZWlnaHQ9Ijk2MCIgdmlld0JveD0iMCAwIDU0MCA5NjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1NDAiIGhlaWdodD0iOTYwIiBmaWxsPSIjMTIxMjEyIi8+CjxyZWN0IHg9IjIwIiB5PSI4MCIgd2lkdGg9IjUwMCIgaGVpZ2h0PSI2MCIgcng9IjgiIGZpbGw9IiMyODI4MjgiLz4KPHN2ZyB4PSI0MCIgeT0iMTAwIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiMxREI5NTQiLz4KPHN2ZyB4PSI0NDAiIHk9IjEwMCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMURCOTU0Ii8+CjxyZWN0IHg9IjIwIiB5PSIxODAiIHdpZHRoPSI1MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMjgyODI4IiByeD0iOCIvPgo8L3N2Zz4=",
+      "sizes": "540x960",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "permissions": ["notifications", "background-sync"],
+  "features": ["offline-support", "responsive-design", "dark-mode"],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

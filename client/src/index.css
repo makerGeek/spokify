@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(142, 76%, 36%);
+  --primary-foreground: hsl(355, 7%, 97%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Spotify-inspired colors */
+  --spotify-green: hsl(142, 76%, 36%);
+  --spotify-accent: hsl(142, 82%, 42%);
+  --spotify-black: hsl(0, 0%, 9.8%);
+  --spotify-bg: hsl(0, 0%, 7.1%);
+  --spotify-card: hsl(0, 0%, 15.7%);
+  --spotify-text: hsl(0, 0%, 100%);
+  --spotify-muted: hsl(0, 0%, 63.9%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 7.1%);
+  --foreground: hsl(0, 0%, 100%);
+  --muted: hsl(0, 0%, 15.7%);
+  --muted-foreground: hsl(0, 0%, 63.9%);
+  --popover: hsl(0, 0%, 7.1%);
+  --popover-foreground: hsl(0, 0%, 100%);
+  --card: hsl(0, 0%, 15.7%);
+  --card-foreground: hsl(0, 0%, 100%);
+  --border: hsl(0, 0%, 15.7%);
+  --input: hsl(0, 0%, 15.7%);
+  --primary: hsl(142, 76%, 36%);
+  --primary-foreground: hsl(355, 7%, 97%);
+  --secondary: hsl(0, 0%, 15.7%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(0, 0%, 15.7%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(0, 0%, 63.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--spotify-bg);
+    color: var(--spotify-text);
+  }
+}
+
+@layer components {
+  .spotify-green {
+    color: var(--spotify-green);
+  }
+  
+  .bg-spotify-green {
+    background-color: var(--spotify-green);
+  }
+  
+  .bg-spotify-accent {
+    background-color: var(--spotify-accent);
+  }
+  
+  .bg-spotify-black {
+    background-color: var(--spotify-black);
+  }
+  
+  .bg-spotify-bg {
+    background-color: var(--spotify-bg);
+  }
+  
+  .bg-spotify-card {
+    background-color: var(--spotify-card);
+  }
+  
+  .text-spotify-text {
+    color: var(--spotify-text);
+  }
+  
+  .text-spotify-muted {
+    color: var(--spotify-muted);
+  }
+  
+  .border-spotify-card {
+    border-color: var(--spotify-card);
+  }
+  
+  .song-card {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
+  }
+  
+  .genre-chip {
+    background: rgba(29, 185, 84, 0.1);
+    border: 1px solid rgba(29, 185, 84, 0.3);
+  }
+  
+  .difficulty-badge {
+    background: linear-gradient(45deg, var(--spotify-green), var(--spotify-accent));
+  }
+  
+  .lyrics-highlight {
+    background: linear-gradient(90deg, var(--spotify-green), var(--spotify-accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .gradient-overlay {
+    background: linear-gradient(180deg, transparent 0%, rgba(18, 18, 18, 0.8) 100%);
+  }
+  
+  .blur-backdrop {
+    backdrop-filter: blur(10px);
+  }
+}
+
+@layer utilities {
+  .circular-font {
+    font-family: 'Circular', system-ui, sans-serif;
+  }
+  
+  .roboto-font {
+    font-family: 'Roboto', sans-serif;
+  }
+}

@@ -1,0 +1,98 @@
+# LyricLingo - Language Learning Through Music
+
+## Overview
+
+LyricLingo is a modern web application that helps users learn languages through interactive song lyrics. The application combines music streaming with AI-powered translations and vocabulary building to create an engaging language learning experience. Built with React on the frontend and Express on the backend, it features a Spotify-inspired interface with real-time translation capabilities.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with custom Spotify-inspired design system
+- **UI Components**: Radix UI primitives with shadcn/ui component library
+- **State Management**: TanStack Query for server state, React Context for audio playback
+- **Routing**: Wouter for client-side routing
+- **Build Tool**: Vite for development and production builds
+
+### Backend Architecture
+- **Framework**: Express.js with TypeScript
+- **Runtime**: Node.js with ESM modules
+- **Database**: PostgreSQL with Drizzle ORM
+- **Database Provider**: Neon Database (@neondatabase/serverless)
+- **AI Integration**: OpenAI API for translations and difficulty assessment
+- **Session Management**: PostgreSQL session store with connect-pg-simple
+
+### Progressive Web App (PWA)
+- **Service Worker**: Offline caching and background sync
+- **Manifest**: Full PWA configuration with installation prompts
+- **Mobile-First**: Responsive design optimized for mobile devices
+
+## Key Components
+
+### Database Schema
+- **Users**: Authentication, language preferences, learning progress
+- **Songs**: Music metadata, lyrics with timestamps, difficulty ratings
+- **User Progress**: Individual song completion tracking
+- **Vocabulary**: Personal vocabulary lists with context and learning timestamps
+
+### AI Services
+- **Translation Service**: Real-time text translation using OpenAI GPT-4o
+- **Difficulty Assessment**: Automatic content difficulty rating
+- **Vocabulary Extraction**: Smart vocabulary word identification and explanations
+
+### Audio System
+- **Audio Context**: Centralized audio playback state management
+- **Mini Player**: Persistent bottom player component
+- **Lyrics Synchronization**: Time-synced lyrics display
+
+### User Interface
+- **Language Selection**: Onboarding flow for language preferences
+- **Home Dashboard**: Song discovery with genre filtering
+- **Lyrics Player**: Full-screen lyrics with translation overlay
+- **Progress Tracking**: Learning statistics and vocabulary management
+
+## Data Flow
+
+1. **User Onboarding**: Language preferences stored in localStorage, then persisted to database
+2. **Song Discovery**: Songs filtered by user's target language and difficulty level
+3. **Lyrics Interaction**: Click-to-translate functionality with vocabulary extraction
+4. **Progress Tracking**: Learning metrics updated in real-time
+5. **Offline Support**: Critical data cached for offline vocabulary review
+
+## External Dependencies
+
+### Core Dependencies
+- **Database**: Drizzle ORM with PostgreSQL dialect
+- **AI Service**: OpenAI API for language processing
+- **UI Framework**: Radix UI primitives for accessibility
+- **Styling**: Tailwind CSS for responsive design
+- **Forms**: React Hook Form with Zod validation
+
+### Development Tools
+- **Build System**: Vite with TypeScript support
+- **Code Quality**: ESLint and TypeScript strict mode
+- **Development**: Hot module replacement and error overlays
+
+## Deployment Strategy
+
+### Build Process
+- **Frontend**: Vite builds React app to `dist/public`
+- **Backend**: ESBuild bundles Express server to `dist/index.js`
+- **Assets**: Static files served from build directory
+
+### Environment Configuration
+- **Development**: Local development with Vite dev server
+- **Production**: Express serves static files and API routes
+- **Database**: PostgreSQL connection via environment variables
+
+### Scaling Considerations
+- **Database**: Drizzle ORM supports connection pooling
+- **AI Services**: OpenAI API calls with error handling and rate limiting
+- **Caching**: Service worker provides offline functionality
+- **Mobile**: PWA installation for native-like experience
+
+The application architecture prioritizes user experience with offline support, real-time translations, and a mobile-first design that makes language learning through music both engaging and accessible.
