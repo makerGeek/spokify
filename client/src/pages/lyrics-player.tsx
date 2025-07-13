@@ -29,9 +29,8 @@ export default function LyricsPlayer() {
       return response.json();
     },
     onSuccess: (data) => {
-      if (!currentSong || currentSong.id !== data.id) {
-        setCurrentSong(data);
-      }
+      // Always set the current song when loading lyrics page
+      setCurrentSong(data);
     }
   });
 

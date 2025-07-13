@@ -194,6 +194,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
     } else {
       console.error('Player not ready or playVideo not available');
+      // If player is not ready but we have a song, try to reinitialize
+      if (currentSong && !playerRef.current && isYouTubeReady) {
+        console.log('Attempting to reinitialize player for direct access');
+        // Trigger player creation by updating the song state
+        const song = currentSong;
+        setCurrentSong(null);
+        setTimeout(() => setCurrentSong(song), 100);
+      }
     }
   };
 
