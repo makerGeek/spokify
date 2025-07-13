@@ -69,11 +69,29 @@ export default function LyricsPlayer() {
 
     if (activeLyricIndex !== -1) {
       const activeElement = document.getElementById(`lyric-line-${activeLyricIndex}`);
-      if (activeElement) {
-        activeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
+      const container = document.getElementById('lyrics-container');
+      
+      if (activeElement && container) {
+        // Mobile-friendly scrolling approach
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = activeElement.getBoundingClientRect();
+        
+        // Check if element is outside the visible area
+        const isAbove = elementRect.top < containerRect.top;
+        const isBelow = elementRect.bottom > containerRect.bottom;
+        
+        if (isAbove || isBelow) {
+          // Calculate scroll position to center the element
+          const containerHeight = container.clientHeight;
+          const elementHeight = activeElement.offsetHeight;
+          const scrollTop = activeElement.offsetTop - (containerHeight / 2) + (elementHeight / 2);
+          
+          // Smooth scroll with explicit mobile compatibility
+          container.scrollTo({
+            top: scrollTop,
+            behavior: 'smooth'
+          });
+        }
       }
     }
   }, [currentTime, song?.lyrics]);
@@ -165,7 +183,14 @@ export default function LyricsPlayer() {
             </div>
           </div>
           
-          <div className="flex-1 space-y-3 overflow-y-auto" id="lyrics-container">
+          <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain" 
+               id="lyrics-container"
+               style={{ 
+                 WebkitOverflowScrolling: 'touch',
+                 scrollBehavior: 'smooth',
+                 touchAction: 'pan-y',
+                 overflowAnchor: 'none'
+               }}>
             {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => {
               const nextLine = song.lyrics[index + 1];
               const isActive = isLineActive(line, nextLine);
@@ -174,9 +199,9 @@ export default function LyricsPlayer() {
                 <div
                   key={index}
                   id={`lyric-line-${index}`}
-                  className={`cursor-pointer hover:bg-spotify-bg rounded p-3 transition-all duration-300 ${
+                  className={`cursor-pointer hover:bg-spotify-bg active:bg-spotify-bg rounded p-3 transition-all duration-300 touch-manipulation ${
                     isActive 
-                      ? "lyrics-highlight scale-105 shadow-lg" 
+                      ? "lyrics-highlight transform scale-105 shadow-lg" 
                       : "text-spotify-muted hover:text-spotify-text"
                   }`}
                   onClick={() => handleLineClick(line)}
