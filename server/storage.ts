@@ -1,6 +1,6 @@
 import { users, songs, userProgress, vocabulary, type User, type InsertUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -56,15 +56,20 @@ export class DatabaseStorage implements IStorage {
 
   async getSongs(filters?: { genre?: string; difficulty?: string; language?: string }): Promise<Song[]> {
     let query = db.select().from(songs);
+    const conditions = [];
     
     if (filters?.genre) {
-      query = query.where(eq(songs.genre, filters.genre));
+      conditions.push(eq(songs.genre, filters.genre));
     }
     if (filters?.difficulty) {
-      query = query.where(eq(songs.difficulty, filters.difficulty));
+      conditions.push(eq(songs.difficulty, filters.difficulty));
     }
     if (filters?.language) {
-      query = query.where(eq(songs.language, filters.language));
+      conditions.push(eq(songs.language, filters.language));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
     
     return await query;

@@ -21,11 +21,15 @@ export default function Home() {
   const { nativeLanguage = "en", targetLanguage = "es", level = "A1" } = userPreferences;
 
   const { data: songs = [], isLoading } = useQuery<Song[]>({
-    queryKey: ["/api/songs", selectedGenre],
+    queryKey: ["/api/songs", selectedGenre, targetLanguage],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedGenre !== "all") {
         params.append("genre", selectedGenre);
+      }
+      // Always filter by target language
+      if (targetLanguage) {
+        params.append("language", targetLanguage);
       }
       const response = await fetch(`/api/songs?${params}`);
       if (!response.ok) throw new Error("Failed to fetch songs");
