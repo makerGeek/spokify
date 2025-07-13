@@ -109,7 +109,7 @@ export default function LyricsPlayer() {
       </div>
 
       {/* Lyrics Section - Maximized */}
-      <div className="flex-1 bg-spotify-card border-t border-spotify-card">
+      <div className="flex-1 bg-spotify-card border-t border-spotify-card pb-32">
         <div className="p-6 h-full flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-semibold text-spotify-text">Interactive Lyrics</h4>
@@ -154,43 +154,61 @@ export default function LyricsPlayer() {
       </div>
 
       {/* Audio Controls */}
-      <Card className="bg-spotify-card border-spotify-card">
-        <CardContent className="p-4">
-          <div className="flex items-center space-x-2 mb-4">
-            <span className="text-xs text-spotify-muted">{formatTime(currentTime)}</span>
-            <Slider
-              value={[currentTime]}
-              onValueChange={(value) => setCurrentTime(value[0])}
-              max={song.duration}
-              step={1}
-              className="flex-1"
-            />
-            <span className="text-xs text-spotify-muted">{formatTime(song.duration)}</span>
-          </div>
-          
-          <div className="flex items-center justify-center space-x-6">
-            <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-              <SkipBack size={20} />
-            </Button>
-            <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-              <RotateCcw size={18} />
-            </Button>
+      <div className="fixed bottom-16 left-0 right-0">
+        <Card className="bg-spotify-card border-spotify-card mx-4">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <span className="text-xs text-spotify-muted">{formatTime(currentTime)}</span>
+              <Slider
+                value={[currentTime]}
+                onValueChange={(value) => setCurrentTime(value[0])}
+                max={song.duration}
+                step={1}
+                className="flex-1"
+              />
+              <span className="text-xs text-spotify-muted">{formatTime(song.duration)}</span>
+            </div>
+            
+            <div className="flex items-center justify-center space-x-6">
+              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
+                <SkipBack size={20} />
+              </Button>
+              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
+                <RotateCcw size={18} />
+              </Button>
+              <Button
+                size="lg"
+                className="w-16 h-16 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors"
+                onClick={togglePlay}
+              >
+                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+              </Button>
+              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
+                <RotateCw size={18} />
+              </Button>
+              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
+                <SkipForward size={20} />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0">
+        <div className="bg-spotify-card border-t border-spotify-card p-4">
+          <div className="flex justify-center">
             <Button
-              size="lg"
-              className="w-16 h-16 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors"
-              onClick={togglePlay}
+              variant="ghost"
+              size="sm"
+              className="text-spotify-muted hover:text-white"
+              onClick={handleCloseLyrics}
             >
-              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-            </Button>
-            <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-              <RotateCw size={18} />
-            </Button>
-            <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-              <SkipForward size={20} />
+              Back to Home
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Translation Overlay */}
       {showTranslation && selectedLine && (
