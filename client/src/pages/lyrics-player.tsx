@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import TranslationOverlay from "@/components/translation-overlay";
+import BottomNavigation from "@/components/bottom-navigation";
 import { useAudio } from "@/hooks/use-audio";
 import { type Song } from "@shared/schema";
 
@@ -195,20 +196,7 @@ export default function LyricsPlayer() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0">
-        <div className="bg-spotify-card border-t border-spotify-card p-4">
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-spotify-muted hover:text-white"
-              onClick={handleCloseLyrics}
-            >
-              Back to Home
-            </Button>
-          </div>
-        </div>
-      </div>
+      <BottomNavigation currentPage="lyrics" />
 
       {/* Translation Overlay */}
       {showTranslation && selectedLine && (
