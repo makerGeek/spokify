@@ -134,26 +134,42 @@ export default function LyricsPlayer() {
           </div>
           
           <div className="space-y-2 max-h-40 overflow-y-auto">
-            {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => (
-              <div
-                key={index}
-                className={`cursor-pointer hover:bg-spotify-bg rounded p-2 transition-colors ${
-                  index === 0 ? "lyrics-highlight" : "text-spotify-muted"
-                }`}
-                onClick={() => handleLineClick(line)}
-              >
-                <span>{line.text}</span>
-                {showTranslationMode && line.translation && (
-                  <div className="text-xs text-spotify-muted mt-1 italic">
-                    {line.translation}
+            {(() => {
+              try {
+                const lyricsArray = typeof song.lyrics === 'string' ? JSON.parse(song.lyrics) : song.lyrics;
+                if (Array.isArray(lyricsArray)) {
+                  return lyricsArray.map((line: any, index: number) => (
+                    <div
+                      key={index}
+                      className={`cursor-pointer hover:bg-spotify-bg rounded p-2 transition-colors ${
+                        index === 0 ? "lyrics-highlight" : "text-spotify-muted"
+                      }`}
+                      onClick={() => handleLineClick(line)}
+                    >
+                      <span>{line.text}</span>
+                      {showTranslationMode && line.translation && (
+                        <div className="text-xs text-spotify-muted mt-1 italic">
+                          {line.translation}
+                        </div>
+                      )}
+                    </div>
+                  ));
+                } else {
+                  return (
+                    <div className="text-spotify-muted text-center py-4">
+                      No lyrics available
+                    </div>
+                  );
+                }
+              } catch (error) {
+                console.error('Error parsing lyrics:', error);
+                return (
+                  <div className="text-spotify-muted text-center py-4">
+                    Error loading lyrics
                   </div>
-                )}
-              </div>
-            )) : (
-              <div className="text-spotify-muted text-center py-4">
-                No lyrics available
-              </div>
-            )}
+                );
+              }
+            })()}
           </div>
         </CardContent>
       </Card>
