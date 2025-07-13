@@ -69,59 +69,84 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     console.log('Creating YouTube player for:', currentSong.title, 'Video ID:', currentSong.audioUrl);
 
+    // Reset state immediately when switching songs
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    stopTimeUpdate();
+
     // Clean up existing player
     if (playerRef.current) {
       console.log('Destroying existing player');
-      playerRef.current.destroy();
+      try {
+        playerRef.current.destroy();
+      } catch (error) {
+        console.warn('Error destroying player:', error);
+      }
+      playerRef.current = null;
     }
 
-    // Create new player
-    try {
-      playerRef.current = new window.YT.Player(playerContainerId.current, {
-        height: '0',
-        width: '0',
-        videoId: currentSong.audioUrl,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          iv_load_policy: 3,
-          modestbranding: 1,
-          rel: 0,
-          showinfo: 0,
-        },
-        events: {
-          onReady: (event: any) => {
-            console.log('YouTube player ready');
-            const duration = event.target.getDuration();
-            console.log('Song duration:', duration);
-            setDuration(duration);
+    // Small delay to ensure proper cleanup before creating new player
+    const createPlayer = () => {
+      try {
+        playerRef.current = new window.YT.Player(playerContainerId.current, {
+          height: '0',
+          width: '0',
+          videoId: currentSong.audioUrl,
+          playerVars: {
+            autoplay: 0,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            modestbranding: 1,
+            rel: 0,
+            showinfo: 0,
           },
-          onStateChange: (event: any) => {
-            console.log('Player state changed:', event.data);
-            if (event.data === window.YT.PlayerState.PLAYING) {
-              setIsPlaying(true);
-              startTimeUpdate();
-            } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+          events: {
+            onReady: (event: any) => {
+              console.log('YouTube player ready');
+              const duration = event.target.getDuration();
+              console.log('Song duration:', duration);
+              setDuration(duration);
+            },
+            onStateChange: (event: any) => {
+              console.log('Player state changed:', event.data);
+              if (event.data === window.YT.PlayerState.PLAYING) {
+                setIsPlaying(true);
+                startTimeUpdate();
+              } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+                setIsPlaying(false);
+                stopTimeUpdate();
+              }
+            },
+            onError: (event: any) => {
+              console.error('YouTube player error:', event.data);
               setIsPlaying(false);
               stopTimeUpdate();
-            }
+            },
           },
-          onError: (event: any) => {
-            console.error('YouTube player error:', event.data);
-          },
-        },
-      });
-    } catch (error) {
-      console.error('Error creating YouTube player:', error);
-    }
+        });
+      } catch (error) {
+        console.error('Error creating YouTube player:', error);
+      }
+    };
+
+    // Use setTimeout to ensure cleanup is complete
+    const timeoutId = setTimeout(createPlayer, 100);
 
     return () => {
+      clearTimeout(timeoutId);
       if (playerRef.current) {
-        playerRef.current.destroy();
+        try {
+          playerRef.current.destroy();
+        } catch (error) {
+          console.warn('Error destroying player in cleanup:', error);
+        }
+        playerRef.current = null;
       }
       stopTimeUpdate();
+      setIsPlaying(false);
     };
   }, [currentSong, isYouTubeReady]);
 
@@ -145,8 +170,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const play = () => {
     console.log('Play requested, player:', !!playerRef.current);
     if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
-      console.log('Calling playVideo');
-      playerRef.current.playVideo();
+      try {
+        console.log('Calling playVideo');
+        playerRef.current.playVideo();
+      } catch (error) {
+        console.error('Error calling playVideo:', error);
+        setIsPlaying(false);
+      }
     } else {
       console.error('Player not ready or playVideo not available');
     }
@@ -155,8 +185,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const pause = () => {
     console.log('Pause requested, player:', !!playerRef.current);
     if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
-      console.log('Calling pauseVideo');
-      playerRef.current.pauseVideo();
+      try {
+        console.log('Calling pauseVideo');
+        playerRef.current.pauseVideo();
+      } catch (error) {
+        console.error('Error calling pauseVideo:', error);
+        setIsPlaying(false);
+      }
     } else {
       console.error('Player not ready or pauseVideo not available');
     }
