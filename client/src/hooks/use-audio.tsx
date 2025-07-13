@@ -167,7 +167,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     
     timeUpdateIntervalRef.current = setInterval(() => {
       if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
-        setCurrentTime(playerRef.current.getCurrentTime());
+        const time = playerRef.current.getCurrentTime();
+        if (time && !isNaN(time)) {
+          setCurrentTime(Math.floor(time));
+        }
       }
     }, 1000);
   };
