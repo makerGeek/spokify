@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowDown, Bookmark, Play, Pause, SkipBack, SkipForward, RotateCcw, RotateCw, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,9 +40,43 @@ export default function LyricsPlayer() {
   };
 
   const handleLineClick = (line: any) => {
+    // Seek to the timestamp of the clicked line
+    if (line.timestamp !== undefined) {
+      seekTo(line.timestamp);
+    }
     setSelectedLine(line);
     setShowTranslation(true);
   };
+
+  // Function to determine if a lyric line is currently active
+  const isLineActive = (line: any, nextLine: any) => {
+    if (!line.timestamp) return false;
+    
+    const lineTime = line.timestamp;
+    const nextLineTime = nextLine?.timestamp || (duration || 0);
+    
+    return currentTime >= lineTime && currentTime < nextLineTime;
+  };
+
+  // Auto-scroll to active lyric line
+  useEffect(() => {
+    if (!song?.lyrics || !Array.isArray(song.lyrics)) return;
+    
+    const activeLyricIndex = song.lyrics.findIndex((line: any, index: number) => {
+      const nextLine = song.lyrics[index + 1];
+      return isLineActive(line, nextLine);
+    });
+
+    if (activeLyricIndex !== -1) {
+      const activeElement = document.getElementById(`lyric-line-${activeLyricIndex}`);
+      if (activeElement) {
+        activeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }
+  }, [currentTime, song?.lyrics]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -131,23 +165,36 @@ export default function LyricsPlayer() {
             </div>
           </div>
           
-          <div className="flex-1 space-y-3 overflow-y-auto">
-            {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => (
-              <div
-                key={index}
-                className={`cursor-pointer hover:bg-spotify-bg rounded p-3 transition-colors ${
-                  index === 0 ? "lyrics-highlight" : "text-spotify-muted"
-                }`}
-                onClick={() => handleLineClick(line)}
-              >
-                <span className="text-lg leading-relaxed">{line.text}</span>
-                {showTranslationMode && line.translation && (
-                  <div className="text-sm text-spotify-muted mt-2 italic">
-                    {line.translation}
-                  </div>
-                )}
-              </div>
-            )) : (
+          <div className="flex-1 space-y-3 overflow-y-auto" id="lyrics-container">
+            {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => {
+              const nextLine = song.lyrics[index + 1];
+              const isActive = isLineActive(line, nextLine);
+              
+              return (
+                <div
+                  key={index}
+                  id={`lyric-line-${index}`}
+                  className={`cursor-pointer hover:bg-spotify-bg rounded p-3 transition-all duration-300 ${
+                    isActive 
+                      ? "lyrics-highlight scale-105 shadow-lg" 
+                      : "text-spotify-muted hover:text-spotify-text"
+                  }`}
+                  onClick={() => handleLineClick(line)}
+                >
+                  <span className="text-lg leading-relaxed">{line.text}</span>
+                  {showTranslationMode && line.translation && (
+                    <div className="text-sm text-spotify-muted mt-2 italic">
+                      {line.translation}
+                    </div>
+                  )}
+                  {line.timestamp && (
+                    <div className="text-xs text-spotify-muted mt-1 opacity-50">
+                      {formatTime(line.timestamp)}
+                    </div>
+                  )}
+                </div>
+              );
+            }) : (
               <div className="text-spotify-muted text-center py-8">
                 No lyrics available
               </div>
