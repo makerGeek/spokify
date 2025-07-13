@@ -97,6 +97,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 13, 2025 - UI and Audio Improvements
+- Fixed YouTube player error handling with detailed error messages and visual feedback
+- Updated backend storage to support multiple filter conditions simultaneously
+- Implemented automatic language filtering on home page (shows only target language songs)
+- Redesigned lyrics player with compact album cover in header and maximized lyrics view
+- Refactored audio controls to use centralized audio system (DRY principle)
+- Added proper bottom navigation to lyrics player for consistent user experience
+- Fixed time synchronization and controls functionality in expanded lyrics view
+
 ### July 9, 2025 - Database Migration
 - Migrated from in-memory storage to PostgreSQL database for data persistence
 - Updated storage layer from MemStorage to DatabaseStorage class

@@ -17,10 +17,9 @@ export default function LyricsPlayer() {
   const [showTranslation, setShowTranslation] = useState(false);
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [currentTime, setCurrentTime] = useState(83); // 1:23 in seconds
   const [showTranslationMode, setShowTranslationMode] = useState(false);
 
-  const { isPlaying, togglePlay, currentSong, setCurrentSong } = useAudio();
+  const { isPlaying, togglePlay, currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
 
   const { data: song, isLoading } = useQuery<Song>({
     queryKey: ["/api/songs", songId],
@@ -30,7 +29,9 @@ export default function LyricsPlayer() {
       return response.json();
     },
     onSuccess: (data) => {
-      setCurrentSong(data);
+      if (!currentSong || currentSong.id !== data.id) {
+        setCurrentSong(data);
+      }
     }
   });
 
@@ -162,12 +163,12 @@ export default function LyricsPlayer() {
               <span className="text-xs text-spotify-muted">{formatTime(currentTime)}</span>
               <Slider
                 value={[currentTime]}
-                onValueChange={(value) => setCurrentTime(value[0])}
-                max={song.duration}
+                onValueChange={(value) => seekTo(value[0])}
+                max={duration || 100}
                 step={1}
                 className="flex-1"
               />
-              <span className="text-xs text-spotify-muted">{formatTime(song.duration)}</span>
+              <span className="text-xs text-spotify-muted">{formatTime(duration)}</span>
             </div>
             
             <div className="flex items-center justify-center space-x-6">
