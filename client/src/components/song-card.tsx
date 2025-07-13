@@ -2,6 +2,7 @@ import { Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
+import { useQuery } from "@tanstack/react-query";
 import { type Song } from "@shared/schema";
 
 interface SongCardProps {
@@ -18,8 +19,9 @@ export default function SongCard({ song, onClick }: SongCardProps) {
     togglePlay();
   };
 
-  // Mock progress - in a real app, this would come from user progress data
-  const progress = Math.floor(Math.random() * 100);
+  // Get user progress for this song - use a consistent value based on song ID
+  // For now, create a deterministic "progress" based on song properties until we have real user tracking
+  const progress = Math.floor((song.id * song.rating * 1.3) % 100);
 
   return (
     <Card className="song-card bg-spotify-card border-spotify-card cursor-pointer" onClick={onClick}>
