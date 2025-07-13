@@ -34,25 +34,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const playerContainerId = useRef(`youtube-player-${Math.random().toString(36).substr(2, 9)}`);
 
-  // Create hidden div for YouTube player on mount
-  useEffect(() => {
-    const playerDiv = document.createElement('div');
-    playerDiv.id = playerContainerId.current;
-    playerDiv.style.position = 'absolute';
-    playerDiv.style.left = '-9999px';
-    playerDiv.style.top = '-9999px';
-    playerDiv.style.width = '1px';
-    playerDiv.style.height = '1px';
-    document.body.appendChild(playerDiv);
-
-    return () => {
-      const existingDiv = document.getElementById(playerContainerId.current);
-      if (existingDiv) {
-        document.body.removeChild(existingDiv);
-      }
-    };
-  }, []);
-
   // Initialize YouTube API
   useEffect(() => {
     const initializeYouTube = () => {
@@ -109,18 +90,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     // Small delay to ensure proper cleanup before creating new player
     const createPlayer = () => {
-      // Ensure the DOM element exists
-      const playerElement = document.getElementById(playerContainerId.current);
-      if (!playerElement) {
-        console.error('Player DOM element not found:', playerContainerId.current);
-        return;
-      }
-
       try {
-        console.log('Creating player with element:', playerElement);
         playerRef.current = new window.YT.Player(playerContainerId.current, {
-          height: '1',
-          width: '1',
+          height: '0',
+          width: '0',
           videoId: currentSong.audioUrl,
           playerVars: {
             autoplay: 0,
@@ -221,14 +194,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
     } else {
       console.error('Player not ready or playVideo not available');
-      // If player is not ready but we have a song, try to reinitialize
-      if (currentSong && !playerRef.current && isYouTubeReady) {
-        console.log('Attempting to reinitialize player for direct access');
-        // Trigger player creation by updating the song state
-        const song = currentSong;
-        setCurrentSong(null);
-        setTimeout(() => setCurrentSong(song), 100);
-      }
     }
   };
 
