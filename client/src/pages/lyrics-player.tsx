@@ -84,9 +84,19 @@ export default function LyricsPlayer() {
         >
           <ArrowDown className="text-spotify-muted" size={20} />
         </Button>
-        <div className="text-center">
-          <h3 className="font-semibold text-spotify-text">{song.title}</h3>
-          <p className="text-spotify-muted text-sm">{song.artist}</p>
+        <div className="flex items-center space-x-3">
+          {/* Small Album Cover */}
+          <div className="w-12 h-12 rounded-lg overflow-hidden">
+            <img
+              src={song.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
+              alt="Album cover"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="text-left">
+            <h3 className="font-semibold text-spotify-text">{song.title}</h3>
+            <p className="text-spotify-muted text-sm">{song.artist}</p>
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -98,20 +108,9 @@ export default function LyricsPlayer() {
         </Button>
       </div>
 
-      {/* Album Art */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-80 h-80 max-w-full max-h-full rounded-lg shadow-2xl overflow-hidden">
-          <img
-            src={song.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=800"}
-            alt="Album cover"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      </div>
-
-      {/* Lyrics Section */}
-      <Card className="bg-spotify-card border-spotify-card rounded-t-3xl">
-        <CardContent className="p-6">
+      {/* Lyrics Section - Maximized */}
+      <div className="flex-1 bg-spotify-card border-t border-spotify-card">
+        <div className="p-6 h-full flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-semibold text-spotify-text">Interactive Lyrics</h4>
             <div className="flex items-center space-x-2">
@@ -129,30 +128,30 @@ export default function LyricsPlayer() {
             </div>
           </div>
           
-          <div className="space-y-2 max-h-40 overflow-y-auto">
+          <div className="flex-1 space-y-3 overflow-y-auto">
             {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => (
               <div
                 key={index}
-                className={`cursor-pointer hover:bg-spotify-bg rounded p-2 transition-colors ${
+                className={`cursor-pointer hover:bg-spotify-bg rounded p-3 transition-colors ${
                   index === 0 ? "lyrics-highlight" : "text-spotify-muted"
                 }`}
                 onClick={() => handleLineClick(line)}
               >
-                <span>{line.text}</span>
+                <span className="text-lg leading-relaxed">{line.text}</span>
                 {showTranslationMode && line.translation && (
-                  <div className="text-xs text-spotify-muted mt-1 italic">
+                  <div className="text-sm text-spotify-muted mt-2 italic">
                     {line.translation}
                   </div>
                 )}
               </div>
             )) : (
-              <div className="text-spotify-muted text-center py-4">
+              <div className="text-spotify-muted text-center py-8">
                 No lyrics available
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Audio Controls */}
       <Card className="bg-spotify-card border-spotify-card">
