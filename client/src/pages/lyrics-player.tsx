@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowDown, Bookmark, Play, Pause, SkipBack, SkipForward, RotateCcw, RotateCw, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,15 +27,11 @@ export default function LyricsPlayer() {
       const response = await fetch(`/api/songs/${songId}`);
       if (!response.ok) throw new Error("Failed to fetch song");
       return response.json();
+    },
+    onSuccess: (data) => {
+      setCurrentSong(data);
     }
   });
-
-  // Set current song when data is available
-  useEffect(() => {
-    if (song) {
-      setCurrentSong(song);
-    }
-  }, [song, setCurrentSong]);
 
   const handleCloseLyrics = () => {
     setLocation("/home");
@@ -134,42 +130,26 @@ export default function LyricsPlayer() {
           </div>
           
           <div className="space-y-2 max-h-40 overflow-y-auto">
-            {(() => {
-              try {
-                const lyricsArray = typeof song.lyrics === 'string' ? JSON.parse(song.lyrics) : song.lyrics;
-                if (Array.isArray(lyricsArray)) {
-                  return lyricsArray.map((line: any, index: number) => (
-                    <div
-                      key={index}
-                      className={`cursor-pointer hover:bg-spotify-bg rounded p-2 transition-colors ${
-                        index === 0 ? "lyrics-highlight" : "text-spotify-muted"
-                      }`}
-                      onClick={() => handleLineClick(line)}
-                    >
-                      <span>{line.text}</span>
-                      {showTranslationMode && line.translation && (
-                        <div className="text-xs text-spotify-muted mt-1 italic">
-                          {line.translation}
-                        </div>
-                      )}
-                    </div>
-                  ));
-                } else {
-                  return (
-                    <div className="text-spotify-muted text-center py-4">
-                      No lyrics available
-                    </div>
-                  );
-                }
-              } catch (error) {
-                console.error('Error parsing lyrics:', error);
-                return (
-                  <div className="text-spotify-muted text-center py-4">
-                    Error loading lyrics
+            {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => (
+              <div
+                key={index}
+                className={`cursor-pointer hover:bg-spotify-bg rounded p-2 transition-colors ${
+                  index === 0 ? "lyrics-highlight" : "text-spotify-muted"
+                }`}
+                onClick={() => handleLineClick(line)}
+              >
+                <span>{line.text}</span>
+                {showTranslationMode && line.translation && (
+                  <div className="text-xs text-spotify-muted mt-1 italic">
+                    {line.translation}
                   </div>
-                );
-              }
-            })()}
+                )}
+              </div>
+            )) : (
+              <div className="text-spotify-muted text-center py-4">
+                No lyrics available
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
