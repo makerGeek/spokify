@@ -7,7 +7,7 @@ import { useAudio } from "@/hooks/use-audio";
 
 export default function MiniPlayer() {
   const [, setLocation] = useLocation();
-  const { currentSong, isPlaying, togglePlay, currentTime, duration, seekTo } = useAudio();
+  const { currentSong, isPlaying, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
 
   if (!currentSong) return null;
 
@@ -58,8 +58,14 @@ export default function MiniPlayer() {
           <div className="flex items-center space-x-2">
             <Button
               size="sm"
-              className="w-8 h-8 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors p-0"
+              className={`w-8 h-8 rounded-full transition-colors p-0 ${
+                hasError 
+                  ? "bg-red-500 hover:bg-red-600" 
+                  : "bg-spotify-green hover:bg-spotify-accent"
+              }`}
               onClick={togglePlay}
+              disabled={hasError}
+              title={hasError ? "Video unavailable for playback" : undefined}
             >
               {isPlaying ? <Pause size={14} /> : <Play size={14} />}
             </Button>

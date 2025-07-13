@@ -18,6 +18,7 @@ interface AudioContextType {
   currentTime: number;
   duration: number;
   seekTo: (time: number) => void;
+  hasError: boolean;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -28,6 +29,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isYouTubeReady, setIsYouTubeReady] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const playerRef = useRef<any>(null);
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const playerContainerId = useRef(`youtube-player-${Math.random().toString(36).substr(2, 9)}`);
@@ -122,7 +124,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             },
             onError: (event: any) => {
               console.error('YouTube player error:', event.data);
+              const errorMessages: { [key: number]: string } = {
+                2: 'Invalid video ID',
+                5: 'HTML5 player error',
+                100: 'Video not found or private',
+                101: 'Video owner has disallowed embedding',
+                150: 'Video owner has disallowed embedding'
+              };
+              const errorMessage = errorMessages[event.data] || 'Unknown error';
+              console.error(`YouTube Error ${event.data}: ${errorMessage} for video ${currentSong?.audioUrl}`);
               setIsPlaying(false);
+              setHasError(true);
               stopTimeUpdate();
             },
           },
@@ -212,18 +224,37 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setCurrentSongWrapper = (song: Song | null) => {
+    if (playerRef.current) {
+      console.log('Destroying existing player');
+      try {
+        playerRef.current.destroy();
+      } catch (error) {
+        console.warn('Error destroying existing player:', error);
+      }
+      playerRef.current = null;
+    }
+    
+    setCurrentSong(song);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setHasError(false); // Reset error state when setting new song
+  };
+
   return (
     <AudioContext.Provider
       value={{
         currentSong,
         isPlaying,
-        setCurrentSong,
+        setCurrentSong: setCurrentSongWrapper,
         togglePlay,
         play,
         pause,
         currentTime,
         duration,
         seekTo,
+        hasError,
       }}
     >
       {children}
