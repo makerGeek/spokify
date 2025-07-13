@@ -172,17 +172,34 @@ async function processSong(song: any) {
 
 async function main() {
   try {
-    console.log('Starting lyrics fetching process...\n');
+    // Check if a specific song ID was provided as command line argument
+    const targetSongId = process.argv[2] ? parseInt(process.argv[2]) : null;
     
-    // Get all songs from database
-    const allSongs = await db.select().from(songs);
-    console.log(`Found ${allSongs.length} songs in database`);
-    
-    for (const song of allSongs) {
-      await processSong(song);
+    if (targetSongId) {
+      console.log(`Fetching lyrics for song ID: ${targetSongId}\n`);
       
-      // Add delay between songs to respect rate limits
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Get specific song
+      const [song] = await db.select().from(songs).where(eq(songs.id, targetSongId));
+      
+      if (!song) {
+        console.log(`Song with ID ${targetSongId} not found`);
+        return;
+      }
+      
+      await processSong(song);
+    } else {
+      console.log('Starting lyrics fetching process for all songs...\n');
+      
+      // Get all songs from database
+      const allSongs = await db.select().from(songs);
+      console.log(`Found ${allSongs.length} songs in database`);
+      
+      for (const song of allSongs) {
+        await processSong(song);
+        
+        // Add delay between songs to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
     }
     
     console.log('\n--- Lyrics fetching completed! ---');
