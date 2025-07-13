@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowDown, Bookmark, Play, Pause, SkipBack, SkipForward, RotateCcw, RotateCw, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,11 +27,15 @@ export default function LyricsPlayer() {
       const response = await fetch(`/api/songs/${songId}`);
       if (!response.ok) throw new Error("Failed to fetch song");
       return response.json();
-    },
-    onSuccess: (data) => {
-      setCurrentSong(data);
     }
   });
+
+  // Set current song when data is available
+  useEffect(() => {
+    if (song) {
+      setCurrentSong(song);
+    }
+  }, [song, setCurrentSong]);
 
   const handleCloseLyrics = () => {
     setLocation("/home");
