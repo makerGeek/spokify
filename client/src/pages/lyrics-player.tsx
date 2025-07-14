@@ -27,13 +27,16 @@ export default function LyricsPlayer() {
       const response = await fetch(`/api/songs/${songId}`);
       if (!response.ok) throw new Error("Failed to fetch song");
       return response.json();
-    },
-    onSuccess: (data) => {
-      if (!currentSong || currentSong.id !== data.id) {
-        setCurrentSong(data);
-      }
     }
   });
+
+  // Initialize YouTube player for this song when it loads
+  useEffect(() => {
+    if (song && (!currentSong || currentSong.id !== song.id)) {
+      console.log("Lyrics page: Setting current song to", song.title);
+      setCurrentSong(song);
+    }
+  }, [song, currentSong, setCurrentSong]);
 
   const handleCloseLyrics = () => {
     setLocation("/home");

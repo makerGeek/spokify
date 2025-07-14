@@ -48,11 +48,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     // Listen for the custom event from main.tsx
     const handleYouTubeReady = () => {
-      console.log('YouTube API ready event received');
+      console.log('YouTube API ready event received in audio hook');
       setIsYouTubeReady(true);
     };
 
     window.addEventListener('youtubeAPIReady', handleYouTubeReady);
+
+    // Also check window.youTubeAPIReady flag
+    if (window.youTubeAPIReady) {
+      console.log('YouTube API already ready according to flag');
+      setIsYouTubeReady(true);
+    }
 
     return () => {
       window.removeEventListener('youtubeAPIReady', handleYouTubeReady);
@@ -67,6 +73,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
 
     console.log('Creating YouTube player for:', currentSong.title, 'Video ID:', currentSong.audioUrl);
+    console.log('YouTube API ready state:', window.YT && window.YT.Player ? 'Available' : 'Not available');
+    console.log('Player container ID:', playerContainerId.current);
 
     // Reset state immediately when switching songs
     setIsPlaying(false);

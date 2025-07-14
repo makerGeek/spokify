@@ -31,10 +31,11 @@ function initializeYouTubeAPI() {
   document.head.appendChild(script);
 
   window.onYouTubeIframeAPIReady = () => {
-    console.log('YouTube API ready');
+    console.log('YouTube API ready - main.tsx');
     window.youTubeAPIReady = true;
     // Dispatch custom event to notify components
     window.dispatchEvent(new CustomEvent('youtubeAPIReady'));
+    console.log('YouTube API ready event dispatched');
   };
 }
 
