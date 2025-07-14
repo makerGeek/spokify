@@ -5,6 +5,13 @@ interface TrackInfo {
   youtubeId: string | null;
   title: string;
   artist: string;
+  lyrics: any[] | null;
+}
+
+interface LyricsLine {
+  startMs: number;
+  durMs: number;
+  text: string;
 }
 
 async function findSpotifyTrackId(songName: string): Promise<{ spotifyId: string; title: string; artist: string } | null> {
@@ -91,6 +98,40 @@ async function findYouTubeVideoId(searchQuery: string): Promise<string | null> {
   }
 }
 
+async function fetchSpotifyLyrics(trackId: string): Promise<LyricsLine[] | null> {
+  const options = {
+    method: 'GET',
+    url: 'https://spotify-scraper.p.rapidapi.com/v1/track/lyrics',
+    params: {
+      trackId: trackId,
+      format: 'json'
+    },
+    headers: {
+      'x-rapidapi-key': '1a244cda35msh6d20ec374075a91p13ae79jsn425c85a9d692',
+      'x-rapidapi-host': 'spotify-scraper.p.rapidapi.com'
+    }
+  };
+
+  try {
+    const response = await axios.request(options);
+    const lyrics = response.data;
+    
+    if (lyrics && Array.isArray(lyrics) && lyrics.length > 0) {
+      console.log(`Found ${lyrics.length} lyric lines`);
+      console.log('Lyrics preview:');
+      console.log(JSON.stringify(lyrics.slice(0, 3), null, 2)); // Show first 3 lines as preview
+      
+      return lyrics;
+    } else {
+      console.log('No lyrics found for this track');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching lyrics:', error);
+    return null;
+  }
+}
+
 // Main function to run the script
 async function main() {
   const songName = process.argv[2];
@@ -117,15 +158,28 @@ async function main() {
   
   const youtubeId = await findYouTubeVideoId(youtubeSearchQuery);
   
+  // Fetch lyrics using Spotify track ID
+  console.log(`\nFetching lyrics for Spotify track: ${spotifyResult.spotifyId}`);
+  const lyrics = await fetchSpotifyLyrics(spotifyResult.spotifyId);
+  
   // Display final results
   console.log('\n=== RESULTS ===');
   console.log(`Song: ${spotifyResult.title}`);
   console.log(`Artist: ${spotifyResult.artist}`);
   console.log(`Spotify ID: ${spotifyResult.spotifyId}`);
   console.log(`YouTube ID: ${youtubeId || 'Not found'}`);
+  console.log(`Lyrics Found: ${lyrics ? 'Yes (' + lyrics.length + ' lines)' : 'No'}`);
   
   if (!youtubeId) {
     console.log('\nWarning: No YouTube video found');
+  }
+  
+  if (!lyrics) {
+    console.log('Warning: No lyrics found');
+  } else {
+    console.log('\n=== LYRICS SAMPLE ===');
+    console.log('Full lyrics response:');
+    console.log(JSON.stringify(lyrics, null, 2));
   }
 }
 
@@ -134,4 +188,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
 
-export { findSpotifyTrackId, findYouTubeVideoId };
+export { findSpotifyTrackId, findYouTubeVideoId, fetchSpotifyLyrics };
