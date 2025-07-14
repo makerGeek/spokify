@@ -174,6 +174,8 @@ async function main() {
     try {
       translatedLyrics = await translateLyrics(lyricsString, "English");
       console.log(`Translation complete: ${translatedLyrics.length} lines translated`);
+      console.log('Translation preview:');
+      console.log(JSON.stringify(translatedLyrics.slice(0, 3), null, 2)); // Show first 3 lines as preview
     } catch (error) {
       console.error('Failed to translate lyrics:', error);
     }
