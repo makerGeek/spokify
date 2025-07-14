@@ -97,6 +97,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 14, 2025 - Database Integration and Song Import Enhancement
+- Extended songs table schema with spotify_id, youtube_id, and key_words columns
+- Integrated complete song data saving to PostgreSQL database in import script
+- Added CEFR difficulty assessment function using Gemini AI for automatic level classification
+- Enhanced import script to collect, assess, and persist all song data in single workflow
+- Successfully tested database saving with all collected metadata and AI analysis results
+- Created comprehensive song data pipeline: Spotify search → YouTube lookup → lyrics fetch → AI translation → difficulty assessment → database storage
+
 ### July 14, 2025 - Gemini AI Integration and Translation Improvements
 - Created new Gemini translation service (`server/services/gemini.ts`) as alternative to OpenAI
 - Implemented same API interface as OpenAI service for seamless switching between providers

@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { translateLyrics, assessDifficulty } from '../server/services/gemini.js';
+import { db } from '../server/db.js';
+import { songs } from '../shared/schema.js';
 
 interface TrackInfo {
   spotifyId: string | null;
@@ -133,6 +135,52 @@ async function fetchSpotifyLyrics(trackId: string): Promise<LyricsLine[] | null>
   }
 }
 
+async function saveSongToDatabase(songData: {
+  title: string;
+  artist: string;
+  spotifyId: string;
+  youtubeId: string | null;
+  lyrics: LyricsLine[];
+  translatedLyrics: any[] | null;
+  difficultyResult: any | null;
+}) {
+  try {
+    // Convert lyrics with translations to the format expected by the database
+    const formattedLyrics = songData.translatedLyrics || songData.lyrics.map(line => ({
+      text: line.text,
+      timestamp: Math.round(line.startMs / 1000), // Convert to seconds
+      translation: line.text // Default to original text if no translation
+    }));
+
+    // Determine genre and language (can be enhanced with more logic)
+    const genre = "Pop"; // Default genre for now
+    const language = songData.difficultyResult ? "Spanish" : "English"; // Basic language detection
+    
+    const songRecord = {
+      title: songData.title,
+      artist: songData.artist,
+      genre,
+      language,
+      difficulty: songData.difficultyResult?.difficulty || "A1",
+      rating: 0,
+      albumCover: null,
+      audioUrl: songData.youtubeId ? `https://www.youtube.com/watch?v=${songData.youtubeId}` : null,
+      duration: 0, // Could be calculated from lyrics
+      lyrics: formattedLyrics,
+      spotifyId: songData.spotifyId,
+      youtubeId: songData.youtubeId,
+      keyWords: songData.difficultyResult?.key_words || null
+    };
+
+    const [savedSong] = await db.insert(songs).values(songRecord).returning();
+    console.log(`\n✓ Song saved to database with ID: ${savedSong.id}`);
+    return savedSong;
+  } catch (error) {
+    console.error('Failed to save song to database:', error);
+    throw error;
+  }
+}
+
 // Main function to run the script
 async function main() {
   const songName = process.argv[2];
@@ -189,6 +237,24 @@ async function main() {
       console.log(`Key words found: ${Object.keys(difficultyResult.key_words).length} words`);
     } catch (error) {
       console.error('Failed to assess difficulty:', error);
+    }
+  }
+  
+  // Save to database if we have all the required data
+  if (lyrics && lyrics.length > 0) {
+    console.log(`\n=== SAVING TO DATABASE ===`);
+    try {
+      await saveSongToDatabase({
+        title: spotifyResult.title,
+        artist: spotifyResult.artist,
+        spotifyId: spotifyResult.spotifyId,
+        youtubeId,
+        lyrics,
+        translatedLyrics,
+        difficultyResult
+      });
+    } catch (error) {
+      console.error('Failed to save to database:', error);
     }
   }
   

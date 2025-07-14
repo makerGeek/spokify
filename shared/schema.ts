@@ -28,6 +28,9 @@ export const songs = pgTable("songs", {
   audioUrl: text("audio_url"),
   duration: integer("duration").notNull().default(0),
   lyrics: jsonb("lyrics").notNull(), // Array of { text, timestamp, translation }
+  spotifyId: text("spotify_id"),
+  youtubeId: text("youtube_id"),
+  keyWords: jsonb("key_words"), // Object with key vocabulary translations
 });
 
 export const userProgress = pgTable("user_progress", {
@@ -71,6 +74,9 @@ export const insertSongSchema = createInsertSchema(songs).pick({
   audioUrl: true,
   duration: true,
   lyrics: true,
+  spotifyId: true,
+  youtubeId: true,
+  keyWords: true,
 });
 
 export const insertUserProgressSchema = createInsertSchema(userProgress).pick({
