@@ -12,7 +12,7 @@ async function testDatabaseSave() {
     difficulty: "A1",
     rating: 0,
     albumCover: null,
-    audioUrl: "https://www.youtube.com/watch?v=test123",
+    audioUrl: "test_youtube_456",
     duration: 180,
     lyrics: [
       {

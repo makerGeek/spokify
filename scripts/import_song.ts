@@ -164,7 +164,7 @@ async function saveSongToDatabase(songData: {
       difficulty: songData.difficultyResult?.difficulty || "A1",
       rating: 0,
       albumCover: null,
-      audioUrl: songData.youtubeId ? `https://www.youtube.com/watch?v=${songData.youtubeId}` : null,
+      audioUrl: songData.youtubeId || null,
       duration: 0, // Could be calculated from lyrics
       lyrics: formattedLyrics,
       spotifyId: songData.spotifyId,
