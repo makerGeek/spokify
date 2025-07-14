@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { ArrowDown, Bookmark, Play, Pause, SkipBack, SkipForward, RotateCcw, RotateCw, Languages } from "lucide-react";
+import { ArrowDown, Bookmark, Play, Pause, SkipBack, SkipForward, RotateCcw, RotateCw, Languages, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -18,6 +18,7 @@ export default function LyricsPlayer() {
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showTranslationMode, setShowTranslationMode] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   const { isPlaying, togglePlay, currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
 
@@ -131,16 +132,20 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className="fixed inset-0 bg-spotify-bg z-50 flex flex-col">
+    <div className={`fixed inset-0 bg-spotify-bg z-50 flex flex-col transition-all duration-500 ease-in-out ${
+      isMinimized ? 'transform translate-y-3/4' : 'transform translate-y-0'
+    }`}>
       {/* Player Header */}
       <div className="flex items-center justify-between p-4 border-b border-spotify-card">
         <Button
           variant="ghost"
           size="sm"
           className="w-10 h-10 bg-spotify-card rounded-full p-0"
-          onClick={handleCloseLyrics}
+          onClick={isMinimized ? () => setIsMinimized(false) : () => setIsMinimized(true)}
         >
-          <ArrowDown className="text-spotify-muted" size={20} />
+          <ArrowDown className={`text-spotify-muted transition-transform duration-300 ${
+            isMinimized ? 'rotate-180' : 'rotate-0'
+          }`} size={20} />
         </Button>
         <div className="flex items-center space-x-3">
           {/* Small Album Cover */}
@@ -156,25 +161,41 @@ export default function LyricsPlayer() {
             <p className="text-spotify-muted text-sm">{song.artist}</p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-10 h-10 bg-spotify-card rounded-full p-0"
-          onClick={() => setIsBookmarked(!isBookmarked)}
-        >
-          <Bookmark className={isBookmarked ? "text-spotify-green" : "text-spotify-muted"} size={20} />
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 bg-spotify-card rounded-full p-0"
+            onClick={() => setIsBookmarked(!isBookmarked)}
+          >
+            <Bookmark className={isBookmarked ? "text-spotify-green" : "text-spotify-muted"} size={20} />
+          </Button>
+          {isMinimized && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-10 h-10 bg-spotify-card rounded-full p-0 animate-fade-in"
+              onClick={handleCloseLyrics}
+            >
+              <ArrowDown className="text-spotify-muted rotate-90" size={20} />
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Lyrics Section - Maximized */}
-      <div className="flex-1 bg-spotify-card border-t border-spotify-card pb-32">
+      {/* Lyrics Section */}
+      <div className={`flex-1 bg-spotify-card border-t border-spotify-card pb-32 transition-all duration-500 ease-in-out ${
+        isMinimized ? 'opacity-30 transform scale-95' : 'opacity-100 transform scale-100'
+      }`}>
         <div className="p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-4">
+          <div className={`flex items-center justify-between mb-4 transition-all duration-300 ${
+            isMinimized ? 'transform translate-y-2 opacity-0' : 'transform translate-y-0 opacity-100'
+          }`}>
             <h4 className="text-lg font-semibold text-spotify-text">Interactive Lyrics</h4>
             <div className="flex items-center space-x-2">
               <Button
                 size="sm"
-                className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white`}
+                className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white transition-all duration-200`}
                 onClick={() => setShowTranslationMode(!showTranslationMode)}
               >
                 <Languages size={16} className="mr-1" />
@@ -186,7 +207,9 @@ export default function LyricsPlayer() {
             </div>
           </div>
           
-          <div className="space-y-3 overflow-y-auto overscroll-contain" 
+          <div className={`space-y-3 overflow-y-auto overscroll-contain transition-all duration-500 ease-in-out ${
+            isMinimized ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
+          }`}
                id="lyrics-container"
                style={{ 
                  height: 'calc(100vh - 280px)', // Screen minus header (64px), controls (128px), bottom nav (64px), padding (24px)
@@ -203,11 +226,11 @@ export default function LyricsPlayer() {
                 <div
                   key={index}
                   id={`lyric-line-${index}`}
-                  className={`cursor-pointer hover:bg-spotify-bg active:bg-spotify-bg rounded p-3 transition-all duration-300 touch-manipulation ${
+                  className={`cursor-pointer hover:bg-spotify-bg active:bg-spotify-bg rounded p-3 transition-all duration-300 touch-manipulation transform ${
                     isActive 
-                      ? "lyrics-highlight transform scale-105 shadow-lg" 
-                      : "text-spotify-muted hover:text-spotify-text"
-                  }`}
+                      ? "lyrics-highlight scale-105 shadow-lg animate-pulse" 
+                      : "text-spotify-muted hover:text-spotify-text scale-100 hover:scale-102"
+                  } ${isMinimized ? 'opacity-50' : 'opacity-100'}`}
                   onClick={() => handleLineClick(line)}
                 >
                   <span className="text-lg leading-relaxed">{line.text}</span>
@@ -233,7 +256,9 @@ export default function LyricsPlayer() {
       </div>
 
       {/* Audio Controls */}
-      <div className="fixed bottom-16 left-0 right-0">
+      <div className={`fixed bottom-16 left-0 right-0 transition-all duration-500 ease-in-out ${
+        isMinimized ? 'transform translate-y-2 scale-95 opacity-80' : 'transform translate-y-0 scale-100 opacity-100'
+      }`}>
         <Card className="bg-spotify-card border-spotify-card mx-4">
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-4">
