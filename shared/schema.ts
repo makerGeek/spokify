@@ -4,8 +4,10 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  email: text("email").notNull().unique(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  profileImageUrl: text("profile_image_url"),
   nativeLanguage: text("native_language").notNull().default("en"),
   targetLanguage: text("target_language").notNull().default("es"),
   level: text("level").notNull().default("A1"),
@@ -14,6 +16,8 @@ export const users = pgTable("users", {
   streak: integer("streak").notNull().default(0),
   lastActiveDate: timestamp("last_active_date").defaultNow(),
   isAdmin: boolean("is_admin").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const songs = pgTable("songs", {
@@ -57,8 +61,10 @@ export const vocabulary = pgTable("vocabulary", {
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
   nativeLanguage: true,
   targetLanguage: true,
   level: true,

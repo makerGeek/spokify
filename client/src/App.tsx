@@ -76,6 +76,7 @@ function Router() {
   // Determine current page for bottom navigation
   const getCurrentPage = () => {
     if (location === '/home') return 'home';
+    if (location === '/search') return 'search';
     if (location === '/library') return 'library';
     if (location === '/review') return 'review';
     if (location === '/profile') return 'profile';
@@ -89,6 +90,7 @@ function Router() {
         <Route path="/" component={LanguageSelection} />
         <Route path="/login" component={Login} />
         <Route path="/home" component={Home} />
+        <Route path="/search" component={Home} />
         <Route path="/lyrics/:id" component={LyricsPlayer} />
         <Route path="/library">
           <AuthenticatedOnly>
