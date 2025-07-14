@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/contexts/auth-context'
-import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, TrendingUp } from 'lucide-react'
+import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, MoreHorizontal } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import BottomNavigation from '@/components/bottom-navigation'
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
@@ -56,116 +54,161 @@ export default function Profile() {
   const weeklyProgress = Math.min((wordsLearned / weeklyGoal) * 100, 100)
 
   return (
-    <div className="min-h-screen bg-spotify-bg">
-      {/* Header */}
-      <div className="bg-gradient-to-b from-spotify-green/20 to-transparent pt-12 pb-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center space-x-4 mb-6">
-            <Avatar className="h-20 w-20 border-2 border-spotify-green">
-              <AvatarImage src={user?.user_metadata?.avatar_url} />
-              <AvatarFallback className="text-2xl bg-spotify-green text-black font-bold">
-                {user?.email ? getInitials(user.email) : 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-3xl font-bold text-spotify-text">
+    <div className="min-h-screen bg-[#121212] text-white">
+      {/* Header Section with Gradient */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1db954]/30 via-[#1db954]/10 to-transparent"></div>
+        <div className="relative px-6 pt-16 pb-8">
+          {/* Profile Header */}
+          <div className="flex items-end space-x-6 mb-8">
+            <div className="relative">
+              <Avatar className="h-32 w-32 border-0 shadow-2xl">
+                <AvatarImage src={user?.user_metadata?.avatar_url} className="object-cover" />
+                <AvatarFallback className="text-4xl bg-[#282828] text-white font-bold border-0">
+                  {user?.email ? getInitials(user.email) : 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white/70 uppercase tracking-wide mb-2">Profile</p>
+              <h1 className="text-5xl font-black text-white mb-4 leading-tight">
                 {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
               </h1>
-              <p className="text-spotify-muted text-sm">
-                {userData?.nativeLanguage || 'English'} → {userData?.targetLanguage || 'Spanish'} • Level {userData?.level || 'A1'}
-              </p>
+              <div className="flex items-center space-x-1 text-sm text-white/70">
+                <span>{userData?.nativeLanguage || 'English'}</span>
+                <span>→</span>
+                <span className="text-[#1db954] font-medium">{userData?.targetLanguage || 'Spanish'}</span>
+                <span>•</span>
+                <span>Level {userData?.level || 'A1'}</span>
+                <span>•</span>
+                <span>{wordsLearned} words learned</span>
+              </div>
             </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-4">
+            <Button 
+              className="bg-[#1db954] hover:bg-[#1ed760] text-black font-bold px-8 py-3 rounded-full transition-all duration-200 hover:scale-105"
+            >
+              Continue Learning
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="w-12 h-12 rounded-full border-white/20 bg-black/20 hover:bg-white/10 hover:border-white/40 transition-all duration-200"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 pb-20">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-spotify-card rounded-lg p-4 border border-spotify-muted">
-            <div className="flex items-center justify-between mb-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              <span className="text-2xl font-bold text-spotify-text">{wordsLearned}</span>
+      {/* Content */}
+      <div className="px-6 pb-24">
+        {/* Stats Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6">Your Progress</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#181818] rounded-lg p-6 hover:bg-[#282828] transition-colors duration-200">
+              <div className="flex items-center justify-between mb-3">
+                <Trophy className="h-6 w-6 text-[#1db954]" />
+                <span className="text-3xl font-bold text-white">{wordsLearned}</span>
+              </div>
+              <p className="text-white/70 text-sm font-medium">Words Learned</p>
             </div>
-            <p className="text-sm text-spotify-muted">Words Learned</p>
-          </div>
-          
-          <div className="bg-spotify-card rounded-lg p-4 border border-spotify-muted">
-            <div className="flex items-center justify-between mb-2">
-              <Flame className="h-5 w-5 text-orange-500" />
-              <span className="text-2xl font-bold text-spotify-text">{streak}</span>
+            
+            <div className="bg-[#181818] rounded-lg p-6 hover:bg-[#282828] transition-colors duration-200">
+              <div className="flex items-center justify-between mb-3">
+                <Flame className="h-6 w-6 text-[#ff6b35]" />
+                <span className="text-3xl font-bold text-white">{streak}</span>
+              </div>
+              <p className="text-white/70 text-sm font-medium">Day Streak</p>
             </div>
-            <p className="text-sm text-spotify-muted">Day Streak</p>
-          </div>
-          
-          <div className="bg-spotify-card rounded-lg p-4 border border-spotify-muted">
-            <div className="flex items-center justify-between mb-2">
-              <BookOpen className="h-5 w-5 text-blue-500" />
-              <span className="text-2xl font-bold text-spotify-text">{songsCompleted}</span>
+            
+            <div className="bg-[#181818] rounded-lg p-6 hover:bg-[#282828] transition-colors duration-200">
+              <div className="flex items-center justify-between mb-3">
+                <BookOpen className="h-6 w-6 text-[#1db954]" />
+                <span className="text-3xl font-bold text-white">{songsCompleted}</span>
+              </div>
+              <p className="text-white/70 text-sm font-medium">Songs Completed</p>
             </div>
-            <p className="text-sm text-spotify-muted">Songs Completed</p>
-          </div>
-          
-          <div className="bg-spotify-card rounded-lg p-4 border border-spotify-muted">
-            <div className="flex items-center justify-between mb-2">
-              <Clock className="h-5 w-5 text-purple-500" />
-              <span className="text-2xl font-bold text-spotify-text">15m</span>
+            
+            <div className="bg-[#181818] rounded-lg p-6 hover:bg-[#282828] transition-colors duration-200">
+              <div className="flex items-center justify-between mb-3">
+                <Clock className="h-6 w-6 text-[#8b5cf6]" />
+                <span className="text-3xl font-bold text-white">15m</span>
+              </div>
+              <p className="text-white/70 text-sm font-medium">Time Today</p>
             </div>
-            <p className="text-sm text-spotify-muted">Time Today</p>
           </div>
         </div>
 
         {/* Weekly Goal */}
-        <div className="bg-spotify-card rounded-lg p-6 border border-spotify-muted mb-6">
+        <div className="bg-[#181818] rounded-lg p-6 mb-8 hover:bg-[#282828] transition-colors duration-200">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-spotify-green" />
-              <h3 className="text-lg font-semibold text-spotify-text">Weekly Goal</h3>
+            <div className="flex items-center space-x-3">
+              <Target className="h-6 w-6 text-[#1db954]" />
+              <h3 className="text-xl font-bold text-white">Weekly Goal</h3>
             </div>
-            <Badge variant="secondary" className="bg-spotify-green/20 text-spotify-green border-spotify-green/20">
-              {wordsLearned}/{weeklyGoal} words
-            </Badge>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-white">{wordsLearned}/{weeklyGoal}</p>
+              <p className="text-white/70 text-sm">words</p>
+            </div>
           </div>
-          <Progress value={weeklyProgress} className="h-3 mb-2" />
-          <p className="text-sm text-spotify-muted">
+          <div className="mb-3">
+            <div className="w-full bg-[#282828] rounded-full h-2 overflow-hidden">
+              <div 
+                className="h-2 bg-[#1db954] rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${weeklyProgress}%` }}
+              ></div>
+            </div>
+          </div>
+          <p className="text-white/70 text-sm">
             {weeklyGoal - wordsLearned > 0 
               ? `${weeklyGoal - wordsLearned} more words to reach your goal`
-              : 'Goal achieved! 🎉'
+              : 'Goal achieved this week!'
             }
           </p>
         </div>
 
         {/* Recent Vocabulary */}
         {vocabulary.length > 0 && (
-          <div className="bg-spotify-card rounded-lg p-6 border border-spotify-muted mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-                <h3 className="text-lg font-semibold text-spotify-text">Recent Vocabulary</h3>
+          <div className="bg-[#181818] rounded-lg p-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <Star className="h-6 w-6 text-[#1db954]" />
+                <h3 className="text-xl font-bold text-white">Recent Vocabulary</h3>
               </div>
-              <TrendingUp className="h-4 w-4 text-spotify-green" />
             </div>
-            <div className="space-y-3">
-              {vocabulary.slice(0, 5).map((word) => (
-                <div key={word.id} className="flex items-center justify-between py-2 border-b border-spotify-muted/30 last:border-b-0">
-                  <div>
-                    <p className="font-medium text-spotify-text">{word.word}</p>
-                    <p className="text-sm text-spotify-muted">{word.translation}</p>
+            <div className="space-y-4">
+              {vocabulary.slice(0, 5).map((word, index) => (
+                <div key={word.id} className="flex items-center justify-between group hover:bg-white/5 rounded-lg p-3 -mx-3 transition-colors duration-200">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-8 h-8 bg-[#282828] rounded flex items-center justify-center text-white/70 text-sm font-medium group-hover:bg-[#1db954] group-hover:text-black transition-colors duration-200">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white">{word.word}</p>
+                      <p className="text-white/70 text-sm">{word.translation}</p>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {word.difficulty}
-                  </Badge>
+                  <div className="text-right">
+                    <div className="inline-flex items-center px-2 py-1 rounded-full bg-[#282828] text-white/70 text-xs font-medium">
+                      {word.difficulty}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Sign Out */}
-        <div className="bg-spotify-card rounded-lg p-6 border border-spotify-muted">
+        {/* Sign Out Section */}
+        <div className="bg-[#181818] rounded-lg p-6">
           <Button
             variant="outline"
-            className="w-full justify-center bg-transparent border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/40 font-medium py-3 rounded-lg transition-all duration-200"
             onClick={handleSignOut}
           >
             <LogOut className="mr-2 h-4 w-4" />
