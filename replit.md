@@ -97,6 +97,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 14, 2025 - Admin Authentication and Real Data
+- Changed admin route from `/admin` to `/song-offset` for clearer naming
+- Implemented router-level authentication protection for admin routes
+- Added `isAdmin` boolean field to users database table
+- Replaced mock user data with real database queries in `/api/user` endpoint
+- Created ProtectedAdminRoute component with proper loading states and redirects
+- Only admin users can access timestamp offset tool, others redirected appropriately
+- Removed component-level AdminGuard wrapper for cleaner architecture
+
 ### July 13, 2025 - UI and Audio Improvements
 - Fixed YouTube player error handling with detailed error messages and visual feedback
 - Updated backend storage to support multiple filter conditions simultaneously
@@ -111,6 +120,6 @@ Preferred communication style: Simple, everyday language.
 - Updated storage layer from MemStorage to DatabaseStorage class
 - Populated database with 12 multilingual songs across 7 genres
 - All song data now persists between application restarts
-- YouTube video IDs verified and working for audio playback
+- YouTube video IDs verified and working for audio playbook
 
 The application architecture prioritizes user experience with offline support, real-time translations, and a mobile-first design that makes language learning through music both engaging and accessible.

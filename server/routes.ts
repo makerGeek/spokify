@@ -44,20 +44,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Current user endpoint (for auth purposes)
   app.get("/api/user", async (req, res) => {
     try {
-      // For now, return a mock user - this would normally be from session/auth
-      const mockUser = {
-        id: 1,
-        username: "demo_user",
-        nativeLanguage: "en",
-        targetLanguage: "es",
-        level: "A1",
-        weeklyGoal: 50,
-        wordsLearned: 25,
-        streak: 5,
-        lastActiveDate: new Date(),
-        isAdmin: true // Set to true for testing admin functionality
-      };
-      res.json(mockUser);
+      // For demo purposes, get user with username 'demo_user'
+      // In a real app, this would be from session/JWT token
+      const user = await storage.getUserByUsername("demo_user");
+      
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error: any) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: error.message });
