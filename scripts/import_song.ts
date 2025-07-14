@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { translateLyrics } from '../server/services/openai.js';
+import { translateLyrics } from '../server/services/gemini.js';
 
 interface TrackInfo {
   spotifyId: string | null;
@@ -168,7 +168,7 @@ async function main() {
   if (lyrics && lyrics.length > 0) {
     // Convert lyrics to string format for translation
     const lyricsString = JSON.stringify(lyrics);
-    console.log(`\nTranslating lyrics to English using OpenAI...`);
+    console.log(`\nTranslating lyrics to English using Gemini...`);
     
     try {
       translatedLyrics = await translateLyrics(lyricsString, "English");

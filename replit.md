@@ -97,6 +97,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 14, 2025 - Gemini AI Integration and Translation Improvements
+- Created new Gemini translation service (`server/services/gemini.ts`) as alternative to OpenAI
+- Implemented same API interface as OpenAI service for seamless switching between providers
+- Added proper timeout handling with 2-minute timeout wrapper for long translation requests
+- Updated import script to use Gemini instead of OpenAI for lyrics translation
+- Successfully tested Gemini translation with Spanish output validation
+- Enhanced error handling and response format validation for AI translation services
+- Added GEMINI_API_KEY environment variable support for Google AI Studio integration
+
 ### July 14, 2025 - Admin Authentication and Real Data
 - Changed admin route from `/admin` to `/song-offset` for clearer naming
 - Implemented router-level authentication protection for admin routes
