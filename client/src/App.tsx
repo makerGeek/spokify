@@ -6,8 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { initializePWA } from "@/lib/pwa";
 import { AudioProvider } from "@/hooks/use-audio";
-import { useAuth } from "@/hooks/useAuth";
-import Landing from "@/pages/landing";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
 import LyricsPlayer from "@/pages/lyrics-player";
@@ -20,7 +18,7 @@ function ProtectedAdminRoute() {
   const [, setLocation] = useLocation();
 
   const { data: user, isLoading, error } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
+    queryKey: ["/api/user"],
     retry: false
   });
 
@@ -65,22 +63,13 @@ function ProtectedAdminRoute() {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/home" component={Home} />
-          <Route path="/language-selection" component={LanguageSelection} />
-          <Route path="/lyrics/:id" component={LyricsPlayer} />
-          <Route path="/progress" component={Progress} />
-          <Route path="/song-offset" component={ProtectedAdminRoute} />
-        </>
-      )}
+      <Route path="/" component={LanguageSelection} />
+      <Route path="/home" component={Home} />
+      <Route path="/lyrics/:id" component={LyricsPlayer} />
+      <Route path="/progress" component={Progress} />
+      <Route path="/song-offset" component={ProtectedAdminRoute} />
       <Route component={NotFound} />
     </Switch>
   );

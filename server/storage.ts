@@ -3,12 +3,11 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
-  // User methods (updated for Replit Auth)
-  getUser(id: string): Promise<User | undefined>;
+  // User methods
+  getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  upsertUser(user: import("@shared/schema").UpsertUser): Promise<User>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: string, updates: Partial<User>): Promise<User>;
+  updateUser(id: number, updates: Partial<User>): Promise<User>;
 
   // Song methods
   getSongs(filters?: { genre?: string; difficulty?: string; language?: string }): Promise<Song[]>;
@@ -16,43 +15,27 @@ export interface IStorage {
   createSong(song: InsertSong): Promise<Song>;
   updateSongLyrics(id: number, lyrics: any[]): Promise<Song>;
 
-  // User progress methods (updated for string user IDs)
-  getUserProgress(userId: string): Promise<UserProgress[]>;
-  getUserProgressBySong(userId: string, songId: number): Promise<UserProgress | undefined>;
+  // User progress methods
+  getUserProgress(userId: number): Promise<UserProgress[]>;
+  getUserProgressBySong(userId: number, songId: number): Promise<UserProgress | undefined>;
   createUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
   updateUserProgress(id: number, updates: Partial<UserProgress>): Promise<UserProgress>;
 
-  // Vocabulary methods (updated for string user IDs)
-  getUserVocabulary(userId: string): Promise<Vocabulary[]>;
+  // Vocabulary methods
+  getUserVocabulary(userId: number): Promise<Vocabulary[]>;
   createVocabulary(vocabulary: InsertVocabulary): Promise<Vocabulary>;
   updateVocabulary(id: number, updates: Partial<Vocabulary>): Promise<Vocabulary>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations for Replit Auth
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    // Not used with Replit Auth, but kept for backward compatibility
-    return undefined;
-  }
-
-  async upsertUser(userData: import("@shared/schema").UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -63,7 +46,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+  async updateUser(id: number, updates: Partial<User>): Promise<User> {
     const [user] = await db
       .update(users)
       .set(updates)
@@ -115,15 +98,16 @@ export class DatabaseStorage implements IStorage {
     return song;
   }
 
-  async getUserProgress(userId: string): Promise<UserProgress[]> {
+  async getUserProgress(userId: number): Promise<UserProgress[]> {
     return await db.select().from(userProgress).where(eq(userProgress.userId, userId));
   }
 
-  async getUserProgressBySong(userId: string, songId: number): Promise<UserProgress | undefined> {
+  async getUserProgressBySong(userId: number, songId: number): Promise<UserProgress | undefined> {
     const [progress] = await db
       .select()
       .from(userProgress)
-      .where(and(eq(userProgress.userId, userId), eq(userProgress.songId, songId)));
+      .where(eq(userProgress.userId, userId))
+      .where(eq(userProgress.songId, songId));
     return progress || undefined;
   }
 
@@ -144,7 +128,7 @@ export class DatabaseStorage implements IStorage {
     return progress;
   }
 
-  async getUserVocabulary(userId: string): Promise<Vocabulary[]> {
+  async getUserVocabulary(userId: number): Promise<Vocabulary[]> {
     return await db.select().from(vocabulary).where(eq(vocabulary.userId, userId));
   }
 

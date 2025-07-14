@@ -97,16 +97,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 14, 2025 - Replit Auth Integration
-- Integrated Replit OpenID Connect authentication system
-- Updated database schema for Replit Auth compatibility (varchar user IDs)
-- Created sessions table for secure session storage
-- Implemented upsertUser functionality for automatic user creation
-- Added authentication middleware and protected routes
-- Created landing page for unauthenticated users
-- Added logout functionality in navigation
-- Updated user progress and vocabulary tables for string user IDs
-- Router-level authentication with proper loading and error states
+### July 14, 2025 - Admin Authentication and Real Data
+- Changed admin route from `/admin` to `/song-offset` for clearer naming
+- Implemented router-level authentication protection for admin routes
+- Added `isAdmin` boolean field to users database table
+- Replaced mock user data with real database queries in `/api/user` endpoint
+- Created ProtectedAdminRoute component with proper loading states and redirects
+- Only admin users can access timestamp offset tool, others redirected appropriately
+- Removed component-level AdminGuard wrapper for cleaner architecture
 
 ### July 13, 2025 - UI and Audio Improvements
 - Fixed YouTube player error handling with detailed error messages and visual feedback

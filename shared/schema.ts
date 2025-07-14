@@ -1,25 +1,11 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, varchar, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table for Replit Auth
-export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
-);
-
-// User storage table for Replit Auth
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(), // Changed to varchar for Replit user IDs
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
   nativeLanguage: text("native_language").notNull().default("en"),
   targetLanguage: text("target_language").notNull().default("es"),
   level: text("level").notNull().default("A1"),
@@ -28,8 +14,6 @@ export const users = pgTable("users", {
   streak: integer("streak").notNull().default(0),
   lastActiveDate: timestamp("last_active_date").defaultNow(),
   isAdmin: boolean("is_admin").notNull().default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const songs = pgTable("songs", {
@@ -48,7 +32,7 @@ export const songs = pgTable("songs", {
 
 export const userProgress = pgTable("user_progress", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull(), // Changed to varchar for Replit Auth
+  userId: integer("user_id").notNull(),
   songId: integer("song_id").notNull(),
   progressPercentage: integer("progress_percentage").notNull().default(0),
   completedAt: timestamp("completed_at"),
@@ -57,7 +41,7 @@ export const userProgress = pgTable("user_progress", {
 
 export const vocabulary = pgTable("vocabulary", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull(), // Changed to varchar for Replit Auth
+  userId: integer("user_id").notNull(),
   word: text("word").notNull(),
   translation: text("translation").notNull(),
   language: text("language").notNull(),
@@ -69,25 +53,11 @@ export const vocabulary = pgTable("vocabulary", {
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  id: true,
-  email: true,
-  firstName: true,
-  lastName: true,
-  profileImageUrl: true,
+  username: true,
+  password: true,
   nativeLanguage: true,
   targetLanguage: true,
   level: true,
-  weeklyGoal: true,
-  wordsLearned: true,
-  streak: true,
-});
-
-export const upsertUserSchema = createInsertSchema(users).pick({
-  id: true,
-  email: true,
-  firstName: true,
-  lastName: true,
-  profileImageUrl: true,
 });
 
 export const insertSongSchema = createInsertSchema(songs).pick({
@@ -121,7 +91,6 @@ export const insertVocabularySchema = createInsertSchema(vocabulary).pick({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSong = z.infer<typeof insertSongSchema>;
 export type Song = typeof songs.$inferSelect;

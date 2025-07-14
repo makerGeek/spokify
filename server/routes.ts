@@ -3,23 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { translateText, assessDifficulty, generateVocabularyExplanation } from "./services/openai";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema } from "@shared/schema";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
   
   // User routes
   app.post("/api/users", async (req, res) => {
@@ -47,7 +32,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/users/:id", async (req, res) => {
     try {
-      const id = req.params.id; // Now string for Replit Auth
+      const id = parseInt(req.params.id);
       const updates = req.body;
       const user = await storage.updateUser(id, updates);
       res.json(user);
@@ -56,9 +41,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Current user endpoint (backwards compatibility - redirects to auth endpoint)
+  // Current user endpoint (for auth purposes)
   app.get("/api/user", async (req, res) => {
-    res.redirect('/api/auth/user');
+    try {
+      // For demo purposes, get user with username 'demo_user'
+      // In a real app, this would be from session/JWT token
+      const user = await storage.getUserByUsername("demo_user");
+      
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: error.message });
+    }
   });
 
   // Song routes
