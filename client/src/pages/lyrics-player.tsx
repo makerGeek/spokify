@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { ArrowDown, Bookmark, Play, Pause, SkipBack, SkipForward, RotateCcw, RotateCw, Languages } from "lucide-react";
+import { ArrowDown, Bookmark, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import TranslationOverlay from "@/components/translation-overlay";
 import BottomNavigation from "@/components/bottom-navigation";
+import MiniPlayer from "@/components/mini-player";
 import { useAudio } from "@/hooks/use-audio";
 import { type Song } from "@shared/schema";
 
@@ -19,7 +18,7 @@ export default function LyricsPlayer() {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showTranslationMode, setShowTranslationMode] = useState(false);
 
-  const { isPlaying, togglePlay, currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
+  const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
 
   const { data: song, isLoading } = useQuery<Song>({
     queryKey: ["/api/songs", songId],
@@ -105,6 +104,7 @@ export default function LyricsPlayer() {
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
 
   if (isLoading) {
     return (
@@ -213,47 +213,8 @@ export default function LyricsPlayer() {
         </div>
       </div>
 
-      {/* Compact Player Controls - Fixed at Bottom */}
-      <div className="fixed bottom-16 left-0 right-0 z-40">
-        <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card mx-4 shadow-xl">
-          <CardContent className="p-3">
-            {/* Song Info Row */}
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
-                <img
-                  src={song.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
-                  alt="Album cover"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-spotify-text text-sm truncate">{song.title}</h3>
-                <p className="text-spotify-muted text-xs truncate">{song.artist}</p>
-              </div>
-              <Button
-                size="sm"
-                className="w-10 h-10 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors flex-shrink-0"
-                onClick={togglePlay}
-              >
-                {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-              </Button>
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-spotify-muted w-10 text-center">{formatTime(currentTime)}</span>
-              <Slider
-                value={[currentTime]}
-                onValueChange={(value) => seekTo(value[0])}
-                max={duration || 100}
-                step={1}
-                className="flex-1"
-              />
-              <span className="text-xs text-spotify-muted w-10 text-center">{formatTime(duration)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Mini Player Component */}
+      <MiniPlayer />
 
       {/* Bottom Navigation */}
       <BottomNavigation currentPage="lyrics" />
