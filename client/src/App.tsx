@@ -20,7 +20,7 @@ function Router() {
       <Route path="/home" component={Home} />
       <Route path="/lyrics/:id" component={LyricsPlayer} />
       <Route path="/progress" component={Progress} />
-      <Route path="/admin" component={Admin} />
+      <Route path="/song-offset" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );

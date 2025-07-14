@@ -109,7 +109,7 @@ export default function Admin() {
         <Card className="bg-spotify-card border-spotify-card mb-6">
           <CardHeader>
             <CardTitle className="text-spotify-text text-2xl">
-              🛠️ Admin - Lyrics Timestamp Offset Tool
+              🛠️ Song Offset - Lyrics Timestamp Tool
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
