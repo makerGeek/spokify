@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { translateLyrics } from '../server/services/gemini.js';
+import { translateLyrics, assessDifficulty } from '../server/services/gemini.js';
 
 interface TrackInfo {
   spotifyId: string | null;
@@ -164,6 +164,7 @@ async function main() {
   const lyrics = await fetchSpotifyLyrics(spotifyResult.spotifyId);
   
   let translatedLyrics = null;
+  let difficultyResult = null;
   
   if (lyrics && lyrics.length > 0) {
     // Convert lyrics to string format for translation
@@ -176,6 +177,17 @@ async function main() {
     } catch (error) {
       console.error('Failed to translate lyrics:', error);
     }
+
+    // Assess difficulty using CEFR levels
+    console.log(`\nAssessing difficulty level using Gemini...`);
+    
+    try {
+      difficultyResult = await assessDifficulty(lyrics);
+      console.log(`Difficulty assessment: ${difficultyResult.difficulty} level`);
+      console.log(`Key words found: ${Object.keys(difficultyResult.key_words).length} words`);
+    } catch (error) {
+      console.error('Failed to assess difficulty:', error);
+    }
   }
   
   // Display final results
@@ -186,6 +198,8 @@ async function main() {
   console.log(`YouTube ID: ${youtubeId || 'Not found'}`);
   console.log(`Lyrics Found: ${lyrics ? 'Yes (' + lyrics.length + ' lines)' : 'No'}`);
   console.log(`Translated Lyrics: ${translatedLyrics ? 'Yes (' + translatedLyrics.length + ' lines)' : 'No'}`);
+  console.log(`Difficulty Level: ${difficultyResult ? difficultyResult.difficulty : 'Not assessed'}`);
+  console.log(`Key Words: ${difficultyResult ? Object.keys(difficultyResult.key_words).length : 0} found`);
   
   if (!youtubeId) {
     console.log('\nWarning: No YouTube video found');
@@ -197,6 +211,16 @@ async function main() {
     console.log('\n=== ORIGINAL LYRICS SAMPLE ===');
     console.log('First 3 lines:');
     console.log(JSON.stringify(lyrics.slice(0, 3), null, 2));
+  }
+  
+  if (difficultyResult && Object.keys(difficultyResult.key_words).length > 0) {
+    console.log('\n=== DIFFICULTY ASSESSMENT ===');
+    console.log(`CEFR Level: ${difficultyResult.difficulty}`);
+    console.log('Key vocabulary sample:');
+    const keyWordsSample = Object.entries(difficultyResult.key_words).slice(0, 5);
+    keyWordsSample.forEach(([word, translation]) => {
+      console.log(`  ${word} → ${translation}`);
+    });
   }
   
   if (translatedLyrics && translatedLyrics.length > 0) {

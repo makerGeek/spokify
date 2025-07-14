@@ -14,6 +14,11 @@ export interface TranslatedLyric {
   translation: string;
 }
 
+export interface DifficultyAssessment {
+  difficulty: string;
+  key_words: Record<string, string>;
+}
+
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return Promise.race([
     promise,
@@ -91,5 +96,40 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
   } catch (error) {
     console.error("Lyrics translation error:", error);
     throw new Error("Failed to translate lyrics: " + (error as Error).message);
+  }
+}
+
+export async function assessDifficulty(
+  lyricsData: Array<{ startMs: number; durMs: number; text: string }>
+): Promise<DifficultyAssessment> {
+  try {
+    // Concatenate all text from the lyrics
+    const concatenatedText = lyricsData.map(line => line.text).join(" ");
+
+    const prompt = `You are a language learning expert. Assess the difficulty level of the given text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length. Respond with JSON in this format: { "difficulty": "A1|A2|B1|B2|C1|C2", "key_words":{"hallo" : "hello", "machen" : "make", "wie geht es ?" : "how is it going ?"}
+
+Text to analyze: ${concatenatedText}`;
+
+    const apiCall = ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      config: {
+        responseMimeType: "application/json"
+      },
+      contents: prompt,
+    });
+
+    // Apply 2 minute timeout wrapper
+    const response = await withTimeout(apiCall, 120000);
+
+    const result = JSON.parse(response.text || '{"difficulty": "A1", "key_words": {}}');
+    console.log("Gemini difficulty assessment:", result);
+    
+    return {
+      difficulty: result.difficulty || "A1",
+      key_words: result.key_words || {}
+    };
+  } catch (error) {
+    console.error("Difficulty assessment error:", error);
+    throw new Error("Failed to assess difficulty: " + (error as Error).message);
   }
 }
