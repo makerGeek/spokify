@@ -6,12 +6,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { initializePWA } from "@/lib/pwa";
 import { AudioProvider } from "@/hooks/use-audio";
+import { AuthProvider } from "@/contexts/auth-context";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
 import LyricsPlayer from "@/pages/lyrics-player";
 import Progress from "@/pages/progress";
+import Profile from "@/pages/profile";
+import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
+import ProtectedRoute from "@/components/protected-route";
 import { type User } from "@shared/schema";
 
 function ProtectedAdminRoute() {
@@ -66,9 +70,15 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LanguageSelection} />
+      <Route path="/login" component={Login} />
       <Route path="/home" component={Home} />
       <Route path="/lyrics/:id" component={LyricsPlayer} />
       <Route path="/progress" component={Progress} />
+      <Route path="/profile">
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      </Route>
       <Route path="/song-offset" component={ProtectedAdminRoute} />
       <Route component={NotFound} />
     </Switch>
@@ -83,12 +93,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AudioProvider>
-          <div className="min-h-screen bg-spotify-bg text-spotify-text">
-            <Toaster />
-            <Router />
-          </div>
-        </AudioProvider>
+        <AuthProvider>
+          <AudioProvider>
+            <div className="min-h-screen bg-spotify-bg text-spotify-text">
+              <Toaster />
+              <Router />
+            </div>
+          </AudioProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
