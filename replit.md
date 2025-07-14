@@ -135,13 +135,6 @@ Preferred communication style: Simple, everyday language.
   - Removed individual bottom navigation components from each page component
   - Intelligent page detection based on current route with proper active states
   - Hidden on language selection and admin pages for cleaner user experience
-- **Spotify-style Lyrics Player**: Redesigned lyrics player to match authentic Spotify layout
-  - Gradient background with song title and artist at top (matching Spotify's red theme example)
-  - Current lyric line highlighted in white and scaled up, positioned vertically centered
-  - Non-active lines shown in reduced opacity white text
-  - Smooth auto-scrolling to keep current line centered in viewport
-  - Clean typography with proper spacing and responsive text sizing
-  - Translation mode shows translations inline with active lyrics only
 
 ### July 14, 2025 - Language Detection and Database Integration
 - Enhanced Gemini AI service to detect song language using ISO 639-1 standard (2-letter codes: es, en, fr, etc.)
