@@ -136,6 +136,15 @@ export async function generateVocabularyExplanation(
   }
 }
 
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+    )
+  ]);
+}
+
 export async function translateLyrics(
   songLyrics: string,
   language: string
@@ -159,7 +168,7 @@ export async function translateLyrics(
   }
 ] and in the following language: ${language}`;
 
-    const response = await openai.chat.completions.create({
+    const apiCall = openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
@@ -173,6 +182,9 @@ export async function translateLyrics(
       ],
       response_format: { type: "json_object" }
     });
+
+    // Apply 2 minute timeout wrapper
+    const response = await withTimeout(apiCall, 120000);
 
     const result = JSON.parse(response.choices[0].message.content || '{"lyrics": []}');
     console.log("OpenAI response:", result);

@@ -166,10 +166,9 @@ async function main() {
   let translatedLyrics = null;
   
   if (lyrics && lyrics.length > 0) {
-    // Limit lyrics to first 10 lines for translation to avoid timeout
-    const limitedLyrics = lyrics.slice(0, 10);
-    const lyricsString = JSON.stringify(limitedLyrics);
-    console.log(`\nTranslating first 10 lines of lyrics to English using OpenAI...`);
+    // Convert lyrics to string format for translation
+    const lyricsString = JSON.stringify(lyrics);
+    console.log(`\nTranslating lyrics to English using OpenAI...`);
     
     try {
       translatedLyrics = await translateLyrics(lyricsString, "English");
