@@ -28,10 +28,32 @@ export default function MiniPlayer() {
 
   return (
     <div className="fixed bottom-16 left-0 right-0 z-40">
-      <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl">
+      {/* Compact Progress Bar - Spotify style */}
+      <div className="bg-spotify-card/95 backdrop-blur-md">
+        <div className="relative group">
+          <Slider
+            value={[currentTime]}
+            onValueChange={handleSeek}
+            max={duration || 100}
+            step={1}
+            className="h-1 cursor-pointer spotify-progress-slider"
+          />
+          {/* Time indicators on hover */}
+          <div className="absolute inset-x-0 -top-6 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <span className="text-xs text-spotify-text bg-spotify-bg px-2 py-1 rounded shadow-lg">
+              {formatTime(currentTime)}
+            </span>
+            <span className="text-xs text-spotify-text bg-spotify-bg px-2 py-1 rounded shadow-lg">
+              {formatTime(duration)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Player Content */}
+      <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl border-t-0">
         <CardContent className="p-3">
-          {/* Song Info Row */}
-          <div className="flex items-center space-x-3 mb-3">
+          <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
               <img
                 src={currentSong.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
@@ -66,19 +88,6 @@ export default function MiniPlayer() {
                 <Maximize2 size={16} />
               </Button>
             </div>
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-spotify-muted w-10 text-center">{formatTime(currentTime)}</span>
-            <Slider
-              value={[currentTime]}
-              onValueChange={handleSeek}
-              max={duration || 100}
-              step={1}
-              className="flex-1"
-            />
-            <span className="text-xs text-spotify-muted w-10 text-center">{formatTime(duration)}</span>
           </div>
         </CardContent>
       </Card>

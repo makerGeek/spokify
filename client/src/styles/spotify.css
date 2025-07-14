@@ -274,6 +274,41 @@
   transform: scale(1.02);
 }
 
+/* Compact Progress Bar - Spotify Style */
+.spotify-progress-slider [data-radix-slider-track] {
+  background: rgba(255, 255, 255, 0.2) !important;
+  height: 4px !important;
+  border-radius: 2px !important;
+}
+
+.spotify-progress-slider [data-radix-slider-range] {
+  background: #1db954 !important;
+  height: 4px !important;
+  border-radius: 2px !important;
+}
+
+.spotify-progress-slider [data-radix-slider-thumb] {
+  width: 12px !important;
+  height: 12px !important;
+  background: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.spotify-progress-slider:hover [data-radix-slider-thumb] {
+  opacity: 1 !important;
+}
+
+.spotify-progress-slider:hover [data-radix-slider-track] {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.spotify-progress-slider:hover [data-radix-slider-range] {
+  background: #1ed760 !important;
+}
+
 .spotify-social-btn:active {
   transform: scale(0.98);
 }
