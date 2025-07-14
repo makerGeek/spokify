@@ -50,6 +50,7 @@ export const vocabulary = pgTable("vocabulary", {
   language: text("language").notNull(),
   difficulty: text("difficulty").notNull(),
   songId: integer("song_id"),
+  songName: text("song_name"),
   context: text("context"),
   learnedAt: timestamp("learned_at").defaultNow(),
   reviewCount: integer("review_count").notNull().default(0),
@@ -93,6 +94,7 @@ export const insertVocabularySchema = createInsertSchema(vocabulary).pick({
   language: true,
   difficulty: true,
   songId: true,
+  songName: true,
   context: true,
 });
 

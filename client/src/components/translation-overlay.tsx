@@ -13,9 +13,10 @@ interface TranslationOverlayProps {
   };
   onClose: () => void;
   songId: number;
+  songName?: string;
 }
 
-export default function TranslationOverlay({ line, onClose, songId }: TranslationOverlayProps) {
+export default function TranslationOverlay({ line, onClose, songId, songName }: TranslationOverlayProps) {
   const [vocabulary, setVocabulary] = useState<Array<{
     word: string;
     translation: string;
@@ -53,6 +54,7 @@ export default function TranslationOverlay({ line, onClose, songId }: Translatio
         language: "es",
         difficulty: "A2",
         songId,
+        songName,
         context: line.text
       });
       return response.json();

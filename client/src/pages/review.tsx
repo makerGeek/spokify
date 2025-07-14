@@ -61,7 +61,7 @@ export default function Review() {
       vocabulary: randomVocab,
       correctAnswer: randomVocab.translation,
       options: shuffledOptions,
-      sourceSong: randomVocab.context || "Unknown Song"
+      sourceSong: randomVocab.songName || "Unknown Song"
     });
     
     setSelectedAnswer(null);

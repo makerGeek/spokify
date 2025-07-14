@@ -220,6 +220,7 @@ export default function LyricsPlayer() {
           line={selectedLine}
           onClose={() => setShowTranslation(false)}
           songId={songId}
+          songName={song.title}
         />
       )}
     </div>

@@ -97,6 +97,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 14, 2025 - Vocabulary Review Game & Enhanced Vocabulary System
+- Added new "Review" navigation tab with vocabulary game functionality
+- Created interactive multiple-choice quiz using user's vocabulary with 4 answer options
+- Enhanced vocabulary database schema with songName column for better song source tracking
+- Updated translation overlay to include song name when saving vocabulary
+- Review game shows source song name and difficulty badges for each vocabulary word
+- Library page now displays song source information in vocabulary section
+- Applied authentic Spotify design system styling to all review game buttons and components
+- Game includes real-time scoring, immediate feedback, and "Next Question" functionality
+- Authentication protection ensures only logged-in users can access review features
+
 ### July 14, 2025 - Supabase Authentication Integration & Centralized Design System
 - Implemented comprehensive Supabase authentication system with email, Facebook, and Google login options
 - Created protected profile page that requires authentication (only profile page is protected)

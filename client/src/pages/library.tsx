@@ -239,6 +239,11 @@ export default function Library() {
                         <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-muted text-xs font-medium mb-1">
                           {word.difficulty}
                         </div>
+                        {word.songName && (
+                          <p className="spotify-text-muted text-sm font-medium mb-1">
+                            From: {word.songName}
+                          </p>
+                        )}
                         {word.context && (
                           <p className="spotify-text-muted text-sm italic max-w-xs truncate">
                             "{word.context}"
