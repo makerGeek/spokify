@@ -60,7 +60,7 @@ export default function LyricsPlayer() {
     return currentTime >= lineTime && currentTime < nextLineTime;
   };
 
-  // Auto-scroll to active lyric line
+  // Auto-scroll to keep active lyric line centered
   useEffect(() => {
     if (!song?.lyrics || !Array.isArray(song.lyrics)) return;
     
@@ -74,26 +74,18 @@ export default function LyricsPlayer() {
       const container = document.getElementById('lyrics-container');
       
       if (activeElement && container) {
-        // Mobile-friendly scrolling approach
-        const containerRect = container.getBoundingClientRect();
-        const elementRect = activeElement.getBoundingClientRect();
+        // Calculate position to keep active line centered
+        const containerHeight = container.clientHeight;
+        const elementOffsetTop = activeElement.offsetTop;
+        const elementHeight = activeElement.offsetHeight;
         
-        // Check if element is outside the visible area
-        const isAbove = elementRect.top < containerRect.top;
-        const isBelow = elementRect.bottom > containerRect.bottom;
+        // Center the active line in the viewport
+        const scrollTop = elementOffsetTop - (containerHeight / 2) + (elementHeight / 2);
         
-        if (isAbove || isBelow) {
-          // Calculate scroll position to center the element
-          const containerHeight = container.clientHeight;
-          const elementHeight = activeElement.offsetHeight;
-          const scrollTop = activeElement.offsetTop - (containerHeight / 2) + (elementHeight / 2);
-          
-          // Smooth scroll with explicit mobile compatibility
-          container.scrollTo({
-            top: scrollTop,
-            behavior: 'smooth'
-          });
-        }
+        container.scrollTo({
+          top: Math.max(0, scrollTop),
+          behavior: 'smooth'
+        });
       }
     }
   }, [currentTime, song?.lyrics]);
@@ -131,52 +123,72 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className="min-h-screen bg-spotify-bg pb-32">
-      {/* Main Content - Full Height Lyrics */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-red-500 via-red-600 to-red-700"></div>
+      
+      {/* Header with Song Info */}
+      <div className="relative z-10 p-4 pt-12">
+        <div className="flex items-center justify-between mb-4">
           <Button
             variant="ghost"
             size="sm"
-            className="w-10 h-10 bg-spotify-card rounded-full p-0"
+            className="w-10 h-10 text-white/80 hover:text-white hover:bg-white/10 rounded-full p-0"
             onClick={handleCloseLyrics}
           >
-            <ArrowDown className="text-spotify-muted" size={20} />
+            <ArrowDown size={20} />
           </Button>
+          
           <div className="flex items-center space-x-2">
             <Button
               size="sm"
-              className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white`}
+              className={`${showTranslationMode ? "bg-white/20" : "bg-white/10"} text-white hover:bg-white/20 border-0`}
               onClick={() => setShowTranslationMode(!showTranslationMode)}
             >
               <Languages size={16} className="mr-1" />
               Translate
             </Button>
-            <div className="difficulty-badge text-xs px-2 py-1 rounded-full font-medium text-white">
-              {song.difficulty}
-            </div>
             <Button
               variant="ghost"
               size="sm"
-              className="w-10 h-10 bg-spotify-card rounded-full p-0"
+              className="w-10 h-10 text-white/80 hover:text-white hover:bg-white/10 rounded-full p-0"
               onClick={() => setIsBookmarked(!isBookmarked)}
             >
-              <Bookmark className={isBookmarked ? "text-spotify-green" : "text-spotify-muted"} size={20} />
+              <Bookmark className={isBookmarked ? "text-white" : "text-white/80"} size={20} />
             </Button>
           </div>
         </div>
 
-        <h4 className="text-2xl font-bold text-spotify-text mb-6 text-center">{song.title}</h4>
-        
-        <div className="space-y-4 overflow-y-auto overscroll-contain" 
-             id="lyrics-container"
-             style={{ 
-               height: 'calc(100vh - 280px)', // Screen minus header, controls, and bottom sections
-               WebkitOverflowScrolling: 'touch',
-               scrollBehavior: 'smooth',
-               touchAction: 'pan-y',
-               overflowAnchor: 'none'
-             }}>
+        {/* Song Title and Artist */}
+        <div className="text-center text-white mb-2">
+          <h1 className="text-lg font-bold">{song.title}</h1>
+          <p className="text-sm opacity-80">{song.artist}</p>
+        </div>
+
+        {/* Music Note Icon */}
+        <div className="flex justify-start mb-8">
+          <div className="w-6 h-6 text-white/60">♪</div>
+        </div>
+      </div>
+
+      {/* Lyrics Container - Full Screen with Centered Current Line */}
+      <div 
+        className="relative z-10 px-6 pb-32"
+        id="lyrics-container"
+        style={{ 
+          height: 'calc(100vh - 200px)',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          scrollBehavior: 'smooth',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center'
+        }}
+      >
+        <div className="flex flex-col" style={{ minHeight: '100%' }}>
+          {/* Spacer to center content */}
+          <div className="flex-1"></div>
+          
           {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => {
             const nextLine = song.lyrics[index + 1];
             const isActive = isLineActive(line, nextLine);
@@ -185,31 +197,35 @@ export default function LyricsPlayer() {
               <div
                 key={index}
                 id={`lyric-line-${index}`}
-                className={`cursor-pointer hover:bg-spotify-card/30 active:bg-spotify-card/50 rounded-lg p-4 transition-all duration-300 touch-manipulation ${
+                className={`cursor-pointer transition-all duration-300 py-2 px-2 rounded-lg ${
                   isActive 
-                    ? "lyrics-highlight transform scale-105 shadow-lg bg-spotify-card/20" 
-                    : "text-spotify-muted hover:text-spotify-text"
+                    ? "text-white font-semibold text-2xl leading-relaxed" 
+                    : "text-white/40 text-lg leading-relaxed"
                 }`}
                 onClick={() => handleLineClick(line)}
+                style={{
+                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                  transformOrigin: 'center'
+                }}
               >
-                <span className="text-xl leading-relaxed block text-center">{line.text}</span>
-                {showTranslationMode && line.translation && (
-                  <div className="text-base text-spotify-muted mt-3 italic text-center">
+                <div className="text-left font-medium">
+                  {line.text}
+                </div>
+                {showTranslationMode && line.translation && isActive && (
+                  <div className="text-white/60 text-base mt-2 italic">
                     {line.translation}
-                  </div>
-                )}
-                {line.timestamp && (
-                  <div className="text-xs text-spotify-muted mt-2 opacity-50 text-center">
-                    {formatTime(line.timestamp)}
                   </div>
                 )}
               </div>
             );
           }) : (
-            <div className="text-spotify-muted text-center py-8">
+            <div className="text-white/60 text-center py-8 text-lg">
               No lyrics available
             </div>
           )}
+          
+          {/* Spacer to center content */}
+          <div className="flex-1"></div>
         </div>
       </div>
 
