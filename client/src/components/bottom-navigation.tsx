@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Home, Search, BookOpen, TrendingUp, User } from "lucide-react";
+import { Home, Search, BookOpen, GamepadIcon, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BottomNavigationProps {
@@ -13,6 +13,7 @@ export default function BottomNavigation({ currentPage }: BottomNavigationProps)
     { id: "home", label: "Home", icon: Home, path: "/home" },
     { id: "search", label: "Search", icon: Search, path: "/search" },
     { id: "library", label: "Library", icon: BookOpen, path: "/library" },
+    { id: "review", label: "Review", icon: GamepadIcon, path: "/review" },
     { id: "profile", label: "Profile", icon: User, path: "/profile" },
   ];
 

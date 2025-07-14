@@ -14,6 +14,7 @@ import LyricsPlayer from "@/pages/lyrics-player";
 import Profile from "@/pages/profile";
 import Login from "@/pages/login";
 import Library from "@/pages/library";
+import Review from "@/pages/review";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import ProtectedRoute from "@/components/protected-route";
@@ -76,6 +77,7 @@ function Router() {
   const getCurrentPage = () => {
     if (location === '/home') return 'home';
     if (location === '/library') return 'library';
+    if (location === '/review') return 'review';
     if (location === '/profile') return 'profile';
     if (location.startsWith('/lyrics/')) return 'home'; // Lyrics player belongs to home flow
     return 'home';
@@ -93,7 +95,11 @@ function Router() {
             <Library />
           </AuthenticatedOnly>
         </Route>
-
+        <Route path="/review">
+          <AuthenticatedOnly>
+            <Review />
+          </AuthenticatedOnly>
+        </Route>
         <Route path="/profile">
           <AuthenticatedOnly>
             <Profile />
