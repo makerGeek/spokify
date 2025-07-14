@@ -34,32 +34,29 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const playerContainerId = useRef(`youtube-player-${Math.random().toString(36).substr(2, 9)}`);
 
-  // Initialize YouTube API
+  // Listen for YouTube API ready event
   useEffect(() => {
-    const initializeYouTube = () => {
+    const checkYouTubeReady = () => {
       if (window.YT && window.YT.Player) {
-        console.log('YouTube API already loaded');
+        console.log('YouTube API available');
         setIsYouTubeReady(true);
-      } else {
-        console.log('Waiting for YouTube API to load...');
-        window.onYouTubeIframeAPIReady = () => {
-          console.log('YouTube API ready');
-          setIsYouTubeReady(true);
-        };
       }
     };
 
-    // Check if script is already loaded
-    if (document.querySelector('script[src*="youtube.com/iframe_api"]')) {
-      initializeYouTube();
-    } else {
-      // Load the script if not present
-      const script = document.createElement('script');
-      script.src = 'https://www.youtube.com/iframe_api';
-      script.async = true;
-      document.head.appendChild(script);
-      initializeYouTube();
-    }
+    // Check immediately
+    checkYouTubeReady();
+
+    // Listen for the custom event from main.tsx
+    const handleYouTubeReady = () => {
+      console.log('YouTube API ready event received');
+      setIsYouTubeReady(true);
+    };
+
+    window.addEventListener('youtubeAPIReady', handleYouTubeReady);
+
+    return () => {
+      window.removeEventListener('youtubeAPIReady', handleYouTubeReady);
+    };
   }, []);
 
   // Create YouTube player when song changes
