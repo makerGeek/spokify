@@ -165,13 +165,11 @@ export default function LyricsPlayer() {
             </Button>
           </div>
         </div>
-
-        <h4 className="text-2xl font-bold text-spotify-text mb-6 text-center">{song.title}</h4>
         
         <div className="space-y-4 overflow-y-auto overscroll-contain" 
              id="lyrics-container"
              style={{ 
-               height: 'calc(100vh - 280px)', // Screen minus header, controls, and bottom sections
+               height: 'calc(100vh - 240px)', // Screen minus header, controls, and bottom sections
                WebkitOverflowScrolling: 'touch',
                scrollBehavior: 'smooth',
                touchAction: 'pan-y',
