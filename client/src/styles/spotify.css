@@ -295,6 +295,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
   opacity: 0 !important;
   transition: opacity 0.2s ease !important;
+  z-index: 50 !important;
+  position: relative !important;
 }
 
 .spotify-progress-slider:hover [data-radix-slider-thumb] {
