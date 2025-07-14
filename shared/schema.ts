@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   wordsLearned: integer("words_learned").notNull().default(0),
   streak: integer("streak").notNull().default(0),
   lastActiveDate: timestamp("last_active_date").defaultNow(),
+  isAdmin: boolean("is_admin").notNull().default(false),
 });
 
 export const songs = pgTable("songs", {

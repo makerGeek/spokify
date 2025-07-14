@@ -9,8 +9,9 @@ import { Slider } from "@/components/ui/slider";
 import { Save, Play, Pause, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { type Song } from "@shared/schema";
+import AdminGuard from "@/components/admin-guard";
 
-export default function Admin() {
+function AdminContent() {
   const [selectedSongId, setSelectedSongId] = useState<string>("");
   const [offsetValue, setOffsetValue] = useState(0);
   const [previewMode, setPreviewMode] = useState(false);
@@ -252,5 +253,13 @@ export default function Admin() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function Admin() {
+  return (
+    <AdminGuard>
+      <AdminContent />
+    </AdminGuard>
   );
 }

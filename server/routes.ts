@@ -41,6 +41,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Current user endpoint (for auth purposes)
+  app.get("/api/user", async (req, res) => {
+    try {
+      // For now, return a mock user - this would normally be from session/auth
+      const mockUser = {
+        id: 1,
+        username: "demo_user",
+        nativeLanguage: "en",
+        targetLanguage: "es",
+        level: "A1",
+        weeklyGoal: 50,
+        wordsLearned: 25,
+        streak: 5,
+        lastActiveDate: new Date(),
+        isAdmin: true // Set to true for testing admin functionality
+      };
+      res.json(mockUser);
+    } catch (error: any) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Song routes
   app.get("/api/songs", async (req, res) => {
     try {
