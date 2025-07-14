@@ -116,12 +116,12 @@ export default function Review() {
               <p className="text-spotify-muted mb-6">
                 Start learning by tapping on words in song lyrics to build your vocabulary!
               </p>
-              <Button
+              <button
                 onClick={() => window.location.href = "/home"}
-                className="bg-spotify-green hover:bg-spotify-green/90 text-black font-semibold"
+                className="spotify-btn-primary"
               >
                 Discover Songs
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -174,23 +174,22 @@ export default function Review() {
                     const showWrongAnswer = showResult && isSelected && !isCorrect;
 
                     return (
-                      <Button
+                      <button
                         key={index}
-                        variant="outline"
-                        className={`w-full text-left justify-start p-4 h-auto border-spotify-muted transition-all ${
+                        className={`w-full text-left p-4 h-auto rounded-lg transition-all font-medium ${
                           showCorrectAnswer
-                            ? "bg-green-600/20 border-green-500 text-green-400"
+                            ? "bg-green-600/20 border border-green-500 text-green-400"
                             : showWrongAnswer
-                            ? "bg-red-600/20 border-red-500 text-red-400"
+                            ? "bg-red-600/20 border border-red-500 text-red-400"
                             : isSelected
-                            ? "bg-spotify-green/20 border-spotify-green text-spotify-green"
-                            : "hover:bg-spotify-muted/10 text-spotify-text"
+                            ? "bg-spotify-green/20 border border-spotify-green text-spotify-green"
+                            : "bg-spotify-card border border-spotify-muted text-spotify-text hover:bg-spotify-card/80 hover:border-spotify-text/30"
                         }`}
                         onClick={() => handleAnswerSelect(option)}
                         disabled={isAnswered}
                       >
                         <div className="flex items-center justify-between w-full">
-                          <span>{option}</span>
+                          <span className="text-base">{option}</span>
                           {showResult && (
                             <>
                               {isCorrect && <CheckCircle size={20} className="text-green-400" />}
@@ -198,7 +197,7 @@ export default function Review() {
                             </>
                           )}
                         </div>
-                      </Button>
+                      </button>
                     );
                   })}
                 </div>
@@ -220,13 +219,13 @@ export default function Review() {
                         </div>
                       )}
                       
-                      <Button
+                      <button
                         onClick={generateQuestion}
-                        className="bg-spotify-green hover:bg-spotify-green/90 text-black font-semibold"
+                        className="spotify-btn-primary inline-flex items-center"
                       >
                         <RefreshCw size={16} className="mr-2" />
                         Next Question
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 )}
