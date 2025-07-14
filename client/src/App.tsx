@@ -13,6 +13,7 @@ import LyricsPlayer from "@/pages/lyrics-player";
 
 import Profile from "@/pages/profile";
 import Login from "@/pages/login";
+import Library from "@/pages/library";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import ProtectedRoute from "@/components/protected-route";
@@ -73,6 +74,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/home" component={Home} />
       <Route path="/lyrics/:id" component={LyricsPlayer} />
+      <Route path="/library" component={Library} />
 
       <Route path="/profile">
         <ProtectedRoute>
