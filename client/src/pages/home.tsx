@@ -80,7 +80,7 @@ export default function Home() {
               variant="outline"
               size="sm"
               className="w-8 h-8 bg-gradient-to-br from-spotify-green to-spotify-accent rounded-full p-0 border-0"
-              onClick={handleProfileClick}
+              onClick={() => window.location.href = '/api/logout'}
             >
               <User size={14} />
             </Button>
