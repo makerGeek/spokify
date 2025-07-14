@@ -165,7 +165,7 @@ export default function LyricsPlayer() {
 
       {/* Lyrics Section - Maximized */}
       <div className="flex-1 bg-spotify-card border-t border-spotify-card pb-32">
-        <div className="p-6 h-full flex flex-col">
+        <div className="p-6 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-semibold text-spotify-text">Interactive Lyrics</h4>
             <div className="flex items-center space-x-2">
@@ -183,9 +183,10 @@ export default function LyricsPlayer() {
             </div>
           </div>
           
-          <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain" 
+          <div className="space-y-3 overflow-y-auto overscroll-contain" 
                id="lyrics-container"
                style={{ 
+                 height: 'calc(100vh - 280px)', // Screen minus header (64px), controls (128px), bottom nav (64px), padding (24px)
                  WebkitOverflowScrolling: 'touch',
                  scrollBehavior: 'smooth',
                  touchAction: 'pan-y',
