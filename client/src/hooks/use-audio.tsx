@@ -11,7 +11,7 @@ declare global {
 interface AudioContextType {
   currentSong: Song | null;
   isPlaying: boolean;
-  setCurrentSong: (song: Song | null) => void;
+  setCurrentSong: (song: Song | null, autoPlay?: boolean) => void;
   togglePlay: () => void;
   play: () => void;
   pause: () => void;
@@ -30,6 +30,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [isYouTubeReady, setIsYouTubeReady] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const playerRef = useRef<any>(null);
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const playerContainerId = useRef(`youtube-player-${Math.random().toString(36).substr(2, 9)}`);
@@ -116,6 +117,18 @@ export function AudioProvider({ children }: { children: ReactNode }) {
               const duration = event.target.getDuration();
               console.log('Song duration:', duration);
               setDuration(duration);
+              setHasError(false);
+              
+              // Auto-play if requested
+              if (shouldAutoPlay) {
+                console.log('Auto-playing song after player ready');
+                setShouldAutoPlay(false);
+                setTimeout(() => {
+                  if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+                    playerRef.current.playVideo();
+                  }
+                }, 500);
+              }
             },
             onStateChange: (event: any) => {
               console.log('Player state changed:', event.data);
@@ -236,7 +249,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setCurrentSongWrapper = (song: Song | null) => {
+  const setCurrentSongWrapper = (song: Song | null, autoPlay: boolean = false) => {
     if (playerRef.current) {
       console.log('Destroying existing player');
       try {
@@ -248,6 +261,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
     
     setCurrentSong(song);
+    setShouldAutoPlay(autoPlay);
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);

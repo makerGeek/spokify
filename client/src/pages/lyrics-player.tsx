@@ -34,7 +34,7 @@ export default function LyricsPlayer() {
   useEffect(() => {
     if (song && (!currentSong || currentSong.id !== song.id)) {
       console.log("Lyrics page: Setting current song to", song.title);
-      setCurrentSong(song);
+      setCurrentSong(song, false); // Don't auto-play from lyrics page
     }
   }, [song, currentSong, setCurrentSong]);
 
