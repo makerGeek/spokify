@@ -1,12 +1,7 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
-import { Mail, Facebook, Chrome, Eye, EyeOff } from 'lucide-react'
+import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
 import { useLocation } from 'wouter'
 
 export default function Login() {
@@ -76,112 +71,140 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </CardTitle>
-          <CardDescription>
-            {isLogin 
-              ? 'Sign in to continue your language learning journey' 
-              : 'Join LyricLingo and start learning languages through music'
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Social Auth Buttons */}
-          <div className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleSocialAuth('google')}
-              disabled={loading}
-            >
-              <Chrome className="mr-2 h-4 w-4" />
-              Continue with Google
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleSocialAuth('facebook')}
-              disabled={loading}
-            >
-              <Facebook className="mr-2 h-4 w-4" />
-              Continue with Facebook
-            </Button>
+    <div className="min-h-screen spotify-bg flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="mb-6">
+            <h1 className="spotify-heading-xl mb-2">LyricLingo</h1>
+            <p className="spotify-text-muted">Learn languages through music</p>
           </div>
+          <h2 className="spotify-heading-lg mb-4">
+            {isLogin ? 'Log in to LyricLingo' : 'Sign up for free'}
+          </h2>
+        </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
+        {/* Social Auth Buttons */}
+        <div className="space-y-4 mb-8">
+          <button
+            className="spotify-social-btn"
+            onClick={() => handleSocialAuth('google')}
+            disabled={loading}
+          >
+            <Chrome className="h-5 w-5" />
+            Continue with Google
+          </button>
+          <button
+            className="spotify-social-btn"
+            onClick={() => handleSocialAuth('facebook')}
+            disabled={loading}
+          >
+            <Facebook className="h-5 w-5" />
+            Continue with Facebook
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="spotify-divider">
+          <span>or</span>
+        </div>
+
+        {/* Email Form */}
+        <form onSubmit={handleEmailAuth} className="space-y-6">
+          <div className="spotify-form-group">
+            <label htmlFor="email" className="spotify-label">
+              Email address
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="spotify-input"
+              disabled={loading}
+            />
           </div>
-
-          {/* Email Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+          
+          <div className="spotify-form-group">
+            <label htmlFor="password" className="spotify-label">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                className="spotify-input pr-12"
+                disabled={loading}
               />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              <Mail className="mr-2 h-4 w-4" />
-              {isLogin ? 'Sign In' : 'Sign Up'}
-            </Button>
-          </form>
-
-          <div className="text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm"
-            >
-              {isLogin 
-                ? "Don't have an account? Sign up" 
-                : 'Already have an account? Sign in'
-              }
-            </Button>
           </div>
-        </CardContent>
-      </Card>
+
+          <button 
+            type="submit" 
+            className="spotify-btn-primary w-full"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="spotify-loading"></div>
+            ) : (
+              isLogin ? 'Log In' : 'Sign Up'
+            )}
+          </button>
+        </form>
+
+        {/* Forgot Password */}
+        {isLogin && (
+          <div className="text-center mt-6">
+            <a href="#" className="spotify-link text-sm">
+              Forgot your password?
+            </a>
+          </div>
+        )}
+
+        {/* Switch Mode */}
+        <div className="spotify-divider">
+          <span></span>
+        </div>
+
+        <div className="text-center">
+          <p className="spotify-text-muted text-sm mb-4">
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+          </p>
+          <button
+            className="spotify-btn-secondary w-full"
+            onClick={() => setIsLogin(!isLogin)}
+            disabled={loading}
+          >
+            {isLogin ? 'Sign up for LyricLingo' : 'Log in instead'}
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="spotify-text-muted text-xs">
+            This site is protected by reCAPTCHA and the Google{' '}
+            <a href="#" className="spotify-link">Privacy Policy</a> and{' '}
+            <a href="#" className="spotify-link">Terms of Service</a> apply.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

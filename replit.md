@@ -97,15 +97,24 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 14, 2025 - Supabase Authentication Integration
+### July 14, 2025 - Supabase Authentication Integration & Centralized Design System
 - Implemented comprehensive Supabase authentication system with email, Facebook, and Google login options
 - Created protected profile page that requires authentication (only profile page is protected)
-- Merged progress and profile pages following Spotify design guidelines
+- Merged progress and profile pages following authentic Spotify design guidelines
 - Added AuthProvider context for centralized authentication state management
 - Created login page with social auth buttons and email signup/signin functionality
 - Updated navigation to remove separate progress tab, integrating progress stats into profile
 - Profile page now displays learning stats, vocabulary progress, weekly goals, and recent vocabulary
-- Designed Spotify-inspired UI with gradient headers, stat cards, and progress indicators
+- **Centralized Design System**: Created `client/src/styles/spotify.css` with authentic Spotify design tokens
+  - Exact Spotify color palette (#121212, #181818, #1db954, etc.)
+  - Consistent typography with proper font weights and sizing
+  - Reusable button styles (spotify-btn-primary, spotify-btn-secondary)
+  - Form components with proper Spotify styling
+  - Hover effects and transitions matching Spotify's interaction patterns
+  - Responsive design optimized for mobile and desktop
+- Redesigned login page with authentic Spotify look and feel
+- Updated profile page to use centralized CSS classes for consistency
+- All design elements now follow Spotify's minimalist, dark theme aesthetic with proper spacing and typography
 
 ### July 14, 2025 - Language Detection and Database Integration
 - Enhanced Gemini AI service to detect song language using ISO 639-1 standard (2-letter codes: es, en, fr, etc.)
