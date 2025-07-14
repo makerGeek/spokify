@@ -17,6 +17,7 @@ export interface TranslatedLyric {
 export interface DifficultyAssessment {
   difficulty: string;
   key_words: Record<string, string>;
+  language?: string;
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
@@ -106,7 +107,11 @@ export async function assessDifficulty(
     // Concatenate all text from the lyrics
     const concatenatedText = lyricsData.map(line => line.text).join(" ");
 
-    const prompt = `You are a language learning expert. Assess the difficulty level of the given text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length. Respond with JSON in this format: { "difficulty": "A1|A2|B1|B2|C1|C2", "key_words":{"hallo" : "hello", "machen" : "make", "wie geht es ?" : "how is it going ?"}
+    const prompt = `You are a language learning expert. Assess the difficulty level of the given text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length. 
+
+Also detect the language of the text and return it using the standard 2-letter ISO 639-1 language code (e.g., "en" for English, "es" for Spanish, "fr" for French, "de" for German, "it" for Italian, "pt" for Portuguese, etc.).
+
+Respond with JSON in this format: { "difficulty": "A1|A2|B1|B2|C1|C2", "language": "2-letter-code", "key_words":{"hallo" : "hello", "machen" : "make", "wie geht es ?" : "how is it going ?"} }
 
 Text to analyze: ${concatenatedText}`;
 
@@ -121,11 +126,12 @@ Text to analyze: ${concatenatedText}`;
     // Apply 2 minute timeout wrapper
     const response = await withTimeout(apiCall, 120000);
 
-    const result = JSON.parse(response.text || '{"difficulty": "A1", "key_words": {}}');
+    const result = JSON.parse(response.text || '{"difficulty": "A1", "language": "en", "key_words": {}}');
     console.log("Gemini difficulty assessment:", result);
     
     return {
       difficulty: result.difficulty || "A1",
+      language: result.language || "en",
       key_words: result.key_words || {}
     };
   } catch (error) {

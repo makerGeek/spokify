@@ -154,7 +154,7 @@ async function saveSongToDatabase(songData: {
 
     // Determine genre and language (can be enhanced with more logic)
     const genre = "Pop"; // Default genre for now
-    const language = songData.difficultyResult ? "Spanish" : "English"; // Basic language detection
+    const language = songData.difficultyResult?.language || "en"; // Use detected language or default to English
     
     const songRecord = {
       title: songData.title,
@@ -234,6 +234,7 @@ async function main() {
     try {
       difficultyResult = await assessDifficulty(lyrics);
       console.log(`Difficulty assessment: ${difficultyResult.difficulty} level`);
+      console.log(`Language detected: ${difficultyResult.language || 'unknown'}`);
       console.log(`Key words found: ${Object.keys(difficultyResult.key_words).length} words`);
     } catch (error) {
       console.error('Failed to assess difficulty:', error);
@@ -266,6 +267,7 @@ async function main() {
   console.log(`YouTube ID: ${youtubeId || 'Not found'}`);
   console.log(`Lyrics Found: ${lyrics ? 'Yes (' + lyrics.length + ' lines)' : 'No'}`);
   console.log(`Translated Lyrics: ${translatedLyrics ? 'Yes (' + translatedLyrics.length + ' lines)' : 'No'}`);
+  console.log(`Language Detected: ${difficultyResult?.language || 'Not detected'}`);
   console.log(`Difficulty Level: ${difficultyResult ? difficultyResult.difficulty : 'Not assessed'}`);
   console.log(`Key Words: ${difficultyResult ? Object.keys(difficultyResult.key_words).length : 0} found`);
   

@@ -97,13 +97,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 14, 2025 - Database Integration and Song Import Enhancement
+### July 14, 2025 - Language Detection and Database Integration
+- Enhanced Gemini AI service to detect song language using ISO 639-1 standard (2-letter codes: es, en, fr, etc.)
+- Updated difficulty assessment to return detected language alongside CEFR level and vocabulary
+- Modified import script to use AI-detected language instead of hardcoded values
+- Successfully tested with Spanish songs showing "es" language detection and A2 difficulty classification
 - Extended songs table schema with spotify_id, youtube_id, and key_words columns
 - Integrated complete song data saving to PostgreSQL database in import script
-- Added CEFR difficulty assessment function using Gemini AI for automatic level classification
-- Enhanced import script to collect, assess, and persist all song data in single workflow
-- Successfully tested database saving with all collected metadata and AI analysis results
-- Created comprehensive song data pipeline: Spotify search → YouTube lookup → lyrics fetch → AI translation → difficulty assessment → database storage
+- Created comprehensive song data pipeline: Spotify search → YouTube lookup → lyrics fetch → AI translation → language detection → difficulty assessment → database storage
 
 ### July 14, 2025 - Gemini AI Integration and Translation Improvements
 - Created new Gemini translation service (`server/services/gemini.ts`) as alternative to OpenAI
