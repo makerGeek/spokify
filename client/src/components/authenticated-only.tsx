@@ -32,20 +32,12 @@ export default function AuthenticatedOnly({
           password,
         })
         if (error) throw error
-        toast({
-          title: 'Welcome back!',
-          description: 'You have been signed in successfully.',
-        })
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
         })
         if (error) throw error
-        toast({
-          title: 'Account created!',
-          description: 'Please check your email for verification.',
-        })
       }
     } catch (error: any) {
       toast({

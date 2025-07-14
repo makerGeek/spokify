@@ -30,10 +30,6 @@ export default function Profile() {
   const handleSignOut = async () => {
     try {
       await signOut()
-      toast({
-        title: 'Signed out',
-        description: 'You have been signed out successfully.',
-      })
     } catch (error: any) {
       toast({
         title: 'Error',

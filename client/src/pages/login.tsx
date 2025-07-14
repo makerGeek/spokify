@@ -25,20 +25,12 @@ export default function Login() {
           password,
         })
         if (error) throw error
-        toast({
-          title: 'Welcome back!',
-          description: 'You have been signed in successfully.',
-        })
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
         })
         if (error) throw error
-        toast({
-          title: 'Account created!',
-          description: 'Please check your email for verification.',
-        })
       }
       setLocation('/home')
     } catch (error: any) {
