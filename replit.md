@@ -130,6 +130,11 @@ Preferred communication style: Simple, everyday language.
   - Uses centralized Spotify design system for consistent loading states
   - Applied to /library and /profile routes for seamless authentication protection
   - Replaced ProtectedRoute with AuthenticatedOnly for consistent inline login experience
+- **Bottom Navigation Centralization**: Moved bottom navigation to main App.tsx layout
+  - Bottom navigation now appears consistently across all main app pages
+  - Removed individual bottom navigation components from each page component
+  - Intelligent page detection based on current route with proper active states
+  - Hidden on language selection and admin pages for cleaner user experience
 
 ### July 14, 2025 - Language Detection and Database Integration
 - Enhanced Gemini AI service to detect song language using ISO 639-1 standard (2-letter codes: es, en, fr, etc.)

@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import BottomNavigation from "@/components/bottom-navigation";
+
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
 import MiniPlayer from "@/components/mini-player";
@@ -116,9 +116,6 @@ export default function Home() {
 
       {/* Mini Player */}
       {currentSong && <MiniPlayer />}
-
-      {/* Bottom Navigation */}
-      <BottomNavigation currentPage="home" />
     </div>
   );
 }

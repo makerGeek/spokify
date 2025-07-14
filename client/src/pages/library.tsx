@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Clock, Heart, BookOpen, Play, MoreVertical } from 'lucide-react'
 import { useLocation } from 'wouter'
-import BottomNavigation from '@/components/bottom-navigation'
+
 import { type Song, type Vocabulary, type UserProgress } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
 
@@ -253,8 +253,6 @@ export default function Library() {
           </div>
         )}
       </div>
-
-      <BottomNavigation currentPage="library" />
     </div>
   )
 }

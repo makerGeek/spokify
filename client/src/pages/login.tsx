@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
 import { useLocation } from 'wouter'
-import BottomNavigation from '@/components/bottom-navigation'
+
 
 export default function Login() {
   const [_, setLocation] = useLocation()
@@ -206,8 +206,6 @@ export default function Login() {
           </p>
         </div>
       </div>
-
-      <BottomNavigation currentPage="login" />
     </div>
   )
 }

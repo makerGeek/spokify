@@ -18,6 +18,7 @@ import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
+import BottomNavigation from "@/components/bottom-navigation";
 import { type User } from "@shared/schema";
 
 function ProtectedAdminRoute() {
@@ -69,26 +70,44 @@ function ProtectedAdminRoute() {
 }
 
 function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={LanguageSelection} />
-      <Route path="/login" component={Login} />
-      <Route path="/home" component={Home} />
-      <Route path="/lyrics/:id" component={LyricsPlayer} />
-      <Route path="/library">
-        <AuthenticatedOnly>
-          <Library />
-        </AuthenticatedOnly>
-      </Route>
+  const [location] = useLocation();
+  
+  // Determine current page for bottom navigation
+  const getCurrentPage = () => {
+    if (location === '/home') return 'home';
+    if (location === '/library') return 'library';
+    if (location === '/profile') return 'profile';
+    if (location.startsWith('/lyrics/')) return 'home'; // Lyrics player belongs to home flow
+    return 'home';
+  };
 
-      <Route path="/profile">
-        <AuthenticatedOnly>
-          <Profile />
-        </AuthenticatedOnly>
-      </Route>
-      <Route path="/song-offset" component={ProtectedAdminRoute} />
-      <Route component={NotFound} />
-    </Switch>
+  return (
+    <div className="relative min-h-screen">
+      <Switch>
+        <Route path="/" component={LanguageSelection} />
+        <Route path="/login" component={Login} />
+        <Route path="/home" component={Home} />
+        <Route path="/lyrics/:id" component={LyricsPlayer} />
+        <Route path="/library">
+          <AuthenticatedOnly>
+            <Library />
+          </AuthenticatedOnly>
+        </Route>
+
+        <Route path="/profile">
+          <AuthenticatedOnly>
+            <Profile />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/song-offset" component={ProtectedAdminRoute} />
+        <Route component={NotFound} />
+      </Switch>
+      
+      {/* Bottom Navigation - visible on main app pages */}
+      {location !== '/' && location !== '/song-offset' && (
+        <BottomNavigation currentPage={getCurrentPage()} />
+      )}
+    </div>
   );
 }
 

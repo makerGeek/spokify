@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowDown, Bookmark, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TranslationOverlay from "@/components/translation-overlay";
-import BottomNavigation from "@/components/bottom-navigation";
+
 import MiniPlayer from "@/components/mini-player";
 import { useAudio } from "@/hooks/use-audio";
 import { type Song } from "@shared/schema";
@@ -215,9 +215,6 @@ export default function LyricsPlayer() {
 
       {/* Mini Player Component */}
       <MiniPlayer />
-
-      {/* Bottom Navigation */}
-      <BottomNavigation currentPage="lyrics" />
 
       {/* Translation Overlay */}
       {showTranslation && selectedLine && (

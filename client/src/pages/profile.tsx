@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/auth-context'
 import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, MoreHorizontal } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import BottomNavigation from '@/components/bottom-navigation'
+
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
 
 export default function Profile() {
@@ -209,8 +209,6 @@ export default function Profile() {
           </button>
         </div>
       </div>
-
-      <BottomNavigation currentPage="profile" />
     </div>
   )
 }
