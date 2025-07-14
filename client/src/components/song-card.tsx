@@ -11,12 +11,22 @@ interface SongCardProps {
 }
 
 export default function SongCard({ song, onClick }: SongCardProps) {
-  const { togglePlay, setCurrentSong } = useAudio();
+  const { play, setCurrentSong, currentSong } = useAudio();
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentSong(song);
-    togglePlay();
+    
+    // If it's a different song, set it and start playing
+    if (!currentSong || currentSong.id !== song.id) {
+      setCurrentSong(song);
+      // Use setTimeout to ensure the song is set before playing
+      setTimeout(() => {
+        play();
+      }, 100);
+    } else {
+      // If it's the same song, just start playing
+      play();
+    }
   };
 
   // Get user progress for this song - use a consistent value based on song ID

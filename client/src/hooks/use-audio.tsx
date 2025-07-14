@@ -189,16 +189,20 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const play = () => {
     console.log('Play requested, player:', !!playerRef.current);
+    console.log('Current song:', currentSong?.title);
+    console.log('YouTube ready:', isYouTubeReady);
+    
     if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
       try {
         console.log('Calling playVideo');
         playerRef.current.playVideo();
       } catch (error) {
         console.error('Error calling playVideo:', error);
-        setIsPlaying(false);
+        setHasError(true);
       }
     } else {
       console.error('Player not ready or playVideo not available');
+      setHasError(true);
     }
   };
 
