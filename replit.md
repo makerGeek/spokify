@@ -128,6 +128,8 @@ Preferred communication style: Simple, everyday language.
   - Automatically displays login page for unauthenticated users
   - Supports custom fallback component via fallback prop
   - Uses centralized Spotify design system for consistent loading states
+  - Applied to /library and /profile routes for seamless authentication protection
+  - Replaced ProtectedRoute with AuthenticatedOnly for consistent inline login experience
 
 ### July 14, 2025 - Language Detection and Database Integration
 - Enhanced Gemini AI service to detect song language using ISO 639-1 standard (2-letter codes: es, en, fr, etc.)

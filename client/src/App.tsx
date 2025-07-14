@@ -75,12 +75,16 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/home" component={Home} />
       <Route path="/lyrics/:id" component={LyricsPlayer} />
-      <Route path="/library" component={Library} />
+      <Route path="/library">
+        <AuthenticatedOnly>
+          <Library />
+        </AuthenticatedOnly>
+      </Route>
 
       <Route path="/profile">
-        <ProtectedRoute>
+        <AuthenticatedOnly>
           <Profile />
-        </ProtectedRoute>
+        </AuthenticatedOnly>
       </Route>
       <Route path="/song-offset" component={ProtectedAdminRoute} />
       <Route component={NotFound} />
