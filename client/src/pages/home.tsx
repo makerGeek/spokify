@@ -8,6 +8,7 @@ import BottomNavigation from "@/components/bottom-navigation";
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
 import MiniPlayer from "@/components/mini-player";
+import LyricsPanel from "@/components/lyrics-panel";
 import { useAudio } from "@/hooks/use-audio";
 import { type Song } from "@shared/schema";
 
@@ -15,6 +16,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { currentSong } = useAudio();
   const [selectedGenre, setSelectedGenre] = useState("all");
+  const [isLyricsPanelOpen, setIsLyricsPanelOpen] = useState(false);
 
   // Get user preferences from localStorage
   const userPreferences = JSON.parse(localStorage.getItem("userPreferences") || "{}");
@@ -42,7 +44,7 @@ export default function Home() {
   };
 
   const handleSongClick = (songId: number) => {
-    setLocation(`/lyrics/${songId}`);
+    setIsLyricsPanelOpen(true);
   };
 
   if (isLoading) {
@@ -111,7 +113,13 @@ export default function Home() {
       </div>
 
       {/* Mini Player */}
-      {currentSong && <MiniPlayer />}
+      {currentSong && <MiniPlayer onOpenLyrics={() => setIsLyricsPanelOpen(true)} />}
+
+      {/* Lyrics Panel */}
+      <LyricsPanel 
+        isOpen={isLyricsPanelOpen} 
+        onClose={() => setIsLyricsPanelOpen(false)} 
+      />
 
       {/* Bottom Navigation */}
       <BottomNavigation currentPage="home" />

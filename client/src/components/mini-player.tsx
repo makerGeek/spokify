@@ -1,19 +1,18 @@
-import { Play, Pause, Maximize2 } from "lucide-react";
+import { Play, Pause, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { useLocation } from "wouter";
 import { useAudio } from "@/hooks/use-audio";
 
-export default function MiniPlayer() {
-  const [, setLocation] = useLocation();
+interface MiniPlayerProps {
+  onOpenLyrics: () => void;
+}
+
+export default function MiniPlayer({ onOpenLyrics }: MiniPlayerProps) {
   const { currentSong, isPlaying, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
 
   if (!currentSong) return null;
-
-  const handleOpenFullPlayer = () => {
-    setLocation(`/lyrics/${currentSong.id}`);
-  };
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -76,9 +75,9 @@ export default function MiniPlayer() {
             variant="ghost"
             size="sm"
             className="w-8 h-8 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50 p-0"
-            onClick={handleOpenFullPlayer}
+            onClick={onOpenLyrics}
           >
-            <Maximize2 size={12} />
+            <ChevronUp size={12} />
           </Button>
         </div>
       </div>
