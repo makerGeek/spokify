@@ -11,6 +11,7 @@ import Home from "@/pages/home";
 import LyricsPlayer from "@/pages/lyrics-player";
 import Progress from "@/pages/progress";
 import NotFound from "@/pages/not-found";
+import Admin from "@/pages/admin";
 
 function Router() {
   return (
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/home" component={Home} />
       <Route path="/lyrics/:id" component={LyricsPlayer} />
       <Route path="/progress" component={Progress} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -13,6 +13,7 @@ export interface IStorage {
   getSongs(filters?: { genre?: string; difficulty?: string; language?: string }): Promise<Song[]>;
   getSong(id: number): Promise<Song | undefined>;
   createSong(song: InsertSong): Promise<Song>;
+  updateSongLyrics(id: number, lyrics: any[]): Promise<Song>;
 
   // User progress methods
   getUserProgress(userId: number): Promise<UserProgress[]>;
@@ -84,6 +85,15 @@ export class DatabaseStorage implements IStorage {
     const [song] = await db
       .insert(songs)
       .values(insertSong)
+      .returning();
+    return song;
+  }
+
+  async updateSongLyrics(id: number, lyrics: any[]): Promise<Song> {
+    const [song] = await db
+      .update(songs)
+      .set({ lyrics })
+      .where(eq(songs.id, id))
       .returning();
     return song;
   }

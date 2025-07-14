@@ -165,6 +165,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes for lyrics management
+  app.patch("/api/admin/songs/:id/lyrics", async (req, res) => {
+    try {
+      const songId = parseInt(req.params.id);
+      const { lyrics } = req.body;
+
+      if (!songId || !lyrics || !Array.isArray(lyrics)) {
+        return res.status(400).json({ error: "Invalid song ID or lyrics data" });
+      }
+
+      // Validate lyrics format
+      const isValidLyrics = lyrics.every(line => 
+        typeof line.text === 'string' && 
+        typeof line.timestamp === 'number' && 
+        typeof line.translation === 'string'
+      );
+
+      if (!isValidLyrics) {
+        return res.status(400).json({ error: "Invalid lyrics format" });
+      }
+
+      // Update the song lyrics in database
+      const updatedSong = await storage.updateSongLyrics(songId, lyrics);
+      res.json(updatedSong);
+    } catch (error: any) {
+      console.error("Error updating song lyrics:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
