@@ -28,8 +28,8 @@ export default function BottomNavigation({ currentPage }: BottomNavigationProps)
               key={item.id}
               variant="ghost"
               size="sm"
-              className={`flex flex-col items-center space-y-1 p-2 hover:bg-transparent ${
-                isActive ? "text-white" : "text-spotify-muted hover:text-spotify-text"
+              className={`flex flex-col items-center space-y-1 p-2 hover:bg-transparent focus:bg-transparent active:bg-transparent ${
+                isActive ? "text-white focus:text-white active:text-white" : "text-spotify-muted hover:text-spotify-text focus:text-spotify-text active:text-spotify-text"
               }`}
               onClick={() => setLocation(item.path)}
             >
