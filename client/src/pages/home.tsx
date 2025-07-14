@@ -41,6 +41,10 @@ export default function Home() {
     setLocation("/");
   };
 
+  const handleLanguageLevelClick = () => {
+    setLocation("/");
+  };
+
   const handleSongClick = (songId: number) => {
     setLocation(`/lyrics/${songId}`);
   };
@@ -66,7 +70,7 @@ export default function Home() {
             <h1 className="text-xl font-bold circular-font">LyricLingo</h1>
           </div>
           <div className="flex items-center space-x-2">
-            <Card className="bg-spotify-card border-spotify-card">
+            <Card className="bg-spotify-card border-spotify-card cursor-pointer hover:bg-spotify-card/80 transition-colors" onClick={handleLanguageLevelClick}>
               <CardContent className="px-3 py-2 flex items-center space-x-2">
                 <span className="text-xs text-spotify-muted">
                   {nativeLanguage.toUpperCase()} → {targetLanguage.toUpperCase()}
