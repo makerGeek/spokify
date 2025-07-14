@@ -90,7 +90,9 @@ function Router() {
         <Route path="/" component={LanguageSelection} />
         <Route path="/login" component={Login} />
         <Route path="/home" component={Home} />
-        <Route path="/search" component={Home} />
+        <Route path="/search">
+          <Home />
+        </Route>
         <Route path="/lyrics/:id" component={LyricsPlayer} />
         <Route path="/library">
           <AuthenticatedOnly>
