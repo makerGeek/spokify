@@ -17,6 +17,7 @@ import Library from "@/pages/library";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import ProtectedRoute from "@/components/protected-route";
+import AuthenticatedOnly from "@/components/authenticated-only";
 import { type User } from "@shared/schema";
 
 function ProtectedAdminRoute() {
