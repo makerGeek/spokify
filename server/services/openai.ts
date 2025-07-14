@@ -23,6 +23,12 @@ export interface DifficultyAssessment {
   grammar_complexity: number;
 }
 
+export interface TranslatedLyric {
+  text: string;
+  timestamp: number;
+  translation: string;
+}
+
 export async function translateText(
   text: string,
   fromLanguage: string,
@@ -127,5 +133,59 @@ export async function generateVocabularyExplanation(
   } catch (error) {
     console.error("Vocabulary explanation error:", error);
     throw new Error("Failed to generate vocabulary explanation: " + (error as Error).message);
+  }
+}
+
+export async function translateLyrics(
+  songLyrics: string,
+  language: string
+): Promise<TranslatedLyric[]> {
+  try {
+    const prompt = `reformat and translate these lyrics ${songLyrics} to this format [
+  {
+    "text": "Ay",
+    "timestamp": 6,
+    "translation": "Ay"
+  },
+  {
+    "text": "Fonsi, DY (oh-oh)",
+    "timestamp": 8,
+    "translation": "Fonsi, DY (oh-oh)"
+  },
+  {
+    "text": "Oh no, oh no (oh)",
+    "timestamp": 12,
+    "translation": "Oh no, oh no (oh)"
+  }
+] and in the following language: ${language}`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: "You are a language learning expert translator. Reformat and translate song lyrics to the specified format and language. Respond with valid JSON array only."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "[]");
+    
+    // Handle both direct array response and wrapped object response
+    const lyricsArray = Array.isArray(result) ? result : (result.lyrics || []);
+    
+    return lyricsArray.map((lyric: any) => ({
+      text: lyric.text || "",
+      timestamp: Number(lyric.timestamp) || 0,
+      translation: lyric.translation || ""
+    }));
+  } catch (error) {
+    console.error("Lyrics translation error:", error);
+    throw new Error("Failed to translate lyrics: " + (error as Error).message);
   }
 }
