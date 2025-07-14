@@ -10,7 +10,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
 import LyricsPlayer from "@/pages/lyrics-player";
-import Progress from "@/pages/progress";
+
 import Profile from "@/pages/profile";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
@@ -73,7 +73,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/home" component={Home} />
       <Route path="/lyrics/:id" component={LyricsPlayer} />
-      <Route path="/progress" component={Progress} />
+
       <Route path="/profile">
         <ProtectedRoute>
           <Profile />
