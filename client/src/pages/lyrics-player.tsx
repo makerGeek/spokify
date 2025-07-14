@@ -233,7 +233,7 @@ export default function LyricsPlayer() {
       </div>
 
       {/* Audio Controls */}
-      <div className="fixed bottom-16 left-0 right-0">
+      <div className="fixed bottom-32 left-0 right-0">
         <Card className="bg-spotify-card border-spotify-card mx-4">
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-4">
