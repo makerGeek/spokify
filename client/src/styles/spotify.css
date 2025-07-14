@@ -275,16 +275,25 @@
 }
 
 /* Compact Progress Bar - Spotify Style */
+.spotify-progress-slider {
+  z-index: 60 !important;
+  position: relative !important;
+}
+
 .spotify-progress-slider [data-radix-slider-track] {
   background: rgba(255, 255, 255, 0.2) !important;
   height: 4px !important;
   border-radius: 2px !important;
+  position: relative !important;
+  z-index: 60 !important;
 }
 
 .spotify-progress-slider [data-radix-slider-range] {
   background: #1db954 !important;
   height: 4px !important;
   border-radius: 2px !important;
+  position: relative !important;
+  z-index: 60 !important;
 }
 
 .spotify-progress-slider [data-radix-slider-thumb] {
@@ -295,7 +304,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
   opacity: 0 !important;
   transition: opacity 0.2s ease !important;
-  z-index: 50 !important;
+  z-index: 70 !important;
   position: relative !important;
 }
 

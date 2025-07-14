@@ -27,19 +27,19 @@ export default function MiniPlayer() {
   };
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-40">
+    <div className="fixed bottom-16 left-0 right-0">
       {/* Compact Progress Bar - Spotify style */}
-      <div className="bg-spotify-card/95 backdrop-blur-md">
+      <div className="bg-spotify-card/95 backdrop-blur-md relative z-50">
         <div className="relative group">
           <Slider
             value={[currentTime]}
             onValueChange={handleSeek}
             max={duration || 100}
             step={1}
-            className="h-1 cursor-pointer spotify-progress-slider"
+            className="h-1 cursor-pointer spotify-progress-slider relative z-50"
           />
           {/* Time indicators on hover */}
-          <div className="absolute inset-x-0 -top-6 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          <div className="absolute inset-x-0 -top-6 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
             <span className="text-xs text-spotify-text bg-spotify-bg px-2 py-1 rounded shadow-lg">
               {formatTime(currentTime)}
             </span>
@@ -51,7 +51,7 @@ export default function MiniPlayer() {
       </div>
 
       {/* Main Player Content */}
-      <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl border-t-0">
+      <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl border-t-0 relative z-40">
         <CardContent className="p-3">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
