@@ -131,113 +131,117 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className="fixed inset-0 bg-spotify-bg z-50 flex flex-col">
-      {/* Player Header */}
-      <div className="flex items-center justify-between p-4 border-b border-spotify-card">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-10 h-10 bg-spotify-card rounded-full p-0"
-          onClick={handleCloseLyrics}
-        >
-          <ArrowDown className="text-spotify-muted" size={20} />
-        </Button>
-        <div className="flex items-center space-x-3">
-          {/* Small Album Cover */}
-          <div className="w-12 h-12 rounded-lg overflow-hidden">
-            <img
-              src={song.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
-              alt="Album cover"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="text-left">
-            <h3 className="font-semibold text-spotify-text">{song.title}</h3>
-            <p className="text-spotify-muted text-sm">{song.artist}</p>
+    <div className="min-h-screen bg-spotify-bg pb-32">
+      {/* Main Content - Full Height Lyrics */}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 bg-spotify-card rounded-full p-0"
+            onClick={handleCloseLyrics}
+          >
+            <ArrowDown className="text-spotify-muted" size={20} />
+          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              size="sm"
+              className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white`}
+              onClick={() => setShowTranslationMode(!showTranslationMode)}
+            >
+              <Languages size={16} className="mr-1" />
+              Translate
+            </Button>
+            <div className="difficulty-badge text-xs px-2 py-1 rounded-full font-medium text-white">
+              {song.difficulty}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-10 h-10 bg-spotify-card rounded-full p-0"
+              onClick={() => setIsBookmarked(!isBookmarked)}
+            >
+              <Bookmark className={isBookmarked ? "text-spotify-green" : "text-spotify-muted"} size={20} />
+            </Button>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-10 h-10 bg-spotify-card rounded-full p-0"
-          onClick={() => setIsBookmarked(!isBookmarked)}
-        >
-          <Bookmark className={isBookmarked ? "text-spotify-green" : "text-spotify-muted"} size={20} />
-        </Button>
+
+        <h4 className="text-2xl font-bold text-spotify-text mb-6 text-center">{song.title}</h4>
+        
+        <div className="space-y-4 overflow-y-auto overscroll-contain" 
+             id="lyrics-container"
+             style={{ 
+               height: 'calc(100vh - 280px)', // Screen minus header, controls, and bottom sections
+               WebkitOverflowScrolling: 'touch',
+               scrollBehavior: 'smooth',
+               touchAction: 'pan-y',
+               overflowAnchor: 'none'
+             }}>
+          {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => {
+            const nextLine = song.lyrics[index + 1];
+            const isActive = isLineActive(line, nextLine);
+            
+            return (
+              <div
+                key={index}
+                id={`lyric-line-${index}`}
+                className={`cursor-pointer hover:bg-spotify-card/30 active:bg-spotify-card/50 rounded-lg p-4 transition-all duration-300 touch-manipulation ${
+                  isActive 
+                    ? "lyrics-highlight transform scale-105 shadow-lg bg-spotify-card/20" 
+                    : "text-spotify-muted hover:text-spotify-text"
+                }`}
+                onClick={() => handleLineClick(line)}
+              >
+                <span className="text-xl leading-relaxed block text-center">{line.text}</span>
+                {showTranslationMode && line.translation && (
+                  <div className="text-base text-spotify-muted mt-3 italic text-center">
+                    {line.translation}
+                  </div>
+                )}
+                {line.timestamp && (
+                  <div className="text-xs text-spotify-muted mt-2 opacity-50 text-center">
+                    {formatTime(line.timestamp)}
+                  </div>
+                )}
+              </div>
+            );
+          }) : (
+            <div className="text-spotify-muted text-center py-8">
+              No lyrics available
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Lyrics Section - Maximized */}
-      <div className="flex-1 bg-spotify-card border-t border-spotify-card pb-32">
-        <div className="p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-spotify-text">Interactive Lyrics</h4>
-            <div className="flex items-center space-x-2">
+      {/* Compact Player Controls - Fixed at Bottom */}
+      <div className="fixed bottom-16 left-0 right-0 z-40">
+        <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card mx-4 shadow-xl">
+          <CardContent className="p-3">
+            {/* Song Info Row */}
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <img
+                  src={song.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
+                  alt="Album cover"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-spotify-text text-sm truncate">{song.title}</h3>
+                <p className="text-spotify-muted text-xs truncate">{song.artist}</p>
+              </div>
               <Button
                 size="sm"
-                className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white`}
-                onClick={() => setShowTranslationMode(!showTranslationMode)}
+                className="w-10 h-10 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors flex-shrink-0"
+                onClick={togglePlay}
               >
-                <Languages size={16} className="mr-1" />
-                Translate
+                {isPlaying ? <Pause size={16} /> : <Play size={16} />}
               </Button>
-              <div className="difficulty-badge text-xs px-2 py-1 rounded-full font-medium text-white">
-                {song.difficulty}
-              </div>
             </div>
-          </div>
-          
-          <div className="space-y-3 overflow-y-auto overscroll-contain" 
-               id="lyrics-container"
-               style={{ 
-                 height: 'calc(100vh - 280px)', // Screen minus header (64px), controls (128px), bottom nav (64px), padding (24px)
-                 WebkitOverflowScrolling: 'touch',
-                 scrollBehavior: 'smooth',
-                 touchAction: 'pan-y',
-                 overflowAnchor: 'none'
-               }}>
-            {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => {
-              const nextLine = song.lyrics[index + 1];
-              const isActive = isLineActive(line, nextLine);
-              
-              return (
-                <div
-                  key={index}
-                  id={`lyric-line-${index}`}
-                  className={`cursor-pointer hover:bg-spotify-bg active:bg-spotify-bg rounded p-3 transition-all duration-300 touch-manipulation ${
-                    isActive 
-                      ? "lyrics-highlight transform scale-105 shadow-lg" 
-                      : "text-spotify-muted hover:text-spotify-text"
-                  }`}
-                  onClick={() => handleLineClick(line)}
-                >
-                  <span className="text-lg leading-relaxed">{line.text}</span>
-                  {showTranslationMode && line.translation && (
-                    <div className="text-sm text-spotify-muted mt-2 italic">
-                      {line.translation}
-                    </div>
-                  )}
-                  {line.timestamp && (
-                    <div className="text-xs text-spotify-muted mt-1 opacity-50">
-                      {formatTime(line.timestamp)}
-                    </div>
-                  )}
-                </div>
-              );
-            }) : (
-              <div className="text-spotify-muted text-center py-8">
-                No lyrics available
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Audio Controls */}
-      <div className="fixed bottom-32 left-0 right-0">
-        <Card className="bg-spotify-card border-spotify-card mx-4">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <span className="text-xs text-spotify-muted">{formatTime(currentTime)}</span>
+            
+            {/* Progress Bar */}
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-spotify-muted w-10 text-center">{formatTime(currentTime)}</span>
               <Slider
                 value={[currentTime]}
                 onValueChange={(value) => seekTo(value[0])}
@@ -245,29 +249,7 @@ export default function LyricsPlayer() {
                 step={1}
                 className="flex-1"
               />
-              <span className="text-xs text-spotify-muted">{formatTime(duration)}</span>
-            </div>
-            
-            <div className="flex items-center justify-center space-x-6">
-              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-                <SkipBack size={20} />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-                <RotateCcw size={18} />
-              </Button>
-              <Button
-                size="lg"
-                className="w-16 h-16 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors"
-                onClick={togglePlay}
-              >
-                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-              </Button>
-              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-                <RotateCw size={18} />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-spotify-muted hover:text-white">
-                <SkipForward size={20} />
-              </Button>
+              <span className="text-xs text-spotify-muted w-10 text-center">{formatTime(duration)}</span>
             </div>
           </CardContent>
         </Card>
