@@ -164,7 +164,7 @@ export async function translateLyrics(
       messages: [
         {
           role: "system",
-          content: "You are a language learning expert translator. Reformat and translate song lyrics to the specified format and language. Respond with valid JSON array only."
+          content: "You are a language learning expert translator. Reformat and translate song lyrics to the specified format and language. Respond with JSON object containing 'lyrics' array with the translated data."
         },
         {
           role: "user",
@@ -174,10 +174,16 @@ export async function translateLyrics(
       response_format: { type: "json_object" }
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "[]");
+    const result = JSON.parse(response.choices[0].message.content || '{"lyrics": []}');
+    console.log("OpenAI response:", result);
     
     // Handle both direct array response and wrapped object response
-    const lyricsArray = Array.isArray(result) ? result : (result.lyrics || []);
+    const lyricsArray = Array.isArray(result) ? result : (result.lyrics || result.data || []);
+    
+    if (!Array.isArray(lyricsArray)) {
+      console.error("Invalid response format from OpenAI:", result);
+      return [];
+    }
     
     return lyricsArray.map((lyric: any) => ({
       text: lyric.text || "",

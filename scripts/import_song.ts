@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { translateLyrics } from '../server/services/openai.js';
 
 interface TrackInfo {
   spotifyId: string | null;
@@ -162,6 +163,22 @@ async function main() {
   console.log(`\nFetching lyrics for Spotify track: ${spotifyResult.spotifyId}`);
   const lyrics = await fetchSpotifyLyrics(spotifyResult.spotifyId);
   
+  let translatedLyrics = null;
+  
+  if (lyrics && lyrics.length > 0) {
+    // Limit lyrics to first 10 lines for translation to avoid timeout
+    const limitedLyrics = lyrics.slice(0, 10);
+    const lyricsString = JSON.stringify(limitedLyrics);
+    console.log(`\nTranslating first 10 lines of lyrics to English using OpenAI...`);
+    
+    try {
+      translatedLyrics = await translateLyrics(lyricsString, "English");
+      console.log(`Translation complete: ${translatedLyrics.length} lines translated`);
+    } catch (error) {
+      console.error('Failed to translate lyrics:', error);
+    }
+  }
+  
   // Display final results
   console.log('\n=== RESULTS ===');
   console.log(`Song: ${spotifyResult.title}`);
@@ -169,6 +186,7 @@ async function main() {
   console.log(`Spotify ID: ${spotifyResult.spotifyId}`);
   console.log(`YouTube ID: ${youtubeId || 'Not found'}`);
   console.log(`Lyrics Found: ${lyrics ? 'Yes (' + lyrics.length + ' lines)' : 'No'}`);
+  console.log(`Translated Lyrics: ${translatedLyrics ? 'Yes (' + translatedLyrics.length + ' lines)' : 'No'}`);
   
   if (!youtubeId) {
     console.log('\nWarning: No YouTube video found');
@@ -177,9 +195,15 @@ async function main() {
   if (!lyrics) {
     console.log('Warning: No lyrics found');
   } else {
-    console.log('\n=== LYRICS SAMPLE ===');
-    console.log('Full lyrics response:');
-    console.log(JSON.stringify(lyrics, null, 2));
+    console.log('\n=== ORIGINAL LYRICS SAMPLE ===');
+    console.log('First 3 lines:');
+    console.log(JSON.stringify(lyrics.slice(0, 3), null, 2));
+  }
+  
+  if (translatedLyrics && translatedLyrics.length > 0) {
+    console.log('\n=== TRANSLATED LYRICS SAMPLE ===');
+    console.log('First 5 lines with translations:');
+    console.log(JSON.stringify(translatedLyrics.slice(0, 5), null, 2));
   }
 }
 
@@ -188,4 +212,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
 
-export { findSpotifyTrackId, findYouTubeVideoId, fetchSpotifyLyrics };
+export { findSpotifyTrackId, findYouTubeVideoId, fetchSpotifyLyrics, translateLyrics };
