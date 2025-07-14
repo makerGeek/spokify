@@ -164,6 +164,13 @@ export default function Review() {
                 <CardTitle className="text-spotify-text text-center text-2xl mt-4">
                   What does "{currentQuestion.vocabulary.word}" mean?
                 </CardTitle>
+                {currentQuestion.vocabulary.context && (
+                  <div className="text-center mt-3">
+                    <p className="text-spotify-muted text-sm italic">
+                      Context: "{currentQuestion.vocabulary.context}"
+                    </p>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
