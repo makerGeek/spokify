@@ -49,51 +49,53 @@ export default function Library() {
   }
 
   return (
-    <div className="min-h-screen spotify-bg spotify-text-primary">
-      {/* Header */}
-      <div className="px-6 pt-16 pb-4">
-        <h1 className="spotify-heading-xl mb-8">Your Library</h1>
-        
-        {/* Tabs */}
-        <div className="flex space-x-0 mb-6">
-          <button
-            onClick={() => setActiveTab('saved')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-              activeTab === 'saved'
-                ? 'bg-[var(--spotify-green)] text-black'
-                : 'bg-[var(--spotify-light-gray)] spotify-text-secondary hover:bg-[var(--spotify-border)]'
-            }`}
-          >
-            <Heart className="inline w-4 h-4 mr-2" />
-            Saved Songs
-          </button>
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ml-2 ${
-              activeTab === 'history'
-                ? 'bg-[var(--spotify-green)] text-black'
-                : 'bg-[var(--spotify-light-gray)] spotify-text-secondary hover:bg-[var(--spotify-border)]'
-            }`}
-          >
-            <Clock className="inline w-4 h-4 mr-2" />
-            History
-          </button>
-          <button
-            onClick={() => setActiveTab('vocabulary')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ml-2 ${
-              activeTab === 'vocabulary'
-                ? 'bg-[var(--spotify-green)] text-black'
-                : 'bg-[var(--spotify-light-gray)] spotify-text-secondary hover:bg-[var(--spotify-border)]'
-            }`}
-          >
-            <BookOpen className="inline w-4 h-4 mr-2" />
-            Vocabulary
-          </button>
+    <div className="min-h-screen spotify-bg spotify-text-primary flex flex-col">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-10 spotify-bg border-b border-[var(--spotify-border)]">
+        <div className="px-6 pt-16 pb-4">
+          <h1 className="spotify-heading-xl mb-8">Your Library</h1>
+          
+          {/* Tabs */}
+          <div className="flex space-x-0 mb-6">
+            <button
+              onClick={() => setActiveTab('saved')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                activeTab === 'saved'
+                  ? 'bg-[var(--spotify-green)] text-black'
+                  : 'bg-[var(--spotify-light-gray)] spotify-text-secondary hover:bg-[var(--spotify-border)]'
+              }`}
+            >
+              <Heart className="inline w-4 h-4 mr-2" />
+              Saved Songs
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ml-2 ${
+                activeTab === 'history'
+                  ? 'bg-[var(--spotify-green)] text-black'
+                  : 'bg-[var(--spotify-light-gray)] spotify-text-secondary hover:bg-[var(--spotify-border)]'
+              }`}
+            >
+              <Clock className="inline w-4 h-4 mr-2" />
+              History
+            </button>
+            <button
+              onClick={() => setActiveTab('vocabulary')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ml-2 ${
+                activeTab === 'vocabulary'
+                  ? 'bg-[var(--spotify-green)] text-black'
+                  : 'bg-[var(--spotify-light-gray)] spotify-text-secondary hover:bg-[var(--spotify-border)]'
+              }`}
+            >
+              <BookOpen className="inline w-4 h-4 mr-2" />
+              Vocabulary
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="px-6 pb-24">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-6 pb-24">
         {/* Saved Songs Tab */}
         {activeTab === 'saved' && (
           <div>
