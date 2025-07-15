@@ -1,33 +1,26 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Music } from "lucide-react";
 
-const languages = [
-  { code: "en", name: "English" },
-  { code: "es", name: "Spanish" },
-  { code: "fr", name: "French" },
-  { code: "de", name: "German" },
-  { code: "it", name: "Italian" },
-  { code: "pt", name: "Portuguese" },
+const targetLanguages = [
+  { code: "es", name: "Spanish", flag: "🇪🇸" },
+  { code: "fr", name: "French", flag: "🇫🇷" },
+  { code: "de", name: "German", flag: "🇩🇪" },
+  { code: "it", name: "Italian", flag: "🇮🇹" },
 ];
-
-const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 export default function LanguageSelection() {
   const [, setLocation] = useLocation();
-  const [nativeLanguage, setNativeLanguage] = useState("en");
-  const [targetLanguage, setTargetLanguage] = useState("es");
-  const [level, setLevel] = useState("A1");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
 
-  const handleStartApp = () => {
-    // Store user preferences in localStorage
+  const handleLanguageSelect = (languageCode: string) => {
+    // Store simplified user preferences in localStorage
     localStorage.setItem("userPreferences", JSON.stringify({
-      nativeLanguage,
-      targetLanguage,
-      level
+      nativeLanguage: "en", // Default to English
+      targetLanguage: languageCode,
+      level: "A1" // Default level
     }));
     setLocation("/home");
   };
@@ -43,65 +36,24 @@ export default function LanguageSelection() {
       </div>
 
       <Card className="bg-spotify-card border-spotify-card">
-        <CardContent className="p-6 space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-3 text-spotify-muted">I speak</label>
-            <Select value={nativeLanguage} onValueChange={setNativeLanguage}>
-              <SelectTrigger className="w-full bg-spotify-bg border-spotify-muted text-spotify-text">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-spotify-card border-spotify-muted">
-                {languages.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code} className="text-spotify-text hover:bg-spotify-bg">
-                    {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <CardContent className="p-6">
+          <h2 className="text-xl font-semibold text-center mb-6 text-spotify-text">
+            What language would you like to learn?
+          </h2>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {targetLanguages.map((lang) => (
+              <Button
+                key={lang.code}
+                className="h-20 bg-spotify-bg border-spotify-muted text-spotify-text hover:border-spotify-green hover:bg-spotify-card transition-all duration-200 flex flex-col items-center justify-center space-y-2"
+                variant="outline"
+                onClick={() => handleLanguageSelect(lang.code)}
+              >
+                <span className="text-3xl">{lang.flag}</span>
+                <span className="text-sm font-medium">{lang.name}</span>
+              </Button>
+            ))}
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-3 text-spotify-muted">I want to learn</label>
-            <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-              <SelectTrigger className="w-full bg-spotify-bg border-spotify-muted text-spotify-text">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-spotify-card border-spotify-muted">
-                {languages.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code} className="text-spotify-text hover:bg-spotify-bg">
-                    {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-3 text-spotify-muted">My level</label>
-            <div className="grid grid-cols-3 gap-2">
-              {levels.map((lvl) => (
-                <Button
-                  key={lvl}
-                  variant={level === lvl ? "default" : "outline"}
-                  className={`${
-                    level === lvl 
-                      ? "difficulty-badge text-white" 
-                      : "bg-spotify-bg border-spotify-muted text-spotify-text hover:border-spotify-green"
-                  }`}
-                  onClick={() => setLevel(lvl)}
-                >
-                  {lvl}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <Button 
-            className="w-full bg-spotify-green text-white hover:bg-spotify-accent transition-colors py-6 text-lg font-medium"
-            onClick={handleStartApp}
-          >
-            Start Learning
-          </Button>
         </CardContent>
       </Card>
     </div>
