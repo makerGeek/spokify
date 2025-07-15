@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/auth-context'
-import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, MoreHorizontal, Download, Smartphone } from 'lucide-react'
+import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, Download, Smartphone, Crown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
@@ -168,10 +168,15 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Plan and Upgrade */}
           <div className="flex items-center space-x-4">
-            <button className="spotify-btn-secondary w-12 h-12 !rounded-full !p-0">
-              <MoreHorizontal className="h-5 w-5" />
+            <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
+              <span>Current plan:</span>
+              <span className="font-medium">Free</span>
+            </div>
+            <button className="spotify-btn-primary px-6 py-2 flex items-center space-x-2">
+              <Crown className="h-4 w-4" />
+              <span>Upgrade</span>
             </button>
           </div>
         </div>
