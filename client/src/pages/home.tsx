@@ -11,6 +11,13 @@ import MiniPlayer from "@/components/mini-player";
 import { useAudio } from "@/hooks/use-audio";
 import { type Song } from "@shared/schema";
 
+const languageFlags = {
+  "es": "/flags/es.png",
+  "fr": "/flags/fr.png", 
+  "de": "/flags/de.png",
+  "it": "/flags/it.png"
+};
+
 export default function Home() {
   const [, setLocation] = useLocation();
   const { currentSong } = useAudio();
@@ -72,9 +79,13 @@ export default function Home() {
           <div className="flex items-center space-x-2">
             <Card className="bg-spotify-card border-spotify-card cursor-pointer hover:bg-spotify-card/80 transition-colors" onClick={handleLanguageLevelClick}>
               <CardContent className="px-3 py-2 flex items-center space-x-2">
-                <span className="text-xs text-spotify-muted">
-                  {nativeLanguage.toUpperCase()} → {targetLanguage.toUpperCase()}
-                </span>
+                <div className="w-8 h-6 rounded-md overflow-hidden">
+                  <img 
+                    src={languageFlags[targetLanguage as keyof typeof languageFlags]} 
+                    alt={`${targetLanguage} flag`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <div className="w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-white">{level}</span>
                 </div>
