@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { ArrowDown, Bookmark, Languages } from "lucide-react";
+import { ArrowDown, Bookmark, Languages, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import TranslationOverlay from "@/components/translation-overlay";
 
 import MiniPlayer from "@/components/mini-player";
@@ -17,6 +18,7 @@ export default function LyricsPlayer() {
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showTranslationMode, setShowTranslationMode] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
 
@@ -62,7 +64,7 @@ export default function LyricsPlayer() {
 
   // Auto-scroll to keep active lyric line centered
   useEffect(() => {
-    if (!song?.lyrics || !Array.isArray(song.lyrics)) return;
+    if (!autoScroll || !song?.lyrics || !Array.isArray(song.lyrics)) return;
     
     const activeLyricIndex = song.lyrics.findIndex((line: any, index: number) => {
       const nextLine = song.lyrics[index + 1];
@@ -86,7 +88,7 @@ export default function LyricsPlayer() {
         });
       }
     }
-  }, [currentTime, song?.lyrics]);
+  }, [currentTime, song?.lyrics, autoScroll]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -134,6 +136,14 @@ export default function LyricsPlayer() {
             <ArrowDown className="text-spotify-muted" size={20} />
           </Button>
           <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 bg-spotify-card rounded-full px-3 py-1">
+              <RotateCcw size={14} className={autoScroll ? "text-spotify-green" : "text-spotify-muted"} />
+              <Switch
+                checked={autoScroll}
+                onCheckedChange={setAutoScroll}
+                className="data-[state=checked]:bg-spotify-green"
+              />
+            </div>
             <Button
               size="sm"
               className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white`}
