@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Check, Plus } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -129,24 +129,10 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
             </div>
           )}
           
-          <div className="flex space-x-2">
-            <Button
-              className="flex-1 bg-spotify-green text-white hover:bg-spotify-accent"
-              onClick={() => {
-                // Mark as learned
-                toast({
-                  title: "Marked as learned!",
-                  description: "Great job learning this phrase",
-                });
-                onClose();
-              }}
-            >
-              <Check size={16} className="mr-2" />
-              Mark as Learned
-            </Button>
+          <div>
             <Button
               variant="outline"
-              className="flex-1 bg-spotify-bg border-spotify-muted text-spotify-text hover:border-spotify-green"
+              className="w-full bg-spotify-bg border-spotify-muted text-spotify-text hover:border-spotify-green"
               onClick={() => {
                 // Add to review
                 toast({
