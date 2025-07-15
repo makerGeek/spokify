@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Music } from "lucide-react";
 
 const targetLanguages = [
@@ -26,40 +24,56 @@ export default function LanguageSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-spotify-bg p-6 flex flex-col justify-center max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <div className="mb-6">
-          <Music className="text-spotify-green text-6xl mb-4 mx-auto" size={96} />
-          <h1 className="text-4xl font-bold circular-font spotify-green mb-2">LyricLingo</h1>
-          <p className="text-spotify-muted text-lg">Learn languages through music</p>
+    <div className="min-h-screen spotify-bg p-4 flex flex-col justify-center items-center">
+      <div className="w-full max-w-lg">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <Music className="text-spotify-green mx-auto mb-6" size={80} />
+          <h1 className="spotify-heading-xl mb-4">LyricLingo</h1>
+          <p className="spotify-text-secondary text-lg">Learn languages through music</p>
         </div>
-      </div>
 
-      <Card className="bg-spotify-card border-spotify-card">
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold text-center mb-6 text-spotify-text">
+        {/* Language Selection */}
+        <div className="mb-8">
+          <h2 className="spotify-heading-lg text-center mb-8">
             What language would you like to learn?
           </h2>
           
           <div className="grid grid-cols-2 gap-4">
             {targetLanguages.map((lang) => (
-              <Button
+              <button
                 key={lang.code}
-                className="h-20 bg-spotify-bg border-spotify-muted text-spotify-text hover:border-spotify-green hover:bg-spotify-card transition-all duration-200 flex flex-col items-center justify-center space-y-2"
-                variant="outline"
+                className="spotify-card p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 flex flex-col items-center justify-center space-y-4"
                 onClick={() => handleLanguageSelect(lang.code)}
+                style={{
+                  background: 'linear-gradient(145deg, var(--spotify-gray), var(--spotify-light-gray))',
+                  border: '2px solid transparent',
+                  minHeight: '140px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--spotify-green)';
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(29, 185, 84, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               >
-                <img 
-                  src={lang.flagImage} 
-                  alt={`${lang.name} flag`}
-                  className="w-8 h-6 object-cover rounded-sm"
-                />
-                <span className="text-sm font-medium">{lang.name}</span>
-              </Button>
+                <div className="w-16 h-12 rounded-lg overflow-hidden shadow-lg">
+                  <img 
+                    src={lang.flagImage} 
+                    alt={`${lang.name} flag`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="spotify-text-primary font-semibold text-lg">
+                  {lang.name}
+                </span>
+              </button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
