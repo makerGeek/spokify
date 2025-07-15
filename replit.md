@@ -97,7 +97,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 15, 2025 - UI Improvements and PWA Install Feature
+### July 15, 2025 - PWA Offline Functionality Fix & UI Improvements
+- **Fixed PWA Offline Issue**: Completely rewrote service worker to properly cache production assets for offline functionality
+  - Service worker now dynamically detects and caches CSS/JS assets from production HTML
+  - Implemented separate static and dynamic cache strategies for optimal performance
+  - Added proper offline fallback page with LyricLingo branding when no cached content available
+  - Fixed blank screen issue when PWA is opened offline after installation
+  - Enhanced error handling and console logging for better debugging
 - Added overflow detection logic for song title marquee animation with dynamic speed based on text length
 - Fixed profile button icon visibility by changing color from white to black on green gradient background
 - Fixed Install App button visibility in PWA install prompt banner
