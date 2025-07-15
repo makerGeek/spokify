@@ -223,7 +223,9 @@ export default function Review() {
                             ? "bg-red-600/20 border border-red-500 text-red-400"
                             : isSelected
                             ? "bg-[var(--spotify-green)]/20 border border-[var(--spotify-green)] text-[var(--spotify-green)]"
-                            : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary hover:bg-[var(--spotify-light-gray)] hover:border-[var(--spotify-border-hover)]"
+                            : autoNext && isAnswered
+                            ? "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary opacity-60 cursor-default"
+                            : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary hover:bg-[var(--spotify-light-gray)] hover:border-[var(--spotify-border-hover)] focus:bg-[var(--spotify-light-gray)] focus:border-[var(--spotify-border-hover)]"
                         }`}
                         onClick={() => handleAnswerSelect(option)}
                         disabled={isAnswered}
