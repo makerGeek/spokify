@@ -136,23 +136,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
             </div>
           )}
           
-          <div>
-            <Button
-              variant="outline"
-              className="w-full bg-spotify-bg border-spotify-muted text-spotify-text hover:border-spotify-green"
-              onClick={() => {
-                // Add to review
-                toast({
-                  title: "Added to review!",
-                  description: "We'll help you practice this later",
-                });
-                onClose();
-              }}
-            >
-              <Plus size={16} className="mr-2" />
-              Review Later
-            </Button>
-          </div>
+          
         </CardContent>
       </Card>
     </div>
