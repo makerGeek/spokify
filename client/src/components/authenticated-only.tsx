@@ -14,7 +14,6 @@ export default function AuthenticatedOnly({
   fallback 
 }: AuthenticatedOnlyProps) {
   const { user, loading } = useAuth()
-  const [isLogin, setIsLogin] = useState(true)
   const [authLoading, setAuthLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
@@ -26,18 +25,24 @@ export default function AuthenticatedOnly({
     setAuthLoading(true)
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+      // First try to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      
+      if (signInError) {
+        // If sign in fails, try to sign up
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         })
-        if (error) throw error
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
+        if (signUpError) throw signUpError
+        
+        toast({
+          title: 'Account created!',
+          description: 'Welcome to LyricLingo. Please check your email to verify your account.',
         })
-        if (error) throw error
       }
     } catch (error: any) {
       toast({
@@ -91,20 +96,15 @@ export default function AuthenticatedOnly({
       <div className="min-h-screen spotify-bg flex items-center justify-center p-4">
         <div className="w-full max-w-sm">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="mb-4">
-              <h1 className="text-3xl font-bold mb-1 text-white">LyricLingo</h1>
-              <p className="spotify-text-muted text-sm">Learn languages through music</p>
-            </div>
-            <h2 className="text-xl font-semibold text-white mb-2">
-              {isLogin ? 'Log in to continue' : 'Sign up for free'}
-            </h2>
+          <div className="text-center mb-4">
+            <h1 className="text-2xl font-bold mb-1 text-white">LyricLingo</h1>
+            <p className="spotify-text-muted text-xs mb-2">Learn languages through music</p>
           </div>
 
           {/* Social Auth Buttons */}
-          <div className="space-y-3 mb-6">
+          <div className="space-y-2 mb-4">
             <button
-              className="spotify-social-btn text-sm"
+              className="spotify-social-btn text-xs py-2"
               onClick={() => handleSocialAuth('google')}
               disabled={authLoading}
             >
@@ -112,7 +112,7 @@ export default function AuthenticatedOnly({
               Continue with Google
             </button>
             <button
-              className="spotify-social-btn text-sm"
+              className="spotify-social-btn text-xs py-2"
               onClick={() => handleSocialAuth('facebook')}
               disabled={authLoading}
             >
@@ -122,20 +122,17 @@ export default function AuthenticatedOnly({
           </div>
 
           {/* Divider */}
-          <div className="spotify-divider">
+          <div className="spotify-divider my-4">
             <span>or</span>
           </div>
 
           {/* Email Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4">
+          <form onSubmit={handleEmailAuth} className="space-y-3">
             <div className="spotify-form-group">
-              <label htmlFor="email" className="spotify-label text-sm">
-                Email address
-              </label>
               <input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -145,14 +142,11 @@ export default function AuthenticatedOnly({
             </div>
             
             <div className="spotify-form-group">
-              <label htmlFor="password" className="spotify-label text-sm">
-                Password
-              </label>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -175,42 +169,22 @@ export default function AuthenticatedOnly({
 
             <button 
               type="submit" 
-              className="spotify-btn-primary w-full text-sm"
+              className="spotify-btn-primary w-full text-sm py-3"
               disabled={authLoading}
             >
               {authLoading ? (
                 <div className="spotify-loading"></div>
               ) : (
-                isLogin ? 'Log In' : 'Sign Up'
+                'Continue'
               )}
             </button>
           </form>
 
-          {/* Forgot Password */}
-          {isLogin && (
-            <div className="text-center mt-4">
-              <a href="#" className="spotify-link text-xs">
-                Forgot your password?
-              </a>
-            </div>
-          )}
-
-          {/* Switch Mode */}
-          <div className="spotify-divider mt-6">
-            <span></span>
-          </div>
-
-          <div className="text-center">
-            <p className="spotify-text-muted text-xs mb-3">
-              {isLogin ? "Don't have an account?" : 'Already have an account?'}
+          {/* Footer */}
+          <div className="text-center mt-4">
+            <p className="spotify-text-muted text-xs">
+              New users will be automatically registered
             </p>
-            <button
-              className="spotify-btn-secondary w-full text-sm"
-              onClick={() => setIsLogin(!isLogin)}
-              disabled={authLoading}
-            >
-              {isLogin ? 'Sign up for LyricLingo' : 'Log in instead'}
-            </button>
           </div>
         </div>
       </div>
