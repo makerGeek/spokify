@@ -97,6 +97,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 15, 2025 - Improved Gemini Translation Service
+- Fixed Gemini lyrics translation prompt to preserve original language in text field
+- Updated translation instructions to clearly separate original text from English translations
+- Enhanced prompt clarity to prevent AI from translating both fields
+- Text field now maintains original language while translation field contains English translation
+- Added specific examples in prompt to demonstrate correct behavior
+
 ### July 14, 2025 - Vocabulary Review Game & Enhanced Vocabulary System
 - Added new "Review" navigation tab with vocabulary game functionality
 - Created interactive multiple-choice quiz using user's vocabulary with 4 answer options

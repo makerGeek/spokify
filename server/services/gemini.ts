@@ -34,27 +34,36 @@ export async function translateLyrics(
   language: string
 ): Promise<TranslatedLyric[]> {
   try {
-    const prompt = `reformat and translate these lyrics ${songLyrics} to this format:
+    const prompt = `Parse and translate these lyrics: ${songLyrics}
 
+IMPORTANT INSTRUCTIONS:
+1. Keep the "text" field in the ORIGINAL language exactly as provided
+2. Only translate the content for the "translation" field to ${language}
+3. Extract timestamps from the lyrics if available
+4. If a line doesn't need translation (like "Ay", "Oh no"), keep both text and translation the same
+
+Return in this JSON format:
 [
+  {
+    "text": "[ORIGINAL LANGUAGE LINE]",
+    "timestamp": [NUMBER],
+    "translation": "[${language.toUpperCase()} TRANSLATION]"
+  }
+]
+
+Example (if original is Spanish):
+[
+  {
+    "text": "Quiero desnudarte a besos",
+    "timestamp": 15,
+    "translation": "I want to undress you with kisses"
+  },
   {
     "text": "Ay",
     "timestamp": 6,
     "translation": "Ay"
-  },
-  {
-    "text": "Fonsi, DY (oh-oh)",
-    "timestamp": 8,
-    "translation": "Fonsi, DY (oh-oh)"
-  },
-  {
-    "text": "Oh no, oh no (oh)",
-    "timestamp": 12,
-    "translation": "Oh no, oh no (oh)"
   }
 ]
-
-Return them in the following language: ${language}
 
 IMPORTANT: Return only valid JSON array format, no additional text or markdown formatting.`;
 
