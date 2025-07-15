@@ -147,14 +147,18 @@
 
 /* Marquee animation for long song titles */
 @keyframes marquee {
-  0%, 40% {
+  0%, 25% {
     transform: translateX(0%);
   }
-  60%, 100% {
-    transform: translateX(-100%);
+  75%, 100% {
+    transform: translateX(calc(-100% + 200px));
   }
 }
 
-.animate-marquee-hover {
-  animation: marquee 5s linear infinite;
+.marquee-text {
+  max-width: fit-content;
+}
+
+.animate-marquee {
+  animation: marquee 10s ease-in-out infinite;
 }

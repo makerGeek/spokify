@@ -2,6 +2,7 @@ import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
+import { useEffect, useRef } from "react";
 
 import { type Song } from "@shared/schema";
 
@@ -12,6 +13,8 @@ interface SongCardProps {
 
 export default function SongCard({ song, onClick }: SongCardProps) {
   const { setCurrentSong, currentSong } = useAudio();
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -19,6 +22,23 @@ export default function SongCard({ song, onClick }: SongCardProps) {
     // Always set the song with auto-play flag
     setCurrentSong(song, true); // Second parameter indicates auto-play
   };
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (titleRef.current && containerRef.current) {
+        const isOverflowing = titleRef.current.scrollWidth > containerRef.current.clientWidth;
+        if (isOverflowing) {
+          titleRef.current.classList.add('animate-marquee');
+        } else {
+          titleRef.current.classList.remove('animate-marquee');
+        }
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [song.title]);
 
 
 
@@ -32,8 +52,8 @@ export default function SongCard({ song, onClick }: SongCardProps) {
         />
         
         <div className="flex-1 min-w-0">
-          <div className="overflow-hidden whitespace-nowrap">
-            <h3 className="font-semibold text-lg text-spotify-text inline-block animate-marquee-hover">
+          <div ref={containerRef} className="overflow-hidden whitespace-nowrap relative">
+            <h3 ref={titleRef} className="font-semibold text-lg text-spotify-text inline-block marquee-text">
               {song.title}
             </h3>
           </div>
