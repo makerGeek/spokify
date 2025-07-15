@@ -87,7 +87,7 @@ export default function Home() {
             <Button
               variant="outline"
               size="sm"
-              className="w-8 h-8 bg-gradient-to-br from-spotify-green to-spotify-accent rounded-full p-0 border-0"
+              className="w-8 h-8 bg-gradient-to-br from-spotify-green to-spotify-accent rounded-full p-0 border-0 text-black hover:text-gray-800"
               onClick={handleProfileClick}
             >
               <User size={14} />
