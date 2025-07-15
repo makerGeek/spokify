@@ -45,7 +45,7 @@ export default function Home() {
   });
 
   const handleProfileClick = () => {
-    setLocation("/");
+    setLocation("/profile");
   };
 
   const handleLanguageLevelClick = () => {
