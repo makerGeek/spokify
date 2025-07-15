@@ -343,6 +343,15 @@
   }
 }
 
+@keyframes progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .spotify-heading-xl {

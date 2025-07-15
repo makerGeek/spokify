@@ -17,6 +17,8 @@ export default function Review() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [isAnswered, setIsAnswered] = useState(false);
+  const [autoNext, setAutoNext] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: vocabulary, isLoading, refetch } = useQuery<Vocabulary[]>({
     queryKey: ["/api/users/1/vocabulary"], // TODO: Use actual user ID from auth
@@ -80,6 +82,27 @@ export default function Review() {
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1
     }));
+
+    // Auto next functionality
+    if (autoNext) {
+      timeoutRef.current = setTimeout(() => {
+        generateQuestion();
+      }, 1500);
+    }
+  };
+
+  // Cleanup timeout on unmount or when generating new question
+  const cleanupTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  // Update generate question to cleanup timeout
+  const handleGenerateQuestion = () => {
+    cleanupTimeout();
+    generateQuestion();
   };
 
   // Start with first question when vocabulary loads
@@ -88,6 +111,13 @@ export default function Review() {
       generateQuestion();
     }
   }, [vocabulary, currentQuestion]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      cleanupTimeout();
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -143,6 +173,28 @@ export default function Review() {
               <div className="text-xs spotify-text-muted">
                 {score.correct}/{score.total} correct
               </div>
+            </div>
+          </div>
+
+          {/* Auto Next Toggle */}
+          <div className="spotify-card p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="spotify-text-primary font-medium">Auto Next</h3>
+                <p className="spotify-text-muted text-sm">Automatically move to next question after answering</p>
+              </div>
+              <button
+                onClick={() => setAutoNext(!autoNext)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  autoNext ? 'bg-[var(--spotify-green)]' : 'bg-[var(--spotify-light-gray)]'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    autoNext ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
           </div>
 
@@ -223,13 +275,26 @@ export default function Review() {
                         </div>
                       )}
                       
-                      <button
-                        onClick={generateQuestion}
-                        className="spotify-btn-primary inline-flex items-center"
-                      >
-                        <RefreshCw size={16} className="mr-2" />
-                        Next Question
-                      </button>
+                      {!autoNext && (
+                        <button
+                          onClick={handleGenerateQuestion}
+                          className="spotify-btn-primary inline-flex items-center"
+                        >
+                          <RefreshCw size={16} className="mr-2" />
+                          Next Question
+                        </button>
+                      )}
+                      
+                      {autoNext && (
+                        <div className="flex flex-col items-center">
+                          <div className="spotify-text-muted text-sm mb-2">
+                            Next question in 1.5s...
+                          </div>
+                          <div className="w-24 h-1 bg-[var(--spotify-light-gray)] rounded-full overflow-hidden">
+                            <div className="h-full bg-[var(--spotify-green)] animate-[progress_1.5s_linear_forwards]"></div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
