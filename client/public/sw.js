@@ -55,6 +55,21 @@ self.addEventListener('install', (event) => {
           }
         }
         
+        // Cache commonly used flag images
+        const commonFlags = ['en', 'es', 'fr', 'de', 'it', 'pt', 'jp', 'kr', 'cn'];
+        for (const flag of commonFlags) {
+          try {
+            const flagUrl = `/flags/${flag}.png`;
+            const flagResponse = await fetch(flagUrl);
+            if (flagResponse.ok) {
+              await staticCache.put(flagUrl, flagResponse);
+              console.log('SW: Cached flag:', flagUrl);
+            }
+          } catch (error) {
+            console.warn('SW: Failed to cache flag:', flagUrl, error);
+          }
+        }
+        
         console.log('SW: All assets cached');
       } catch (error) {
         console.error('SW: Install failed:', error);
@@ -205,7 +220,10 @@ self.addEventListener('fetch', (event) => {
           // Cache the response if it's a static asset
           if (url.pathname.includes('/assets/') || 
               url.pathname.includes('/flags/') || 
-              url.pathname.includes('/manifest.json')) {
+              url.pathname.includes('/manifest.json') ||
+              url.pathname.endsWith('.png') ||
+              url.pathname.endsWith('.jpg') ||
+              url.pathname.endsWith('.svg')) {
             await staticCache.put(event.request, networkResponse.clone());
             console.log('SW: Cached static asset:', url.pathname);
           } else {
@@ -219,8 +237,17 @@ self.addEventListener('fetch', (event) => {
         console.log('SW: Network failed for:', url.pathname);
         
         // Return appropriate fallback
-        if (event.request.destination === 'image') {
-          return new Response('', { status: 404 });
+        if (event.request.destination === 'image' || url.pathname.includes('/flags/')) {
+          // Create a simple fallback flag SVG
+          const fallbackSvg = `
+            <svg width="32" height="24" viewBox="0 0 32 24" xmlns="http://www.w3.org/2000/svg">
+              <rect width="32" height="24" fill="#ccc"/>
+              <text x="16" y="14" text-anchor="middle" font-size="8" fill="#666">Flag</text>
+            </svg>
+          `;
+          return new Response(fallbackSvg, {
+            headers: { 'Content-Type': 'image/svg+xml' }
+          });
         }
         
         return new Response('Offline', { status: 503 });

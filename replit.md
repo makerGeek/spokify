@@ -104,6 +104,9 @@ Preferred communication style: Simple, everyday language.
   - Added proper offline fallback page with LyricLingo branding when no cached content available
   - Fixed blank screen issue when PWA is opened offline after installation
   - Enhanced error handling and console logging for better debugging
+  - **Flag Image Caching**: Added caching for commonly used language flag images (en, es, fr, de, it, pt, jp, kr, cn)
+  - Created fallback SVG placeholder for flag images when offline and not cached
+  - Enhanced static asset detection to include all image types (PNG, JPG, SVG)
 - Added overflow detection logic for song title marquee animation with dynamic speed based on text length
 - Fixed profile button icon visibility by changing color from white to black on green gradient background
 - Fixed Install App button visibility in PWA install prompt banner
