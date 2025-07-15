@@ -95,17 +95,17 @@ function Router() {
         </Route>
         <Route path="/lyrics/:id" component={LyricsPlayer} />
         <Route path="/library">
-          <AuthenticatedOnly>
+          <AuthenticatedOnly contextMessage="Login to see your favorite songs and learned vocabulary">
             <Library />
           </AuthenticatedOnly>
         </Route>
         <Route path="/review">
-          <AuthenticatedOnly>
+          <AuthenticatedOnly contextMessage="Login to practice vocabulary with interactive quizzes">
             <Review />
           </AuthenticatedOnly>
         </Route>
         <Route path="/profile">
-          <AuthenticatedOnly>
+          <AuthenticatedOnly contextMessage="Login to view your learning progress and stats">
             <Profile />
           </AuthenticatedOnly>
         </Route>

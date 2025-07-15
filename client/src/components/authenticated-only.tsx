@@ -7,11 +7,13 @@ import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
 interface AuthenticatedOnlyProps {
   children: ReactNode
   fallback?: ReactNode
+  contextMessage?: string
 }
 
 export default function AuthenticatedOnly({ 
   children, 
-  fallback 
+  fallback,
+  contextMessage
 }: AuthenticatedOnlyProps) {
   const { user, loading } = useAuth()
   const [authLoading, setAuthLoading] = useState(false)
@@ -99,6 +101,11 @@ export default function AuthenticatedOnly({
           <div className="text-center mb-4">
             <h1 className="text-2xl font-bold mb-1 text-white">LyricLingo</h1>
             <p className="spotify-text-muted text-xs mb-2">Learn languages through music</p>
+            {contextMessage && (
+              <div className="mt-3 p-3 bg-spotify-gray rounded-lg border border-spotify-border">
+                <p className="spotify-text-secondary text-sm">{contextMessage}</p>
+              </div>
+            )}
           </div>
 
           {/* Social Auth Buttons */}
