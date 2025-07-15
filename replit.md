@@ -97,6 +97,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 15, 2025 - UI Improvements and PWA Install Feature
+- Added overflow detection logic for song title marquee animation with dynamic speed based on text length
+- Fixed profile button icon visibility by changing color from white to black on green gradient background
+- Fixed Install App button visibility in PWA install prompt banner
+- Added comprehensive "Install App" section to profile page with PWA functionality
+- Implemented automatic detection of installation availability using beforeinstallprompt event
+- Added Install App benefits display: offline learning, faster performance, native notifications
+- Created smart UI states showing install button when available or info message when not supported
+- Added toast notifications for installation success, failure, and already installed states
+- Enhanced marquee animation to only activate when text overflows container with consistent 50px/second speed
+- Added debugging functionality to PWA install feature for better troubleshooting
+
 ### July 15, 2025 - Improved Gemini Translation Service
 - Fixed Gemini lyrics translation prompt to preserve original language in text field
 - Updated translation instructions to clearly separate original text from English translations

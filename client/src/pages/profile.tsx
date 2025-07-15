@@ -32,19 +32,32 @@ export default function Profile() {
 
   // PWA Install functionality
   useEffect(() => {
+    console.log('Setting up install prompt listeners')
+    
     const handleBeforeInstallPrompt = (e: any) => {
+      console.log('beforeinstallprompt event received')
       e.preventDefault()
       setDeferredPrompt(e)
       setCanInstall(true)
     }
 
     const handleAppInstalled = () => {
+      console.log('App installed event received')
       setDeferredPrompt(null)
       setCanInstall(false)
       toast({
         title: 'App Installed!',
         description: 'LyricLingo has been installed successfully.',
       })
+    }
+
+    // Check if we're in a compatible browser
+    const isCompatible = 'serviceWorker' in navigator && 'PushManager' in window
+    console.log('PWA compatible browser:', isCompatible)
+    
+    // For development/testing, show install option even without prompt
+    if (process.env.NODE_ENV === 'development') {
+      setCanInstall(true)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -57,25 +70,47 @@ export default function Profile() {
   }, [toast])
 
   const handleInstallApp = async () => {
+    console.log('Install button clicked:', { deferredPrompt, canInstall })
+    
     if (!deferredPrompt) {
-      toast({
-        title: 'App Already Installed',
-        description: 'LyricLingo is already installed on your device.',
-      })
+      // Check if app is already installed
+      if ('navigator' in window && 'serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        if (registrations.length > 0) {
+          toast({
+            title: 'App Installation',
+            description: 'The app may already be installed, or installation is not available in this browser.',
+          })
+        } else {
+          toast({
+            title: 'Installation Not Available',
+            description: 'App installation is not available in this browser. Try using Chrome, Edge, or another supported browser.',
+          })
+        }
+      }
       return
     }
 
     try {
+      console.log('Prompting install...')
       const result = await deferredPrompt.prompt()
+      console.log('Install result:', result)
+      
       if (result.outcome === 'accepted') {
         toast({
           title: 'Installing App...',
           description: 'LyricLingo is being installed.',
         })
+      } else {
+        toast({
+          title: 'Installation Cancelled',
+          description: 'App installation was cancelled.',
+        })
       }
       setDeferredPrompt(null)
       setCanInstall(false)
     } catch (error) {
+      console.error('Install error:', error)
       toast({
         title: 'Installation Failed',
         description: 'Unable to install the app. Please try again.',
