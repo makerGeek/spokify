@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -110,22 +110,29 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
             <p className="text-spotify-text font-medium">{line.translation}</p>
           </div>
           
-          {vocabulary.length > 0 && (
+          {(translateMutation.isPending || vocabulary.length > 0) && (
             <div className="bg-spotify-bg rounded-lg p-4">
               <p className="text-spotify-muted text-sm mb-2">Key Vocabulary</p>
-              <div className="flex flex-wrap gap-2">
-                {vocabulary.map((word, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    size="sm"
-                    className="bg-spotify-green text-white hover:bg-spotify-accent px-2 py-1 rounded-full text-xs"
-                    onClick={() => addVocabularyMutation.mutate(word)}
-                  >
-                    {word.word} ({word.translation})
-                  </Button>
-                ))}
-              </div>
+              {translateMutation.isPending ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-spotify-green mr-2" />
+                  <span className="text-spotify-muted text-sm">Loading vocabulary...</span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {vocabulary.map((word, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      size="sm"
+                      className="bg-spotify-green text-white hover:bg-spotify-accent px-2 py-1 rounded-full text-xs"
+                      onClick={() => addVocabularyMutation.mutate(word)}
+                    >
+                      {word.word} ({word.translation})
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           
