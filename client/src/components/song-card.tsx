@@ -31,9 +31,13 @@ export default function SongCard({ song, onClick }: SongCardProps) {
           className="w-16 h-16 rounded-lg object-cover"
         />
         
-        <div className="flex-1">
-          <h3 className="font-semibold text-lg text-spotify-text">{song.title}</h3>
-          <p className="text-spotify-muted text-sm">{song.artist}</p>
+        <div className="flex-1 min-w-0">
+          <div className="overflow-hidden whitespace-nowrap">
+            <h3 className="font-semibold text-lg text-spotify-text inline-block animate-marquee-hover">
+              {song.title}
+            </h3>
+          </div>
+          <p className="text-spotify-muted text-sm truncate">{song.artist}</p>
           <div className="flex items-center space-x-2 mt-1">
             <span className="difficulty-badge text-xs px-2 py-1 rounded-full font-medium text-white">
               {song.difficulty}
