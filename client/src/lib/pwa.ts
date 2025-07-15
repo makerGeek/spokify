@@ -77,11 +77,14 @@ export function initializePWA() {
 
   function getEngagementScore(): number {
     const pageViews = parseInt(localStorage.getItem('pwa-page-views') || '0');
-    const totalTime = parseInt(localStorage.getItem('pwa-total-time') || '0');
+    const totalTimeMs = parseInt(localStorage.getItem('pwa-total-time') || '0');
     const interactions = parseInt(localStorage.getItem('pwa-interactions') || '0');
     
+    // Convert milliseconds to seconds, then to minutes
+    const totalTimeSeconds = totalTimeMs / 1000;
+    const minutesOnSite = totalTimeSeconds / 60;
+    
     // Calculate engagement score (page views + minutes on site + interactions)
-    const minutesOnSite = totalTime / (1000 * 60);
     return pageViews + Math.floor(minutesOnSite) + interactions;
   }
 
