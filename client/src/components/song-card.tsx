@@ -1,8 +1,8 @@
-import { Play, Star } from "lucide-react";
+import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
-import { useQuery } from "@tanstack/react-query";
+
 import { type Song } from "@shared/schema";
 
 interface SongCardProps {
@@ -20,9 +20,7 @@ export default function SongCard({ song, onClick }: SongCardProps) {
     setCurrentSong(song, true); // Second parameter indicates auto-play
   };
 
-  // Get user progress for this song - use a consistent value based on song ID
-  // For now, create a deterministic "progress" based on song properties until we have real user tracking
-  const progress = Math.floor((song.id * song.rating * 1.3) % 100);
+
 
   return (
     <Card className="song-card bg-spotify-card border-spotify-card cursor-pointer" onClick={onClick}>
@@ -41,25 +39,10 @@ export default function SongCard({ song, onClick }: SongCardProps) {
               {song.difficulty}
             </span>
             <span className="text-xs text-spotify-muted">{song.genre}</span>
-            <div className="flex items-center space-x-1">
-              <Star className="text-yellow-400" size={12} />
-              <span className="text-xs text-spotify-muted">{(song.rating / 10).toFixed(1)}</span>
-            </div>
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            progress > 0 
-              ? "bg-gradient-to-br from-spotify-green to-spotify-accent" 
-              : "bg-spotify-bg border border-spotify-muted"
-          }`}>
-            <span className={`text-xs font-bold ${
-              progress > 0 ? "text-white" : "text-spotify-muted"
-            }`}>
-              {progress}%
-            </span>
-          </div>
+        <div className="flex items-center">
           <Button
             size="sm"
             className="w-10 h-10 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors p-0"
