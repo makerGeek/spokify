@@ -17,12 +17,6 @@ export default function Review() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [isAnswered, setIsAnswered] = useState(false);
-  const [animatingAnswer, setAnimatingAnswer] = useState<string | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  
-  // Audio refs for sound effects
-  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
-  const incorrectSoundRef = useRef<HTMLAudioElement | null>(null);
 
   const { data: vocabulary, isLoading, refetch } = useQuery<Vocabulary[]>({
     queryKey: ["/api/users/1/vocabulary"], // TODO: Use actual user ID from auth
@@ -67,68 +61,25 @@ export default function Review() {
       sourceSong: randomVocab.songName || "Unknown Song"
     });
     
-    // Reset all animation states
     setSelectedAnswer(null);
     setShowResult(false);
     setIsAnswered(false);
-    setAnimatingAnswer(null);
-    setShowFeedback(false);
   };
 
-  // Create audio elements for sound effects
-  useEffect(() => {
-    // Create correct answer sound (high-pitched bell-like sound)
-    const correctAudio = new Audio();
-    correctAudio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMecj2a4faydAT2h8Xw1oMMAi+A0fPejjwIHm+/8+CSSA==';
-    correctSoundRef.current = correctAudio;
-    
-    // Create incorrect answer sound (lower-pitched buzz)
-    const incorrectAudio = new Audio();
-    incorrectAudio.src = 'data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQDAAC1hYuFbV1heJitrI9hOTZfodHcq2IcBz2Z2vPBdSUELYDO89eINwgZab3s5Z9NEAxRp+Txs2MeBTiP2PLNeSsFJXfH8N2QQAoUXrTo7KhUFAlGnuDyvGMecz2Y4vWydAX2h8Tw2IMMAi+A0fPfjAoMNWq58OKXSwkRVKzm8K1gHA==';
-    incorrectSoundRef.current = incorrectAudio;
-  }, []);
-
-  // Handle answer selection with Duolingo-style animations
-  const handleAnswerSelect = async (answer: string) => {
+  // Handle answer selection
+  const handleAnswerSelect = (answer: string) => {
     if (isAnswered) return;
     
     setSelectedAnswer(answer);
-    setAnimatingAnswer(answer);
-    
-    // Quick animation delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
     setIsAnswered(true);
-    const isCorrect = answer === currentQuestion?.correctAnswer;
-    
-    // Play sound effect
-    try {
-      if (isCorrect && correctSoundRef.current) {
-        correctSoundRef.current.currentTime = 0;
-        correctSoundRef.current.play().catch(() => {}); // Ignore autoplay restrictions
-      } else if (!isCorrect && incorrectSoundRef.current) {
-        incorrectSoundRef.current.currentTime = 0;
-        incorrectSoundRef.current.play().catch(() => {}); // Ignore autoplay restrictions
-      }
-    } catch (error) {
-      // Sound might be blocked by browser, continue without sound
-    }
-    
-    // Show result with animation delay
-    await new Promise(resolve => setTimeout(resolve, 300));
     setShowResult(true);
-    setShowFeedback(true);
     
     // Update score
+    const isCorrect = answer === currentQuestion?.correctAnswer;
     setScore(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1
     }));
-    
-    // Reset animation state
-    setTimeout(() => {
-      setAnimatingAnswer(null);
-    }, 600);
   };
 
   // Start with first question when vocabulary loads
@@ -229,24 +180,17 @@ export default function Review() {
                     return (
                       <button
                         key={index}
-                        className={`w-full text-left p-4 h-auto rounded-lg font-medium transition-all duration-300 transform ${
-                          animatingAnswer === option
-                            ? "scale-95 transition-transform duration-100"
-                            : showCorrectAnswer
-                            ? "bg-green-500/90 border-2 border-green-400 text-white scale-105 shadow-lg animate-pulse"
+                        className={`w-full text-left p-4 h-auto rounded-lg transition-all font-medium ${
+                          showCorrectAnswer
+                            ? "bg-green-600/20 border border-green-500 text-green-400"
                             : showWrongAnswer
-                            ? "bg-red-500/90 border-2 border-red-400 text-white scale-95 animate-shake"
+                            ? "bg-red-600/20 border border-red-500 text-red-400"
                             : isSelected
-                            ? "bg-[var(--spotify-green)]/20 border border-[var(--spotify-green)] text-[var(--spotify-green)] scale-105"
-                            : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary hover:bg-[var(--spotify-light-gray)] hover:border-[var(--spotify-border-hover)] hover:scale-102"
+                            ? "bg-[var(--spotify-green)]/20 border border-[var(--spotify-green)] text-[var(--spotify-green)]"
+                            : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary hover:bg-[var(--spotify-light-gray)] hover:border-[var(--spotify-border-hover)]"
                         }`}
                         onClick={() => handleAnswerSelect(option)}
                         disabled={isAnswered}
-                        style={{
-                          transition: showResult 
-                            ? 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' 
-                            : 'all 0.2s ease'
-                        }}
                       >
                         <div className="flex items-center justify-between w-full">
                           <span className="text-base">{option}</span>
@@ -263,40 +207,28 @@ export default function Review() {
                 </div>
 
                 {showResult && (
-                  <div className="mt-6 pt-4 border-t border-[var(--spotify-border)] animate-slide-up">
+                  <div className="mt-6 pt-4 border-t border-[var(--spotify-border)]">
                     <div className="text-center">
                       {selectedAnswer === currentQuestion.correctAnswer ? (
-                        <div className="text-green-400 mb-4 animate-bounce-in">
-                          <div className="relative">
-                            <CheckCircle className="mx-auto mb-2 text-green-400" size={48} />
-                            <div className="absolute inset-0 bg-green-400/20 rounded-full mx-auto mb-2 w-12 h-12 animate-ping"></div>
-                          </div>
-                          <p className="font-bold text-lg spotify-text-primary bg-gradient-to-r from-green-400 to-green-500 bg-clip-text text-transparent">
-                            Excellent! 🎉
-                          </p>
-                          <p className="text-sm spotify-text-muted mt-1">You got it right!</p>
+                        <div className="text-green-400 mb-4">
+                          <CheckCircle className="mx-auto mb-2" size={32} />
+                          <p className="font-semibold spotify-text-primary">Correct! Well done!</p>
                         </div>
                       ) : (
-                        <div className="text-red-400 mb-4 animate-bounce-in">
-                          <div className="relative">
-                            <XCircle className="mx-auto mb-2 text-red-400" size={48} />
-                            <div className="absolute inset-0 bg-red-400/20 rounded-full mx-auto mb-2 w-12 h-12 animate-ping"></div>
-                          </div>
-                          <p className="font-bold text-lg spotify-text-primary bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">
-                            Not quite right
-                          </p>
-                          <p className="text-sm spotify-text-muted mt-1">
-                            The correct answer is: <span className="text-[var(--spotify-green)] font-semibold">"{currentQuestion.correctAnswer}"</span>
+                        <div className="text-red-400 mb-4">
+                          <XCircle className="mx-auto mb-2" size={32} />
+                          <p className="font-semibold spotify-text-primary">
+                            Incorrect. The correct answer is "{currentQuestion.correctAnswer}"
                           </p>
                         </div>
                       )}
                       
                       <button
                         onClick={generateQuestion}
-                        className="spotify-btn-primary inline-flex items-center mt-4 hover:scale-105 transition-transform duration-200"
+                        className="spotify-btn-primary inline-flex items-center"
                       >
                         <RefreshCw size={16} className="mr-2" />
-                        {selectedAnswer === currentQuestion.correctAnswer ? "Continue" : "Try Another"}
+                        Next Question
                       </button>
                     </div>
                   </div>
