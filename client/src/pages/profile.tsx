@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/auth-context'
-import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, Download, Smartphone, Crown } from 'lucide-react'
+import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Download, Smartphone, Crown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
@@ -250,37 +250,7 @@ export default function Profile() {
           </p>
         </div>
 
-        {/* Recent Vocabulary */}
-        {vocabulary.length > 0 && (
-          <div className="spotify-card p-6 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <Star className="h-6 w-6 text-[var(--spotify-green)]" />
-                <h3 className="spotify-heading-md">Recent Vocabulary</h3>
-              </div>
-            </div>
-            <div className="space-y-4">
-              {vocabulary.slice(0, 5).map((word, index) => (
-                <div key={word.id} className="flex items-center justify-between group hover:bg-white/5 rounded-lg p-3 -mx-3 transition-colors duration-200">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-[var(--spotify-light-gray)] rounded flex items-center justify-center spotify-text-secondary text-sm font-medium group-hover:bg-[var(--spotify-green)] group-hover:text-black transition-colors duration-200">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-semibold spotify-text-primary">{word.word}</p>
-                      <p className="spotify-text-secondary text-sm">{word.translation}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-xs font-medium">
-                      {word.difficulty}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {/* Install App Section */}
         <div className="spotify-card p-6 mb-8">
