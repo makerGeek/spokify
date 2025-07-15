@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, CheckCircle, XCircle, Music } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import { type Vocabulary } from "@shared/schema";
 
@@ -183,18 +184,11 @@ export default function Review() {
                 <h3 className="spotify-text-primary font-medium">Auto Next</h3>
                 <p className="spotify-text-muted text-sm">Automatically move to next question after answering</p>
               </div>
-              <button
-                onClick={() => setAutoNext(!autoNext)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  autoNext ? 'bg-[var(--spotify-green)]' : 'bg-[var(--spotify-light-gray)]'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    autoNext ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
+              <Switch
+                checked={autoNext}
+                onCheckedChange={setAutoNext}
+                className="data-[state=checked]:bg-[var(--spotify-green)]"
+              />
             </div>
           </div>
 

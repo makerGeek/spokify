@@ -110,11 +110,11 @@ Preferred communication style: Simple, everyday language.
 - Added debugging functionality to PWA install feature for better troubleshooting
 
 ### July 15, 2025 - Auto-Next Feature for Review Page
-- Added "Auto Next" toggle functionality to vocabulary review page
+- Added "Auto Next" toggle functionality to vocabulary review page using existing Switch component (DRY principle)
 - Implemented 1.5-second delay with visual progress bar animation when auto-next is enabled
 - Created custom progress bar animation using CSS keyframes for smooth user feedback
 - Added proper timeout cleanup to prevent memory leaks on component unmount
-- Toggle uses authentic Spotify switch design with green accent color
+- Reused shadcn/ui Switch component with Spotify green accent color for consistency
 - Conditional rendering shows either manual "Next Question" button or auto-progress indicator
 - Enhanced user experience with clear visual feedback during auto-progression
 
