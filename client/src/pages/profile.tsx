@@ -163,12 +163,6 @@ export default function Profile() {
                 {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
               </h1>
               <div className="flex items-center space-x-1 text-sm spotify-text-secondary">
-                <span>{userData?.nativeLanguage || 'English'}</span>
-                <span>→</span>
-                <span className="text-[var(--spotify-green)] font-medium">{userData?.targetLanguage || 'Spanish'}</span>
-                <span>•</span>
-                <span>Level {userData?.level || 'A1'}</span>
-                <span>•</span>
                 <span>{wordsLearned} words learned</span>
               </div>
             </div>
@@ -176,9 +170,6 @@ export default function Profile() {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
-            <button className="spotify-btn-primary px-8 py-3">
-              Continue Learning
-            </button>
             <button className="spotify-btn-secondary w-12 h-12 !rounded-full !p-0">
               <MoreHorizontal className="h-5 w-5" />
             </button>
