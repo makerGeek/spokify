@@ -77,7 +77,7 @@ export default function Home() {
             <h1 className="text-xl font-bold circular-font">LyricLingo</h1>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-7 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform" onClick={handleLanguageLevelClick}>
+            <div className="w-12 h-8 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform" onClick={handleLanguageLevelClick}>
               <img 
                 src={languageFlags[targetLanguage as keyof typeof languageFlags]} 
                 alt={`${targetLanguage} flag`}
