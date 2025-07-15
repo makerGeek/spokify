@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, CheckCircle, XCircle, Music } from "lucide-react";
 import AuthenticatedOnly from "@/components/authenticated-only";
