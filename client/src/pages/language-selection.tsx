@@ -39,14 +39,14 @@ export default function LanguageSelection() {
             What language would you like to learn?
           </h2>
           
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-4">
             {targetLanguages.map((lang) => (
               <button
                 key={lang.code}
-                className="cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 flex flex-col items-center justify-center space-y-4 p-4"
+                className="cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 flex flex-col items-center justify-center space-y-3 p-2"
                 onClick={() => handleLanguageSelect(lang.code)}
               >
-                <div className="w-20 h-15 rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-green-500/20">
+                <div className="w-28 h-20 rounded-md overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-green-500/20">
                   <img 
                     src={lang.flagImage} 
                     alt={`${lang.name} flag`}
