@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Clock, Heart, BookOpen, Play, MoreVertical } from 'lucide-react'
+import { Clock, Heart, BookOpen } from 'lucide-react'
 import { useLocation } from 'wouter'
 
 import { type Song, type Vocabulary, type UserProgress } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
+import SongCard from '@/components/song-card'
 
 export default function Library() {
   const [_, setLocation] = useLocation()
@@ -35,9 +36,8 @@ export default function Library() {
     userProgress.some(p => p.songId === song.id)
   ).slice(0, 10)
 
-  const handleSongPlay = (song: Song) => {
-    setCurrentSong(song, true)
-    setLocation(`/lyrics/${song.id}`)
+  const handleSongClick = (songId: number) => {
+    setLocation(`/lyrics/${songId}`)
   }
 
   const formatDate = (dateString: string) => {
@@ -109,32 +109,13 @@ export default function Library() {
                 <p className="spotify-text-muted">Songs you like will appear here</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {savedSongs.map((song, index) => (
-                  <div
+              <div className="space-y-4">
+                {savedSongs.map((song) => (
+                  <SongCard
                     key={song.id}
-                    className="group flex items-center p-3 rounded-lg hover:bg-[var(--spotify-light-gray)] transition-colors duration-200 cursor-pointer"
-                    onClick={() => handleSongPlay(song)}
-                  >
-                    <div className="flex items-center justify-center w-10 h-10 mr-4">
-                      <span className="spotify-text-muted text-sm group-hover:hidden">
-                        {index + 1}
-                      </span>
-                      <Play className="h-5 w-5 spotify-text-primary hidden group-hover:block" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <p className="spotify-text-primary font-medium truncate">{song.title}</p>
-                      <p className="spotify-text-muted text-sm truncate">{song.artist}</p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <span className="spotify-text-muted text-sm">{song.genre}</span>
-                      <button className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreVertical className="h-5 w-5 spotify-text-muted" />
-                      </button>
-                    </div>
-                  </div>
+                    song={song}
+                    onClick={() => handleSongClick(song.id)}
+                  />
                 ))}
               </div>
             )}
@@ -156,49 +137,14 @@ export default function Library() {
                 <p className="spotify-text-muted">Songs you've played will appear here</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {recentSongs.map((song, index) => {
-                  const progress = userProgress.find(p => p.songId === song.id)
-                  return (
-                    <div
-                      key={song.id}
-                      className="group flex items-center p-3 rounded-lg hover:bg-[var(--spotify-light-gray)] transition-colors duration-200 cursor-pointer"
-                      onClick={() => handleSongPlay(song)}
-                    >
-                      <div className="flex items-center justify-center w-10 h-10 mr-4">
-                        <span className="spotify-text-muted text-sm group-hover:hidden">
-                          {index + 1}
-                        </span>
-                        <Play className="h-5 w-5 spotify-text-primary hidden group-hover:block" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className="spotify-text-primary font-medium truncate">{song.title}</p>
-                        <p className="spotify-text-muted text-sm truncate">{song.artist}</p>
-                        {progress && (
-                          <div className="flex items-center mt-1">
-                            <div className="w-16 h-1 bg-[var(--spotify-light-gray)] rounded-full overflow-hidden mr-2">
-                              <div 
-                                className="h-full bg-[var(--spotify-green)] rounded-full"
-                                style={{ width: `${progress.progressPercentage}%` }}
-                              />
-                            </div>
-                            <span className="spotify-text-muted text-xs">
-                              {progress.progressPercentage}% complete
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center space-x-4">
-                        <span className="spotify-text-muted text-sm">{song.genre}</span>
-                        <button className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreVertical className="h-5 w-5 spotify-text-muted" />
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
+              <div className="space-y-4">
+                {recentSongs.map((song) => (
+                  <SongCard
+                    key={song.id}
+                    song={song}
+                    onClick={() => handleSongClick(song.id)}
+                  />
+                ))}
               </div>
             )}
           </div>
