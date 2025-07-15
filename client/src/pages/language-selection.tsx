@@ -39,34 +39,21 @@ export default function LanguageSelection() {
             What language would you like to learn?
           </h2>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-8">
             {targetLanguages.map((lang) => (
               <button
                 key={lang.code}
-                className="spotify-card p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 flex flex-col items-center justify-center space-y-4"
+                className="cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 flex flex-col items-center justify-center space-y-4 p-4"
                 onClick={() => handleLanguageSelect(lang.code)}
-                style={{
-                  background: 'linear-gradient(145deg, var(--spotify-gray), var(--spotify-light-gray))',
-                  border: '2px solid transparent',
-                  minHeight: '140px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--spotify-green)';
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(29, 185, 84, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'transparent';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
               >
-                <div className="w-16 h-12 rounded-lg overflow-hidden shadow-lg">
+                <div className="w-20 h-15 rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-green-500/20">
                   <img 
                     src={lang.flagImage} 
                     alt={`${lang.name} flag`}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="spotify-text-primary font-semibold text-lg">
+                <span className="spotify-text-primary font-semibold text-xl hover:text-spotify-green transition-colors duration-300">
                   {lang.name}
                 </span>
               </button>
