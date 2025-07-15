@@ -116,7 +116,7 @@ Preferred communication style: Simple, everyday language.
 - Implemented toast notifications for setting changes with user feedback
 - Review page now reads auto-next preference from localStorage on component mount
 - Used shadcn/ui Switch component with Spotify green accent color for consistency
-- Added 1.5-second delay with visual progress bar animation when auto-next is enabled
+- Added 2-second delay with visual progress bar animation when auto-next is enabled
 - Proper timeout cleanup prevents memory leaks on component unmount
 
 ### July 15, 2025 - Review Page Spotify Design System Integration

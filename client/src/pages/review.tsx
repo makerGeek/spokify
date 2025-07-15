@@ -91,7 +91,7 @@ export default function Review() {
     if (autoNext) {
       timeoutRef.current = setTimeout(() => {
         generateQuestion();
-      }, 1500);
+      }, 2000);
     }
   };
 
@@ -274,10 +274,10 @@ export default function Review() {
                       {autoNext && (
                         <div className="flex flex-col items-center">
                           <div className="spotify-text-muted text-sm mb-2">
-                            Next question in 1.5s...
+                            Next question in 2s...
                           </div>
                           <div className="w-24 h-1 bg-[var(--spotify-light-gray)] rounded-full overflow-hidden">
-                            <div className="h-full bg-[var(--spotify-green)] animate-[progress_1.5s_linear_forwards]"></div>
+                            <div className="h-full bg-[var(--spotify-green)] animate-[progress_2s_linear_forwards]"></div>
                           </div>
                         </div>
                       )}
