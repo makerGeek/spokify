@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/auth-context'
-import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, MoreHorizontal } from 'lucide-react'
+import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Star, MoreHorizontal, Download, Smartphone } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
@@ -10,6 +11,8 @@ import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
 export default function Profile() {
   const { user, signOut } = useAuth()
   const { toast } = useToast()
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [canInstall, setCanInstall] = useState(false)
 
   // Fetch user data from your backend
   const { data: userData } = useQuery<User>({
@@ -26,6 +29,60 @@ export default function Profile() {
     queryKey: ["/api/users/1/progress"],
     retry: false
   })
+
+  // PWA Install functionality
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setCanInstall(true)
+    }
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null)
+      setCanInstall(false)
+      toast({
+        title: 'App Installed!',
+        description: 'LyricLingo has been installed successfully.',
+      })
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [toast])
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) {
+      toast({
+        title: 'App Already Installed',
+        description: 'LyricLingo is already installed on your device.',
+      })
+      return
+    }
+
+    try {
+      const result = await deferredPrompt.prompt()
+      if (result.outcome === 'accepted') {
+        toast({
+          title: 'Installing App...',
+          description: 'LyricLingo is being installed.',
+        })
+      }
+      setDeferredPrompt(null)
+      setCanInstall(false)
+    } catch (error) {
+      toast({
+        title: 'Installation Failed',
+        description: 'Unable to install the app. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
 
   const handleSignOut = async () => {
     try {
@@ -193,6 +250,53 @@ export default function Profile() {
             </div>
           </div>
         )}
+
+        {/* Install App Section */}
+        <div className="spotify-card p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Smartphone className="h-6 w-6 text-[var(--spotify-green)]" />
+              <div>
+                <h3 className="spotify-heading-md">Install App</h3>
+                <p className="spotify-text-secondary text-sm">Get the native app experience</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
+              <div className="w-2 h-2 bg-[var(--spotify-green)] rounded-full"></div>
+              <span>Offline learning capability</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
+              <div className="w-2 h-2 bg-[var(--spotify-green)] rounded-full"></div>
+              <span>Faster performance</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
+              <div className="w-2 h-2 bg-[var(--spotify-green)] rounded-full"></div>
+              <span>Native notifications</span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            {canInstall ? (
+              <button
+                className="spotify-btn-primary w-full"
+                onClick={handleInstallApp}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Install LyricLingo
+              </button>
+            ) : (
+              <div className="text-center p-4 bg-[var(--spotify-light-gray)] rounded-lg">
+                <Smartphone className="h-8 w-8 text-[var(--spotify-green)] mx-auto mb-2" />
+                <p className="spotify-text-secondary text-sm">
+                  App installation is available in supported browsers
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Sign Out Section */}
         <div className="spotify-card p-6">
