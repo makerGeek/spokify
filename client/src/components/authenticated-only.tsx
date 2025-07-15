@@ -88,35 +88,35 @@ export default function AuthenticatedOnly({
     }
 
     return (
-      <div className="min-h-screen spotify-bg flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen spotify-bg flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mb-6">
-              <h1 className="spotify-heading-xl mb-2">LyricLingo</h1>
-              <p className="spotify-text-muted">Learn languages through music</p>
+          <div className="text-center mb-6">
+            <div className="mb-4">
+              <h1 className="text-3xl font-bold mb-1 text-white">LyricLingo</h1>
+              <p className="spotify-text-muted text-sm">Learn languages through music</p>
             </div>
-            <h2 className="spotify-heading-lg mb-4">
+            <h2 className="text-xl font-semibold text-white mb-2">
               {isLogin ? 'Log in to continue' : 'Sign up for free'}
             </h2>
           </div>
 
           {/* Social Auth Buttons */}
-          <div className="space-y-4 mb-8">
+          <div className="space-y-3 mb-6">
             <button
-              className="spotify-social-btn"
+              className="spotify-social-btn text-sm"
               onClick={() => handleSocialAuth('google')}
               disabled={authLoading}
             >
-              <Chrome className="h-5 w-5" />
+              <Chrome className="h-4 w-4" />
               Continue with Google
             </button>
             <button
-              className="spotify-social-btn"
+              className="spotify-social-btn text-sm"
               onClick={() => handleSocialAuth('facebook')}
               disabled={authLoading}
             >
-              <Facebook className="h-5 w-5" />
+              <Facebook className="h-4 w-4" />
               Continue with Facebook
             </button>
           </div>
@@ -127,9 +127,9 @@ export default function AuthenticatedOnly({
           </div>
 
           {/* Email Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-6">
+          <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="spotify-form-group">
-              <label htmlFor="email" className="spotify-label">
+              <label htmlFor="email" className="spotify-label text-sm">
                 Email address
               </label>
               <input
@@ -139,13 +139,13 @@ export default function AuthenticatedOnly({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="spotify-input"
+                className="spotify-input text-sm"
                 disabled={authLoading}
               />
             </div>
             
             <div className="spotify-form-group">
-              <label htmlFor="password" className="spotify-label">
+              <label htmlFor="password" className="spotify-label text-sm">
                 Password
               </label>
               <div className="relative">
@@ -156,18 +156,18 @@ export default function AuthenticatedOnly({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="spotify-input pr-12"
+                  className="spotify-input pr-10 text-sm"
                   disabled={authLoading}
                 />
                 <button
                   type="button"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
@@ -175,7 +175,7 @@ export default function AuthenticatedOnly({
 
             <button 
               type="submit" 
-              className="spotify-btn-primary w-full"
+              className="spotify-btn-primary w-full text-sm"
               disabled={authLoading}
             >
               {authLoading ? (
@@ -188,24 +188,24 @@ export default function AuthenticatedOnly({
 
           {/* Forgot Password */}
           {isLogin && (
-            <div className="text-center mt-6">
-              <a href="#" className="spotify-link text-sm">
+            <div className="text-center mt-4">
+              <a href="#" className="spotify-link text-xs">
                 Forgot your password?
               </a>
             </div>
           )}
 
           {/* Switch Mode */}
-          <div className="spotify-divider">
+          <div className="spotify-divider mt-6">
             <span></span>
           </div>
 
           <div className="text-center">
-            <p className="spotify-text-muted text-sm mb-4">
+            <p className="spotify-text-muted text-xs mb-3">
               {isLogin ? "Don't have an account?" : 'Already have an account?'}
             </p>
             <button
-              className="spotify-btn-secondary w-full"
+              className="spotify-btn-secondary w-full text-sm"
               onClick={() => setIsLogin(!isLogin)}
               disabled={authLoading}
             >
