@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle, XCircle, Music } from "lucide-react";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import { type Vocabulary } from "@shared/schema";
@@ -95,10 +92,10 @@ export default function Review() {
   if (isLoading) {
     return (
       <AuthenticatedOnly>
-        <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
+        <div className="min-h-screen spotify-bg flex items-center justify-center pb-20">
           <div className="text-center">
-            <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
-            <p className="text-spotify-muted">Loading vocabulary...</p>
+            <div className="spotify-loading mb-4"></div>
+            <p className="spotify-text-muted">Loading vocabulary...</p>
           </div>
         </div>
       </AuthenticatedOnly>
@@ -108,12 +105,12 @@ export default function Review() {
   if (!vocabulary || vocabulary.length === 0) {
     return (
       <AuthenticatedOnly>
-        <div className="min-h-screen bg-spotify-bg pb-20">
+        <div className="min-h-screen spotify-bg pb-20">
           <div className="p-6">
             <div className="text-center py-16">
-              <Music className="mx-auto text-spotify-muted mb-4" size={64} />
-              <h2 className="text-xl font-semibold text-spotify-text mb-2">No Vocabulary Yet</h2>
-              <p className="text-spotify-muted mb-6">
+              <Music className="mx-auto spotify-text-muted mb-4" size={64} />
+              <h2 className="spotify-heading-md mb-2">No Vocabulary Yet</h2>
+              <p className="spotify-text-muted mb-6">
                 Start learning by tapping on words in song lyrics to build your vocabulary!
               </p>
               <button
@@ -131,48 +128,48 @@ export default function Review() {
 
   return (
     <AuthenticatedOnly>
-      <div className="min-h-screen bg-spotify-bg pb-20">
+      <div className="min-h-screen spotify-bg pb-20">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-spotify-text">Vocabulary Review</h1>
-              <p className="text-spotify-muted">Test your knowledge</p>
+              <h1 className="spotify-heading-lg">Vocabulary Review</h1>
+              <p className="spotify-text-muted">Test your knowledge</p>
             </div>
             <div className="text-right">
-              <div className="text-spotify-green font-semibold">
+              <div className="text-[var(--spotify-green)] font-semibold text-lg">
                 {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
               </div>
-              <div className="text-xs text-spotify-muted">
+              <div className="text-xs spotify-text-muted">
                 {score.correct}/{score.total} correct
               </div>
             </div>
           </div>
 
           {currentQuestion && (
-            <Card className="bg-spotify-card border-spotify-muted mb-6">
-              <CardHeader>
-                <div className="flex items-center justify-between">
+            <div className="spotify-card p-6 mb-6">
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <Music size={20} className="text-spotify-green" />
-                    <span className="text-spotify-muted text-sm">From: {currentQuestion.sourceSong}</span>
+                    <Music size={20} className="text-[var(--spotify-green)]" />
+                    <span className="spotify-text-muted text-sm">From: {currentQuestion.sourceSong}</span>
                   </div>
-                  <Badge variant="outline" className="text-spotify-muted border-spotify-muted">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-xs font-medium">
                     {currentQuestion.vocabulary.difficulty}
-                  </Badge>
+                  </div>
                 </div>
-                <CardTitle className="text-spotify-text text-center text-2xl mt-4">
+                <h2 className="spotify-text-primary text-center text-2xl font-bold mt-4">
                   What does "{currentQuestion.vocabulary.word}" mean?
-                </CardTitle>
+                </h2>
                 {currentQuestion.vocabulary.context && (
                   <div className="text-center mt-3">
-                    <p className="text-spotify-muted text-sm italic">
+                    <p className="spotify-text-muted text-sm italic">
                       Context: "{currentQuestion.vocabulary.context}"
                     </p>
                   </div>
                 )}
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div>
                 <div className="space-y-3">
                   {currentQuestion.options.map((option, index) => {
                     const isSelected = selectedAnswer === option;
@@ -189,8 +186,8 @@ export default function Review() {
                             : showWrongAnswer
                             ? "bg-red-600/20 border border-red-500 text-red-400"
                             : isSelected
-                            ? "bg-spotify-green/20 border border-spotify-green text-spotify-green"
-                            : "bg-spotify-card border border-spotify-muted text-spotify-text hover:bg-spotify-card/80 hover:border-spotify-text/30"
+                            ? "bg-[var(--spotify-green)]/20 border border-[var(--spotify-green)] text-[var(--spotify-green)]"
+                            : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary hover:bg-[var(--spotify-light-gray)] hover:border-[var(--spotify-border-hover)]"
                         }`}
                         onClick={() => handleAnswerSelect(option)}
                         disabled={isAnswered}
@@ -210,17 +207,17 @@ export default function Review() {
                 </div>
 
                 {showResult && (
-                  <div className="mt-6 pt-4 border-t border-spotify-muted">
+                  <div className="mt-6 pt-4 border-t border-[var(--spotify-border)]">
                     <div className="text-center">
                       {selectedAnswer === currentQuestion.correctAnswer ? (
                         <div className="text-green-400 mb-4">
                           <CheckCircle className="mx-auto mb-2" size={32} />
-                          <p className="font-semibold">Correct! Well done!</p>
+                          <p className="font-semibold spotify-text-primary">Correct! Well done!</p>
                         </div>
                       ) : (
                         <div className="text-red-400 mb-4">
                           <XCircle className="mx-auto mb-2" size={32} />
-                          <p className="font-semibold">
+                          <p className="font-semibold spotify-text-primary">
                             Incorrect. The correct answer is "{currentQuestion.correctAnswer}"
                           </p>
                         </div>
@@ -236,8 +233,8 @@ export default function Review() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
       </div>
