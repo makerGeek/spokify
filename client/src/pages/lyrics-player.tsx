@@ -60,7 +60,7 @@ export default function LyricsPlayer() {
     return currentTime >= lineTime && currentTime < nextLineTime;
   };
 
-  // Auto-scroll to active lyric line
+  // Auto-scroll to keep active lyric line centered
   useEffect(() => {
     if (!song?.lyrics || !Array.isArray(song.lyrics)) return;
     
@@ -74,26 +74,16 @@ export default function LyricsPlayer() {
       const container = document.getElementById('lyrics-container');
       
       if (activeElement && container) {
-        // Mobile-friendly scrolling approach
-        const containerRect = container.getBoundingClientRect();
-        const elementRect = activeElement.getBoundingClientRect();
+        // Always center the active line, regardless of position
+        const containerHeight = container.clientHeight;
+        const elementHeight = activeElement.offsetHeight;
+        const scrollTop = activeElement.offsetTop - (containerHeight / 2) + (elementHeight / 2);
         
-        // Check if element is outside the visible area
-        const isAbove = elementRect.top < containerRect.top;
-        const isBelow = elementRect.bottom > containerRect.bottom;
-        
-        if (isAbove || isBelow) {
-          // Calculate scroll position to center the element
-          const containerHeight = container.clientHeight;
-          const elementHeight = activeElement.offsetHeight;
-          const scrollTop = activeElement.offsetTop - (containerHeight / 2) + (elementHeight / 2);
-          
-          // Smooth scroll with explicit mobile compatibility
-          container.scrollTo({
-            top: scrollTop,
-            behavior: 'smooth'
-          });
-        }
+        // Smooth scroll to center the active line
+        container.scrollTo({
+          top: Math.max(0, scrollTop), // Ensure we don't scroll to negative values
+          behavior: 'smooth'
+        });
       }
     }
   }, [currentTime, song?.lyrics]);

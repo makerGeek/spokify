@@ -20,18 +20,24 @@ export interface DifficultyAssessment {
   language?: string;
 }
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
-    )
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Operation timed out after ${timeoutMs}ms`)),
+        timeoutMs,
+      ),
+    ),
   ]);
 }
 
 export async function translateLyrics(
   songLyrics: string,
-  language: string
+  language: string,
 ): Promise<TranslatedLyric[]> {
   try {
     const prompt = `Parse and translate these lyrics: ${songLyrics}
@@ -39,14 +45,14 @@ export async function translateLyrics(
 IMPORTANT INSTRUCTIONS:
 1. Keep the "text" field in the ORIGINAL language exactly as provided
 2. Only translate the content for the "translation" field to ${language}
-3. Extract timestamps from the lyrics if available
+3. Extract timestamps from the lyrics and convert them to seconds
 4. If a line doesn't need translation (like "Ay", "Oh no"), keep both text and translation the same
 
 Return in this JSON format:
 [
   {
     "text": "[ORIGINAL LANGUAGE LINE]",
-    "timestamp": [NUMBER],
+    "timestamp": [NUMBER IN SECONDS],
     "translation": "[${language.toUpperCase()} TRANSLATION]"
   }
 ]
@@ -78,11 +84,11 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
             properties: {
               text: { type: "string" },
               timestamp: { type: "number" },
-              translation: { type: "string" }
+              translation: { type: "string" },
             },
-            required: ["text", "timestamp", "translation"]
-          }
-        }
+            required: ["text", "timestamp", "translation"],
+          },
+        },
       },
       contents: prompt,
     });
@@ -92,16 +98,16 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
 
     const result = JSON.parse(response.text || "[]");
     console.log("Gemini response:", result);
-    
+
     if (!Array.isArray(result)) {
       console.error("Invalid response format from Gemini:", result);
       return [];
     }
-    
+
     return result.map((lyric: any) => ({
       text: lyric.text || "",
       timestamp: Number(lyric.timestamp) || 0,
-      translation: lyric.translation || ""
+      translation: lyric.translation || "",
     }));
   } catch (error) {
     console.error("Lyrics translation error:", error);
@@ -110,11 +116,11 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
 }
 
 export async function assessDifficulty(
-  lyricsData: Array<{ startMs: number; durMs: number; text: string }>
+  lyricsData: Array<{ startMs: number; durMs: number; text: string }>,
 ): Promise<DifficultyAssessment> {
   try {
     // Concatenate all text from the lyrics
-    const concatenatedText = lyricsData.map(line => line.text).join(" ");
+    const concatenatedText = lyricsData.map((line) => line.text).join(" ");
 
     const prompt = `You are a language learning expert. Assess the difficulty level of the given text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length. 
 
@@ -127,7 +133,7 @@ Text to analyze: ${concatenatedText}`;
     const apiCall = ai.models.generateContent({
       model: "gemini-2.0-flash",
       config: {
-        responseMimeType: "application/json"
+        responseMimeType: "application/json",
       },
       contents: prompt,
     });
@@ -135,13 +141,16 @@ Text to analyze: ${concatenatedText}`;
     // Apply 2 minute timeout wrapper
     const response = await withTimeout(apiCall, 120000);
 
-    const result = JSON.parse(response.text || '{"difficulty": "A1", "language": "en", "key_words": {}}');
+    const result = JSON.parse(
+      response.text ||
+        '{"difficulty": "A1", "language": "en", "key_words": {}}',
+    );
     console.log("Gemini difficulty assessment:", result);
-    
+
     return {
       difficulty: result.difficulty || "A1",
       language: result.language || "en",
-      key_words: result.key_words || {}
+      key_words: result.key_words || {},
     };
   } catch (error) {
     console.error("Difficulty assessment error:", error);
