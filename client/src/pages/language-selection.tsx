@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Music } from "lucide-react";
 
 const targetLanguages = [
-  { code: "es", name: "Spanish", flag: "🇪🇸" },
-  { code: "fr", name: "French", flag: "🇫🇷" },
-  { code: "de", name: "German", flag: "🇩🇪" },
-  { code: "it", name: "Italian", flag: "🇮🇹" },
+  { code: "es", name: "Spanish", flagImage: "/flags/es.png" },
+  { code: "fr", name: "French", flagImage: "/flags/fr.png" },
+  { code: "de", name: "German", flagImage: "/flags/de.png" },
+  { code: "it", name: "Italian", flagImage: "/flags/it.png" },
 ];
 
 export default function LanguageSelection() {
@@ -49,7 +49,11 @@ export default function LanguageSelection() {
                 variant="outline"
                 onClick={() => handleLanguageSelect(lang.code)}
               >
-                <span className="text-3xl">{lang.flag}</span>
+                <img 
+                  src={lang.flagImage} 
+                  alt={`${lang.name} flag`}
+                  className="w-8 h-6 object-cover rounded-sm"
+                />
                 <span className="text-sm font-medium">{lang.name}</span>
               </Button>
             ))}
