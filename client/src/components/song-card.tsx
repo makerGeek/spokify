@@ -2,7 +2,7 @@ import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
-import { useEffect, useRef } from "react";
+import { useMarquee } from "@/hooks/use-marquee";
 
 import { type Song } from "@shared/schema";
 
@@ -13,8 +13,7 @@ interface SongCardProps {
 
 export default function SongCard({ song, onClick }: SongCardProps) {
   const { setCurrentSong, currentSong } = useAudio();
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { textRef: titleRef, containerRef } = useMarquee({ text: song.title });
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -22,33 +21,6 @@ export default function SongCard({ song, onClick }: SongCardProps) {
     // Always set the song with auto-play flag
     setCurrentSong(song, true); // Second parameter indicates auto-play
   };
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (titleRef.current && containerRef.current) {
-        const isOverflowing = titleRef.current.scrollWidth > containerRef.current.clientWidth;
-        if (isOverflowing) {
-          // Calculate animation duration based on text length
-          // Base speed: ~50 pixels per second for consistent movement
-          const textWidth = titleRef.current.scrollWidth;
-          const containerWidth = containerRef.current.clientWidth;
-          const overflowDistance = textWidth - containerWidth;
-          const scrollDuration = Math.max(3, overflowDistance / 50); // Minimum 3 seconds
-          const totalDuration = scrollDuration + 4; // Add 4 seconds for pauses (2s start + 2s end)
-          
-          titleRef.current.style.animationDuration = `${totalDuration}s`;
-          titleRef.current.classList.add('animate-marquee');
-        } else {
-          titleRef.current.classList.remove('animate-marquee');
-          titleRef.current.style.animationDuration = '';
-        }
-      }
-    };
-
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [song.title]);
 
 
 

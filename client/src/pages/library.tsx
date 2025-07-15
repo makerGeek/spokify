@@ -5,6 +5,7 @@ import { useLocation } from 'wouter'
 
 import { type Song, type Vocabulary, type UserProgress } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
+import { useMarquee } from '@/hooks/use-marquee'
 import SongCard from '@/components/song-card'
 
 export default function Library() {
@@ -46,6 +47,47 @@ export default function Library() {
       day: 'numeric',
       year: 'numeric'
     })
+  }
+
+  // VocabularyItem component with marquee animation for context
+  function VocabularyItem({ word, index }: { word: Vocabulary; index: number }) {
+    const { textRef: contextRef, containerRef: contextContainerRef } = useMarquee({ 
+      text: word.context || '', 
+      enabled: !!word.context 
+    });
+
+    return (
+      <div className="spotify-card p-4 hover:bg-[var(--spotify-light-gray)] transition-colors duration-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-8 h-8 bg-[var(--spotify-green)] rounded-full flex items-center justify-center text-black text-sm font-bold">
+              {index + 1}
+            </div>
+            <div>
+              <p className="spotify-text-primary font-semibold text-lg">{word.word}</p>
+              <p className="spotify-text-secondary">{word.translation}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-muted text-xs font-medium mb-1">
+              {word.difficulty}
+            </div>
+            {word.songName && (
+              <p className="spotify-text-muted text-sm font-medium mb-1">
+                From: {word.songName}
+              </p>
+            )}
+            {word.context && (
+              <div ref={contextContainerRef} className="max-w-xs overflow-hidden whitespace-nowrap relative">
+                <p ref={contextRef} className="spotify-text-muted text-sm italic inline-block marquee-text">
+                  "{word.context}"
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -169,37 +211,7 @@ export default function Library() {
             ) : (
               <div className="space-y-3">
                 {vocabulary.map((word, index) => (
-                  <div
-                    key={word.id}
-                    className="spotify-card p-4 hover:bg-[var(--spotify-light-gray)] transition-colors duration-200"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-8 h-8 bg-[var(--spotify-green)] rounded-full flex items-center justify-center text-black text-sm font-bold">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="spotify-text-primary font-semibold text-lg">{word.word}</p>
-                          <p className="spotify-text-secondary">{word.translation}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-muted text-xs font-medium mb-1">
-                          {word.difficulty}
-                        </div>
-                        {word.songName && (
-                          <p className="spotify-text-muted text-sm font-medium mb-1">
-                            From: {word.songName}
-                          </p>
-                        )}
-                        {word.context && (
-                          <p className="spotify-text-muted text-sm italic max-w-xs truncate">
-                            "{word.context}"
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <VocabularyItem key={word.id} word={word} index={index} />
                 ))}
               </div>
             )}
