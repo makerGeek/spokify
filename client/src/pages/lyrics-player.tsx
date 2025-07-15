@@ -131,9 +131,9 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className="min-h-screen bg-spotify-bg pb-32">
+    <div className="min-h-screen bg-spotify-bg pb-32 overflow-x-hidden">
       {/* Main Content - Full Height Lyrics */}
-      <div className="p-4">
+      <div className="p-4 w-full max-w-full">
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
@@ -166,14 +166,15 @@ export default function LyricsPlayer() {
           </div>
         </div>
         
-        <div className="space-y-1 overflow-y-auto overscroll-contain" 
+        <div className="space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain" 
              id="lyrics-container"
              style={{ 
                height: 'calc(100vh - 240px)', // Screen minus header, controls, and bottom sections
                WebkitOverflowScrolling: 'touch',
                scrollBehavior: 'smooth',
                touchAction: 'pan-y',
-               overflowAnchor: 'none'
+               overflowAnchor: 'none',
+               width: '100%'
              }}>
           {Array.isArray(song.lyrics) ? song.lyrics.map((line: any, index: number) => {
             const nextLine = song.lyrics[index + 1];
@@ -183,16 +184,16 @@ export default function LyricsPlayer() {
               <div
                 key={index}
                 id={`lyric-line-${index}`}
-                className={`cursor-pointer hover:bg-spotify-card/30 active:bg-spotify-card/50 rounded-lg px-3 py-2 transition-all duration-300 touch-manipulation ${
+                className={`cursor-pointer hover:bg-spotify-card/30 active:bg-spotify-card/50 rounded-lg px-3 py-2 transition-all duration-300 touch-manipulation w-full ${
                   isActive 
                     ? "lyrics-highlight transform scale-105 shadow-lg bg-spotify-card/20" 
                     : "text-spotify-muted hover:text-spotify-text"
                 }`}
                 onClick={() => handleLineClick(line)}
               >
-                <span className="text-lg leading-snug block text-center">{line.text}</span>
+                <span className="text-lg leading-snug block text-center break-words w-full">{line.text}</span>
                 {showTranslationMode && line.translation && (
-                  <div className="text-sm text-spotify-muted mt-1 italic text-center">
+                  <div className="text-sm text-spotify-muted mt-1 italic text-center break-words w-full">
                     {line.translation}
                   </div>
                 )}
