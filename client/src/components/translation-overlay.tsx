@@ -125,9 +125,10 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
                       key={index}
                       variant="ghost"
                       size="sm"
-                      className="bg-spotify-green text-white hover:bg-spotify-accent px-2 py-1 rounded-full text-xs"
+                      className="bg-spotify-green text-white hover:bg-spotify-accent px-2 py-1 rounded-full text-xs flex items-center gap-1"
                       onClick={() => addVocabularyMutation.mutate(word)}
                     >
+                      <Plus size={12} />
                       {word.word} ({word.translation})
                     </Button>
                   ))}
