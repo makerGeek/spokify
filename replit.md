@@ -109,14 +109,15 @@ Preferred communication style: Simple, everyday language.
 - Enhanced marquee animation to only activate when text overflows container with consistent 50px/second speed
 - Added debugging functionality to PWA install feature for better troubleshooting
 
-### July 15, 2025 - Auto-Next Feature for Review Page
-- Added "Auto Next" toggle functionality to vocabulary review page using existing Switch component (DRY principle)
-- Implemented 1.5-second delay with visual progress bar animation when auto-next is enabled
-- Created custom progress bar animation using CSS keyframes for smooth user feedback
-- Added proper timeout cleanup to prevent memory leaks on component unmount
-- Reused shadcn/ui Switch component with Spotify green accent color for consistency
-- Conditional rendering shows either manual "Next Question" button or auto-progress indicator
-- Enhanced user experience with clear visual feedback during auto-progression
+### July 15, 2025 - Auto-Next Feature for Review Page & Profile Settings
+- Moved "Auto Next" setting to profile page Settings section for better user experience
+- Added persistent localStorage storage for user preference across sessions
+- Created new Settings section in profile page with proper Spotify design system styling
+- Implemented toast notifications for setting changes with user feedback
+- Review page now reads auto-next preference from localStorage on component mount
+- Used shadcn/ui Switch component with Spotify green accent color for consistency
+- Added 1.5-second delay with visual progress bar animation when auto-next is enabled
+- Proper timeout cleanup prevents memory leaks on component unmount
 
 ### July 15, 2025 - Review Page Spotify Design System Integration
 - Updated review page to follow authentic Spotify design guidelines using centralized design system

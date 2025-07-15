@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/auth-context'
 import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Download, Smartphone, Crown } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
@@ -13,6 +14,10 @@ export default function Profile() {
   const { toast } = useToast()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [canInstall, setCanInstall] = useState(false)
+  const [autoNextReview, setAutoNextReview] = useState(() => {
+    const saved = localStorage.getItem('reviewAutoNext');
+    return saved ? JSON.parse(saved) : false;
+  })
 
   // Fetch user data from your backend
   const { data: userData } = useQuery<User>({
@@ -117,6 +122,15 @@ export default function Profile() {
         variant: 'destructive',
       })
     }
+  }
+
+  const handleAutoNextToggle = (checked: boolean) => {
+    setAutoNextReview(checked)
+    localStorage.setItem('reviewAutoNext', JSON.stringify(checked))
+    toast({
+      title: 'Setting Updated',
+      description: `Auto next in vocabulary review is now ${checked ? 'enabled' : 'disabled'}.`,
+    })
   }
 
   const handleSignOut = async () => {
@@ -296,6 +310,32 @@ export default function Profile() {
                 </p>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Settings Section */}
+        <div className="spotify-card p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Target className="h-6 w-6 text-[var(--spotify-green)]" />
+              <div>
+                <h3 className="spotify-heading-md">Settings</h3>
+                <p className="spotify-text-secondary text-sm">Customize your learning experience</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Auto Next Review Setting */}
+          <div className="flex items-center justify-between py-3">
+            <div>
+              <h4 className="spotify-text-primary font-medium">Auto Next in Review</h4>
+              <p className="spotify-text-muted text-sm">Automatically move to next question after answering</p>
+            </div>
+            <Switch
+              checked={autoNextReview}
+              onCheckedChange={handleAutoNextToggle}
+              className="data-[state=checked]:bg-[var(--spotify-green)]"
+            />
           </div>
         </div>
 

@@ -18,7 +18,10 @@ export default function Review() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [isAnswered, setIsAnswered] = useState(false);
-  const [autoNext, setAutoNext] = useState(false);
+  const [autoNext, setAutoNext] = useState(() => {
+    const saved = localStorage.getItem('reviewAutoNext');
+    return saved ? JSON.parse(saved) : false;
+  });
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: vocabulary, isLoading, refetch } = useQuery<Vocabulary[]>({
@@ -177,20 +180,7 @@ export default function Review() {
             </div>
           </div>
 
-          {/* Auto Next Toggle */}
-          <div className="spotify-card p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="spotify-text-primary font-medium">Auto Next</h3>
-                <p className="spotify-text-muted text-sm">Automatically move to next question after answering</p>
-              </div>
-              <Switch
-                checked={autoNext}
-                onCheckedChange={setAutoNext}
-                className="data-[state=checked]:bg-[var(--spotify-green)]"
-              />
-            </div>
-          </div>
+
 
           {currentQuestion && (
             <div className="spotify-card p-6 mb-6">
