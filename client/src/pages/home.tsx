@@ -77,20 +77,13 @@ export default function Home() {
             <h1 className="text-xl font-bold circular-font">LyricLingo</h1>
           </div>
           <div className="flex items-center space-x-2">
-            <Card className="bg-spotify-card border-spotify-card cursor-pointer hover:bg-spotify-card/80 transition-colors" onClick={handleLanguageLevelClick}>
-              <CardContent className="px-3 py-2 flex items-center space-x-2">
-                <div className="w-8 h-6 rounded-md overflow-hidden">
-                  <img 
-                    src={languageFlags[targetLanguage as keyof typeof languageFlags]} 
-                    alt={`${targetLanguage} flag`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">{level}</span>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="w-10 h-7 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform" onClick={handleLanguageLevelClick}>
+              <img 
+                src={languageFlags[targetLanguage as keyof typeof languageFlags]} 
+                alt={`${targetLanguage} flag`}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <Button
               variant="outline"
               size="sm"
