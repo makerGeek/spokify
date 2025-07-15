@@ -1,30 +1,105 @@
 const CACHE_NAME = 'lyriclingo-v1';
 const urlsToCache = [
   '/',
+  '/manifest.json',
+  '/flags/',
+  // Essential pages for offline access
   '/home',
-  '/progress',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/manifest.json'
+  '/profile',
+  '/library',
+  '/review',
+  '/language-selection'
 ];
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
+  console.log('Service Worker installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        return cache.addAll(urlsToCache);
+        console.log('Opened cache');
+        // Only cache essential resources that we know exist
+        const essentialUrls = [
+          '/',
+          '/manifest.json'
+        ];
+        return cache.addAll(essentialUrls);
+      })
+      .catch((error) => {
+        console.error('Failed to cache resources:', error);
       })
   );
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Handle navigation requests (HTML pages)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match(event.request)
+        .then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          return fetch(event.request)
+            .then((response) => {
+              // Cache successful navigation responses
+              if (response.status === 200) {
+                const responseClone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(event.request, responseClone);
+                });
+              }
+              return response;
+            })
+            .catch(() => {
+              // If offline and no cached version, return the main page
+              return caches.match('/') || new Response(
+                '<html><body><h1>Offline</h1><p>Please check your internet connection.</p></body></html>',
+                { headers: { 'Content-Type': 'text/html' } }
+              );
+            });
+        })
+    );
+    return;
+  }
+
+  // Handle all other requests
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+      .then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        return fetch(event.request)
+          .then((response) => {
+            // Cache successful responses for static assets
+            if (response.status === 200 && 
+                (event.request.url.includes('/flags/') || 
+                 event.request.url.includes('/manifest.json'))) {
+              const responseClone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseClone);
+              });
+            }
+            return response;
+          })
+          .catch(() => {
+            // Return a fallback for failed requests
+            if (event.request.destination === 'image') {
+              return new Response('', { status: 404 });
+            }
+            throw error;
+          });
       })
   );
 });
