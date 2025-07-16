@@ -1,25 +1,37 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { useFeatureFlag } from '@/hooks/use-feature-flags'
 
 interface AuthContextType {
   session: Session | null
   user: User | null
   loading: boolean
   signOut: () => Promise<void>
+  requiresInviteCode: boolean
+  setRequiresInviteCode: (required: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   loading: true,
-  signOut: async () => {}
+  signOut: async () => {},
+  requiresInviteCode: false,
+  setRequiresInviteCode: () => {}
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [requiresInviteCode, setRequiresInviteCode] = useState(false)
+  const { isEnabled: inviteCodeEnabled } = useFeatureFlag('ENABLE_INVITE_CODES')
+
+  useEffect(() => {
+    // Set invite code requirement based on feature flag
+    setRequiresInviteCode(inviteCodeEnabled)
+  }, [inviteCodeEnabled])
 
   useEffect(() => {
     // Get initial session
@@ -46,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, loading, signOut, requiresInviteCode, setRequiresInviteCode }}>
       {children}
     </AuthContext.Provider>
   )

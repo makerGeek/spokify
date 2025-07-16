@@ -16,6 +16,8 @@ export const users = pgTable("users", {
   streak: integer("streak").notNull().default(0),
   lastActiveDate: timestamp("last_active_date").defaultNow(),
   isAdmin: boolean("is_admin").notNull().default(false),
+  invitedBy: text("invited_by"),
+  inviteCode: text("invite_code").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -69,10 +71,24 @@ export const featureFlags = pgTable("feature_flags", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const inviteCodes = pgTable("invite_codes", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  createdBy: integer("created_by").notNull(),
+  usedBy: integer("used_by"),
+  usedAt: timestamp("used_at"),
+  maxUses: integer("max_uses").notNull().default(1),
+  currentUses: integer("current_uses").notNull().default(0),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   firstName: true,
   lastName: true,
+  invitedBy: true,
+  inviteCode: true,
   profileImageUrl: true,
   nativeLanguage: true,
   targetLanguage: true,
@@ -119,6 +135,13 @@ export const insertFeatureFlagSchema = createInsertSchema(featureFlags).pick({
   description: true,
 });
 
+export const insertInviteCodeSchema = createInsertSchema(inviteCodes).pick({
+  code: true,
+  createdBy: true,
+  maxUses: true,
+  expiresAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSong = z.infer<typeof insertSongSchema>;
@@ -129,3 +152,5 @@ export type InsertVocabulary = z.infer<typeof insertVocabularySchema>;
 export type Vocabulary = typeof vocabulary.$inferSelect;
 export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
 export type FeatureFlag = typeof featureFlags.$inferSelect;
+export type InsertInviteCode = z.infer<typeof insertInviteCodeSchema>;
+export type InviteCode = typeof inviteCodes.$inferSelect;

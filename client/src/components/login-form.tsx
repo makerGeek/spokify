@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
 import { useFeatureFlag } from '@/hooks/use-feature-flags'
+import { useAuth } from '@/contexts/auth-context'
+import { InviteCodeInput } from './invite-code-input'
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -19,8 +21,11 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [validatedInviteCode, setValidatedInviteCode] = useState<string | null>(null)
   const { toast } = useToast()
   const { isEnabled: socialLoginEnabled } = useFeatureFlag('ENABLE_SOCIAL_LOGIN')
+  const { requiresInviteCode } = useAuth()
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,12 +39,25 @@ export default function LoginForm({
       })
       
       if (signInError) {
-        // If sign in fails, try to sign up
+        // If sign in fails, this might be a new user
+        if (requiresInviteCode && !validatedInviteCode) {
+          setIsNewUser(true)
+          setLoading(false)
+          return
+        }
+
+        // Try to sign up
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         })
         if (signUpError) throw signUpError
+        
+        // If we have an invite code, use it
+        if (validatedInviteCode) {
+          // Here we would associate the invite code with the user
+          // For now, just proceed with signup
+        }
         
         toast({
           title: 'Account created!',
@@ -56,6 +74,11 @@ export default function LoginForm({
       })
     }
     setLoading(false)
+  }
+
+  const handleInviteCodeValidated = (code: string) => {
+    setValidatedInviteCode(code)
+    setIsNewUser(false)
   }
 
   const handleSocialAuth = async (provider: 'google' | 'facebook') => {
@@ -76,6 +99,17 @@ export default function LoginForm({
       })
       setLoading(false)
     }
+  }
+
+  // Show invite code input if user is new and invite code is required
+  if (isNewUser && requiresInviteCode) {
+    return (
+      <InviteCodeInput
+        onCodeValidated={handleInviteCodeValidated}
+        onSkip={() => setIsNewUser(false)}
+        isLoading={loading}
+      />
+    )
   }
 
   return (

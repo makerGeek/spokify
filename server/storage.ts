@@ -1,4 +1,4 @@
-import { users, songs, userProgress, vocabulary, featureFlags, type User, type InsertUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, inviteCodes, type User, type InsertUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type InviteCode, type InsertInviteCode } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
@@ -31,6 +31,13 @@ export interface IStorage {
   getAllFeatureFlags(): Promise<FeatureFlag[]>;
   createFeatureFlag(featureFlag: InsertFeatureFlag): Promise<FeatureFlag>;
   updateFeatureFlag(name: string, updates: Partial<FeatureFlag>): Promise<FeatureFlag>;
+
+  // Invite code methods
+  validateInviteCode(code: string): Promise<{ valid: boolean; inviteCode?: InviteCode }>;
+  useInviteCode(code: string, userId: number): Promise<InviteCode>;
+  createInviteCode(inviteCode: InsertInviteCode): Promise<InviteCode>;
+  getUserInviteCodes(userId: number): Promise<InviteCode[]>;
+  generateUniqueInviteCode(): Promise<string>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -179,6 +186,78 @@ export class DatabaseStorage implements IStorage {
       .where(eq(featureFlags.name, name))
       .returning();
     return flag;
+  }
+
+  async validateInviteCode(code: string): Promise<{ valid: boolean; inviteCode?: InviteCode }> {
+    const [inviteCode] = await db.select().from(inviteCodes).where(eq(inviteCodes.code, code));
+    
+    if (!inviteCode) {
+      return { valid: false };
+    }
+
+    // Check if code is expired
+    if (inviteCode.expiresAt && new Date() > new Date(inviteCode.expiresAt)) {
+      return { valid: false };
+    }
+
+    // Check if code has reached max uses
+    if (inviteCode.currentUses >= inviteCode.maxUses) {
+      return { valid: false };
+    }
+
+    return { valid: true, inviteCode };
+  }
+
+  async useInviteCode(code: string, userId: number): Promise<InviteCode> {
+    const validation = await this.validateInviteCode(code);
+    
+    if (!validation.valid || !validation.inviteCode) {
+      throw new Error('Invalid invite code');
+    }
+
+    // Update the invite code usage
+    const [updatedCode] = await db
+      .update(inviteCodes)
+      .set({
+        currentUses: validation.inviteCode.currentUses + 1,
+        usedBy: userId,
+        usedAt: new Date(),
+      })
+      .where(eq(inviteCodes.code, code))
+      .returning();
+
+    return updatedCode;
+  }
+
+  async createInviteCode(insertInviteCode: InsertInviteCode): Promise<InviteCode> {
+    const [code] = await db
+      .insert(inviteCodes)
+      .values(insertInviteCode)
+      .returning();
+    return code;
+  }
+
+  async getUserInviteCodes(userId: number): Promise<InviteCode[]> {
+    return await db.select().from(inviteCodes).where(eq(inviteCodes.createdBy, userId));
+  }
+
+  async generateUniqueInviteCode(): Promise<string> {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code: string;
+    let isUnique = false;
+
+    do {
+      code = '';
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
+      // Check if code already exists
+      const [existing] = await db.select().from(inviteCodes).where(eq(inviteCodes.code, code));
+      isUnique = !existing;
+    } while (!isUnique);
+
+    return code;
   }
 }
 
