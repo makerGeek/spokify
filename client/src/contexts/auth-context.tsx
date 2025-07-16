@@ -72,16 +72,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Syncing user to database:', user.email);
       
-      const response = await fetch('/api/users/sync', {
+      // Get user's auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      if (!token) {
+        console.error('No authentication token available');
+        return;
+      }
+      
+      const response = await fetch('/api/auth/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          email: user.email,
-          firstName: user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.first_name || null,
-          lastName: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || user.user_metadata?.last_name || null,
-          profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           inviteCode: pendingInviteCode, // Use pending invite code if available
         }),
       });
@@ -93,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const userData = await response.json();
-      console.log('User synced successfully:', userData.email);
+      console.log('User synced successfully:', userData.user?.email);
       
       // Clear pending invite code after successful sync
       setPendingInviteCode(null);

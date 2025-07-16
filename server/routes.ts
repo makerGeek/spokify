@@ -3,8 +3,30 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { translateText, assessDifficulty, generateVocabularyExplanation } from "./services/openai";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema } from "@shared/schema";
+import { authenticateToken, optionalAuth, rateLimit, AuthenticatedRequest } from "./middleware/auth";
+import authRoutes from "./routes/auth";
+import session from "express-session";
+import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Session configuration for invite code validation
+  const MemoryStoreSession = MemoryStore(session);
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    store: new MemoryStoreSession({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Use new secure authentication routes
+  app.use('/api/auth', authRoutes);
   
   // User routes
   app.post("/api/users", async (req, res) => {
@@ -41,30 +63,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Current user endpoint (for auth purposes)
-  app.get("/api/user", async (req, res) => {
-    try {
-      // TODO: In a real app, get user ID from session/JWT token
-      // For now, check if there's an email parameter to find the user
-      const { email } = req.query;
-      
-      let user;
-      if (email) {
-        user = await storage.getUserByUsername(email as string);
-      } else {
-        // Fallback to demo user with ID 1
-        user = await storage.getUser(1);
-      }
-      
-      if (!user) {
-        return res.status(401).json({ error: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error: any) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ error: error.message });
-    }
+  // DEPRECATED: Use /api/auth/user instead
+  // Keeping for backward compatibility, but redirect to new secure endpoint
+  app.get("/api/user", (req, res) => {
+    res.status(301).json({ 
+      error: "This endpoint is deprecated. Use /api/auth/user instead.",
+      redirectTo: "/api/auth/user"
+    });
   });
 
   // Check if user exists in our database
@@ -87,64 +92,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Sync Supabase user to our database
-  app.post("/api/users/sync", async (req, res) => {
-    try {
-      // Basic protection: check for required email format and reasonable request structure
-      const { email, firstName, lastName, profileImageUrl, inviteCode } = req.body;
-      
-      // Validate email format to prevent abuse
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email || !emailRegex.test(email)) {
-        return res.status(400).json({ message: "Valid email is required" });
-      }
-      
-      // Rate limiting check: prevent too many sync requests from same IP
-      const clientIp = req.ip || req.connection.remoteAddress;
-      // In production, implement proper rate limiting here
-
-      // Check if user already exists in our database
-      const existingUser = await storage.getUserByUsername(email);
-      if (existingUser) {
-        return res.json(existingUser);
-      }
-
-      // Generate unique invite code for new user
-      const userInviteCode = await storage.generateUniqueInviteCode();
-
-      // Create user in our database
-      const userData = {
-        email,
-        firstName: firstName || null,
-        lastName: lastName || null,
-        profileImageUrl: profileImageUrl || null,
-        nativeLanguage: "en",
-        targetLanguage: "es",
-        level: "A1",
-        weeklyGoal: 50,
-        wordsLearned: 0,
-        streak: 0,
-        isAdmin: false,
-        invitedBy: inviteCode || null,
-        inviteCode: userInviteCode,
-      };
-
-      const user = await storage.createUser(userData);
-
-      // If they used an invite code, mark it as used
-      if (inviteCode) {
-        try {
-          await storage.useInviteCode(inviteCode, user.id);
-        } catch (error) {
-          console.warn("Failed to mark invite code as used:", error);
-        }
-      }
-
-      res.json(user);
-    } catch (error: any) {
-      console.error("Error syncing user:", error);
-      res.status(500).json({ error: error.message });
-    }
+  // DEPRECATED: Use /api/auth/sync instead
+  // Keeping for backward compatibility, but redirect to new secure endpoint
+  app.post("/api/users/sync", (req, res) => {
+    res.status(301).json({ 
+      error: "This endpoint is deprecated. Use /api/auth/sync instead.",
+      redirectTo: "/api/auth/sync"
+    });
   });
 
   // Song routes
@@ -175,10 +129,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Progress routes
-  app.get("/api/users/:userId/progress", async (req, res) => {
+  // Progress routes - now protected
+  app.get("/api/users/:userId/progress", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      
+      // Users can only access their own progress
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const progress = await storage.getUserProgress(userId);
       res.json(progress);
     } catch (error) {
@@ -186,9 +147,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/progress", async (req, res) => {
+  app.post("/api/progress", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const progressData = insertUserProgressSchema.parse(req.body);
+      
+      // Verify user owns this progress record
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== progressData.userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const progress = await storage.createUserProgress(progressData);
       res.json(progress);
     } catch (error) {
@@ -207,10 +175,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Vocabulary routes
-  app.get("/api/users/:userId/vocabulary", async (req, res) => {
+  // Vocabulary routes - now protected
+  app.get("/api/users/:userId/vocabulary", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      
+      // Users can only access their own vocabulary
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const vocabulary = await storage.getUserVocabulary(userId);
       res.json(vocabulary);
     } catch (error) {
@@ -218,9 +193,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/vocabulary", async (req, res) => {
+  app.post("/api/vocabulary", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const vocabularyData = insertVocabularySchema.parse(req.body);
+      
+      // Verify user owns this vocabulary record
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== vocabularyData.userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const vocabulary = await storage.createVocabulary(vocabularyData);
       res.json(vocabulary);
     } catch (error) {
