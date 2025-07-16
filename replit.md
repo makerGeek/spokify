@@ -97,6 +97,25 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 16, 2025 - Critical User Database Sync Fix & Database Schema Repair
+- **Fixed Critical Authentication Bug**: Resolved major issue where Supabase users weren't being properly synced to our database
+  - Users were authenticating through Supabase but not being added to our PostgreSQL users table
+  - This prevented proper tracking of learning progress, vocabulary, and user preferences
+  - Fixed database schema mismatch where `id` column was text instead of auto-incrementing integer
+  - Updated user creation to properly handle serial ID generation with sequence
+  - Added comprehensive error handling and logging to user sync process
+  - Created `/api/users/check/:email` endpoint to verify user existence in our database
+  - Enhanced both auth context and login form with better sync error handling
+- **Improved Authentication Flow**: All login/registration methods now properly sync user data
+  - Email registration syncs users with invite code tracking
+  - Social login (Google/Facebook) syncs users via auth state change listener
+  - Existing users are returned without creating duplicates
+  - Better error logging for debugging sync issues
+- **Database Integrity**: Fixed underlying schema inconsistencies that were preventing proper user creation
+  - Converted users.id from varchar to proper serial integer with auto-increment
+  - All new users now get proper integer IDs starting from 1000+
+  - Maintained backward compatibility with existing users in the database
+
 ### July 16, 2025 - Invite-Only Registration System & User Invite Code Display
 - **Comprehensive Invite Code System**: Implemented complete invite-only registration system for controlled access
   - Created `invite_codes` database table with usage tracking, expiration dates, and multi-use support

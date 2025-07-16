@@ -56,7 +56,8 @@ export default function LoginForm({
         // If user was created successfully, sync to our database
         if (signUpData.user) {
           try {
-            await fetch('/api/users/sync', {
+            console.log('Syncing new user to database:', signUpData.user.email);
+            const response = await fetch('/api/users/sync', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -69,8 +70,16 @@ export default function LoginForm({
                 inviteCode: validatedInviteCode,
               }),
             });
+
+            if (!response.ok) {
+              const errorData = await response.text();
+              console.error('Failed to sync new user to database:', response.status, errorData);
+            } else {
+              const userData = await response.json();
+              console.log('New user synced successfully:', userData.email);
+            }
           } catch (syncError) {
-            console.warn('Failed to sync user to database:', syncError);
+            console.error('Error during new user sync:', syncError);
           }
         }
         

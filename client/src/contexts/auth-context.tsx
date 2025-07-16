@@ -67,7 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const syncUserToDatabase = async (user: any) => {
     try {
-      await fetch('/api/users/sync', {
+      console.log('Syncing user to database:', user.email);
+      
+      const response = await fetch('/api/users/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,8 +82,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           inviteCode: null, // For existing users, no invite code needed
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Failed to sync user to database:', response.status, errorData);
+        return;
+      }
+
+      const userData = await response.json();
+      console.log('User synced successfully:', userData.email);
     } catch (error) {
-      console.warn('Failed to sync user to database:', error);
+      console.error('Error during user sync:', error);
     }
   }
 

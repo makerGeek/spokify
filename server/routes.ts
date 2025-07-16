@@ -67,6 +67,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check if user exists in our database
+  app.get("/api/users/check/:email", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const user = await storage.getUserByUsername(email);
+      res.json({ exists: !!user, user: user || null });
+    } catch (error: any) {
+      console.error("Error checking user existence:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Sync Supabase user to our database
   app.post("/api/users/sync", async (req, res) => {
     try {
