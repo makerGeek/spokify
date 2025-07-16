@@ -17,7 +17,6 @@ import Library from "@/pages/library";
 import Review from "@/pages/review";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
-import TestFlags from "@/pages/test-flags";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -111,12 +110,11 @@ function Router() {
           </AuthenticatedOnly>
         </Route>
         <Route path="/song-offset" component={ProtectedAdminRoute} />
-        <Route path="/test-flags" component={TestFlags} />
         <Route component={NotFound} />
       </Switch>
       
       {/* Bottom Navigation - visible on main app pages */}
-      {location !== '/' && location !== '/song-offset' && location !== '/test-flags' && (
+      {location !== '/' && location !== '/song-offset' && (
         <BottomNavigation currentPage={getCurrentPage()} />
       )}
     </div>

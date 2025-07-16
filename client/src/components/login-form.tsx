@@ -20,15 +20,7 @@ export default function LoginForm({
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { toast } = useToast()
-  const { isEnabled: socialLoginEnabled, isLoading: flagLoading, flag, error } = useFeatureFlag('ENABLE_SOCIAL_LOGIN')
-  
-  // Debug logging
-  console.log('LoginForm - Feature flag debug:', {
-    socialLoginEnabled,
-    flagLoading,
-    flag,
-    error
-  })
+  const { isEnabled: socialLoginEnabled } = useFeatureFlag('ENABLE_SOCIAL_LOGIN')
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
