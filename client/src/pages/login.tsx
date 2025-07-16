@@ -3,6 +3,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
 import { useLocation } from 'wouter'
+import { useFeatureFlag } from '@/hooks/use-feature-flags'
 
 
 export default function Login() {
@@ -12,6 +13,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { toast } = useToast()
+  const { isEnabled: socialLoginEnabled, isLoading: flagLoading } = useFeatureFlag('ENABLE_SOCIAL_LOGIN')
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,30 +80,34 @@ export default function Login() {
           <p className="spotify-text-muted text-xs mb-2">Learn languages through music</p>
         </div>
 
-        {/* Social Auth Buttons */}
-        <div className="space-y-2 mb-4">
-          <button
-            className="spotify-social-btn text-xs py-2"
-            onClick={() => handleSocialAuth('google')}
-            disabled={loading}
-          >
-            <Chrome className="h-4 w-4" />
-            Continue with Google
-          </button>
-          <button
-            className="spotify-social-btn text-xs py-2"
-            onClick={() => handleSocialAuth('facebook')}
-            disabled={loading}
-          >
-            <Facebook className="h-4 w-4" />
-            Continue with Facebook
-          </button>
-        </div>
+        {/* Social Auth Buttons - Only show if feature flag is enabled */}
+        {socialLoginEnabled && (
+          <>
+            <div className="space-y-2 mb-4">
+              <button
+                className="spotify-social-btn text-xs py-2"
+                onClick={() => handleSocialAuth('google')}
+                disabled={loading}
+              >
+                <Chrome className="h-4 w-4" />
+                Continue with Google
+              </button>
+              <button
+                className="spotify-social-btn text-xs py-2"
+                onClick={() => handleSocialAuth('facebook')}
+                disabled={loading}
+              >
+                <Facebook className="h-4 w-4" />
+                Continue with Facebook
+              </button>
+            </div>
 
-        {/* Divider */}
-        <div className="spotify-divider my-4">
-          <span>or</span>
-        </div>
+            {/* Divider */}
+            <div className="spotify-divider my-4">
+              <span>or</span>
+            </div>
+          </>
+        )}
 
         {/* Email Form */}
         <form onSubmit={handleEmailAuth} className="space-y-3">

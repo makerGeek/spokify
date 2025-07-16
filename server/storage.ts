@@ -1,4 +1,4 @@
-import { users, songs, userProgress, vocabulary, type User, type InsertUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, type User, type InsertUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
@@ -25,6 +25,12 @@ export interface IStorage {
   getUserVocabulary(userId: number): Promise<Vocabulary[]>;
   createVocabulary(vocabulary: InsertVocabulary): Promise<Vocabulary>;
   updateVocabulary(id: number, updates: Partial<Vocabulary>): Promise<Vocabulary>;
+
+  // Feature flag methods
+  getFeatureFlag(name: string): Promise<FeatureFlag | undefined>;
+  getAllFeatureFlags(): Promise<FeatureFlag[]>;
+  createFeatureFlag(featureFlag: InsertFeatureFlag): Promise<FeatureFlag>;
+  updateFeatureFlag(name: string, updates: Partial<FeatureFlag>): Promise<FeatureFlag>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -147,6 +153,32 @@ export class DatabaseStorage implements IStorage {
       .where(eq(vocabulary.id, id))
       .returning();
     return vocab;
+  }
+
+  async getFeatureFlag(name: string): Promise<FeatureFlag | undefined> {
+    const [flag] = await db.select().from(featureFlags).where(eq(featureFlags.name, name));
+    return flag || undefined;
+  }
+
+  async getAllFeatureFlags(): Promise<FeatureFlag[]> {
+    return await db.select().from(featureFlags);
+  }
+
+  async createFeatureFlag(insertFeatureFlag: InsertFeatureFlag): Promise<FeatureFlag> {
+    const [flag] = await db
+      .insert(featureFlags)
+      .values(insertFeatureFlag)
+      .returning();
+    return flag;
+  }
+
+  async updateFeatureFlag(name: string, updates: Partial<FeatureFlag>): Promise<FeatureFlag> {
+    const [flag] = await db
+      .update(featureFlags)
+      .set(updates)
+      .where(eq(featureFlags.name, name))
+      .returning();
+    return flag;
   }
 }
 

@@ -60,6 +60,15 @@ export const vocabulary = pgTable("vocabulary", {
   reviewCount: integer("review_count").notNull().default(0),
 });
 
+export const featureFlags = pgTable("feature_flags", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  enabled: boolean("enabled").notNull().default(false),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   firstName: true,
@@ -104,6 +113,12 @@ export const insertVocabularySchema = createInsertSchema(vocabulary).pick({
   context: true,
 });
 
+export const insertFeatureFlagSchema = createInsertSchema(featureFlags).pick({
+  name: true,
+  enabled: true,
+  description: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSong = z.infer<typeof insertSongSchema>;
@@ -112,3 +127,5 @@ export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type UserProgress = typeof userProgress.$inferSelect;
 export type InsertVocabulary = z.infer<typeof insertVocabularySchema>;
 export type Vocabulary = typeof vocabulary.$inferSelect;
+export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
+export type FeatureFlag = typeof featureFlags.$inferSelect;

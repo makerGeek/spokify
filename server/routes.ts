@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { translateText, assessDifficulty, generateVocabularyExplanation } from "./services/openai";
-import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema } from "@shared/schema";
+import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -180,6 +180,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Vocabulary explanation failed" });
+    }
+  });
+
+  // Feature flag routes
+  app.get("/api/feature-flags", async (req, res) => {
+    try {
+      const flags = await storage.getAllFeatureFlags();
+      res.json(flags);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch feature flags" });
+    }
+  });
+
+  app.get("/api/feature-flags/:name", async (req, res) => {
+    try {
+      const { name } = req.params;
+      const flag = await storage.getFeatureFlag(name);
+      if (!flag) {
+        return res.status(404).json({ message: "Feature flag not found" });
+      }
+      res.json(flag);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch feature flag" });
+    }
+  });
+
+  app.post("/api/feature-flags", async (req, res) => {
+    try {
+      const flagData = insertFeatureFlagSchema.parse(req.body);
+      const flag = await storage.createFeatureFlag(flagData);
+      res.json(flag);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Invalid feature flag data" });
+    }
+  });
+
+  app.put("/api/feature-flags/:name", async (req, res) => {
+    try {
+      const { name } = req.params;
+      const updates = req.body;
+      const flag = await storage.updateFeatureFlag(name, updates);
+      res.json(flag);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to update feature flag" });
     }
   });
 
