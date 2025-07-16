@@ -88,6 +88,7 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Local development with Vite dev server
 - **Production**: Express serves static files and API routes
 - **Database**: PostgreSQL connection via environment variables
+- **RapidAPI**: Requires RAPIDAPI_KEY environment variable for music/lyrics data fetching
 
 ### Scaling Considerations
 - **Database**: Drizzle ORM supports connection pooling
@@ -96,6 +97,18 @@ Preferred communication style: Simple, everyday language.
 - **Mobile**: PWA installation for native-like experience
 
 ## Recent Changes
+
+### July 16, 2025 - Critical Security Fix: RapidAPI Credentials Hardcoded in Source Code
+- **Security Vulnerability Resolved**: Removed hard-coded RapidAPI credentials from script files
+  - Fixed 5 instances of exposed API key `1a244cda35msh6d20ec374075a91p13ae79jsn425c85a9d692` in:
+    - `scripts/fetch-lyrics-simple.ts` (line 6)
+    - `scripts/fetch-lyrics.ts` (line 6) 
+    - `scripts/import_song.ts` (lines 29, 68, 113)
+  - Replaced all hard-coded keys with `process.env.RAPIDAPI_KEY` environment variable references
+  - Added documentation requirement for RAPIDAPI_KEY environment variable
+  - **Important**: Users must now set the RAPIDAPI_KEY environment variable before running import scripts
+- **Risk Assessment**: High-severity vulnerability that could lead to unauthorized API usage and billing charges
+- **Impact**: Prevents exposure of API credentials in source code repository
 
 ### July 16, 2025 - Major Authentication Security Overhaul & Architecture Improvements
 

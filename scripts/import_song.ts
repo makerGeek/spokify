@@ -26,7 +26,7 @@ async function findSpotifyTrackId(songName: string): Promise<{ spotifyId: string
       type: 'track'
     },
     headers: {
-      'x-rapidapi-key': '1a244cda35msh6d20ec374075a91p13ae79jsn425c85a9d692',
+      'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
       'x-rapidapi-host': 'spotify-scraper.p.rapidapi.com'
     }
   };
@@ -65,7 +65,7 @@ async function findYouTubeVideoId(searchQuery: string): Promise<string | null> {
       gl: 'US'
     },
     headers: {
-      'x-rapidapi-key': '1a244cda35msh6d20ec374075a91p13ae79jsn425c85a9d692',
+      'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
       'x-rapidapi-host': 'youtube138.p.rapidapi.com'
     }
   };
@@ -110,7 +110,7 @@ async function fetchSpotifyLyrics(trackId: string): Promise<LyricsLine[] | null>
       format: 'json'
     },
     headers: {
-      'x-rapidapi-key': '1a244cda35msh6d20ec374075a91p13ae79jsn425c85a9d692',
+      'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
       'x-rapidapi-host': 'spotify-scraper.p.rapidapi.com'
     }
   };

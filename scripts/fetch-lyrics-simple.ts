@@ -3,7 +3,7 @@ import { db } from '../server/db';
 import { songs } from '../shared/schema';
 import { eq } from 'drizzle-orm';
 
-const RAPIDAPI_KEY = '1a244cda35msh6d20ec374075a91p13ae79jsn425c85a9d692';
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 
 // Process just a few specific songs to avoid rate limits
 const TARGET_SONGS = [
