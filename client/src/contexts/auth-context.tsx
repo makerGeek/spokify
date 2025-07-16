@@ -10,6 +10,7 @@ interface AuthContextType {
   signOut: () => Promise<void>
   requiresInviteCode: boolean
   setRequiresInviteCode: (required: boolean) => void
+  setPendingInviteCode: (code: string | null) => void
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,7 +19,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   requiresInviteCode: false,
-  setRequiresInviteCode: () => {}
+  setRequiresInviteCode: () => {},
+  setPendingInviteCode: () => {}
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [requiresInviteCode, setRequiresInviteCode] = useState(false)
+  const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(null)
   const { isEnabled: inviteCodeEnabled } = useFeatureFlag('ENABLE_INVITE_CODES')
 
   useEffect(() => {
@@ -79,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           firstName: user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.first_name || null,
           lastName: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || user.user_metadata?.last_name || null,
           profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-          inviteCode: null, // For existing users, no invite code needed
+          inviteCode: pendingInviteCode, // Use pending invite code if available
         }),
       });
 
@@ -91,6 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const userData = await response.json();
       console.log('User synced successfully:', userData.email);
+      
+      // Clear pending invite code after successful sync
+      setPendingInviteCode(null);
     } catch (error) {
       console.error('Error during user sync:', error);
     }
@@ -101,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signOut, requiresInviteCode, setRequiresInviteCode }}>
+    <AuthContext.Provider value={{ session, user, loading, signOut, requiresInviteCode, setRequiresInviteCode, setPendingInviteCode }}>
       {children}
     </AuthContext.Provider>
   )

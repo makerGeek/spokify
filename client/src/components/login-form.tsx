@@ -25,7 +25,7 @@ export default function LoginForm({
   const [validatedInviteCode, setValidatedInviteCode] = useState<string | null>(null)
   const { toast } = useToast()
   const { isEnabled: socialLoginEnabled } = useFeatureFlag('ENABLE_SOCIAL_LOGIN')
-  const { requiresInviteCode } = useAuth()
+  const { requiresInviteCode, setPendingInviteCode } = useAuth()
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,35 +53,8 @@ export default function LoginForm({
         })
         if (signUpError) throw signUpError
         
-        // If user was created successfully, sync to our database
-        if (signUpData.user) {
-          try {
-            console.log('Syncing new user to database:', signUpData.user.email);
-            const response = await fetch('/api/users/sync', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                email: signUpData.user.email,
-                firstName: null,
-                lastName: null,
-                profileImageUrl: null,
-                inviteCode: validatedInviteCode,
-              }),
-            });
-
-            if (!response.ok) {
-              const errorData = await response.text();
-              console.error('Failed to sync new user to database:', response.status, errorData);
-            } else {
-              const userData = await response.json();
-              console.log('New user synced successfully:', userData.email);
-            }
-          } catch (syncError) {
-            console.error('Error during new user sync:', syncError);
-          }
-        }
+        // User sync will be handled by auth context state change listener
+        // which now has access to the pending invite code
         
         toast({
           title: 'Account created!',
@@ -102,6 +75,7 @@ export default function LoginForm({
 
   const handleInviteCodeValidated = (code: string) => {
     setValidatedInviteCode(code)
+    setPendingInviteCode(code) // Set in auth context for social login
     setIsNewUser(false)
   }
 

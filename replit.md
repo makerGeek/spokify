@@ -97,7 +97,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 16, 2025 - Critical User Database Sync Fix & Database Schema Repair
+### July 16, 2025 - Critical User Database Sync Fix & Invite Code Tracking Repair
 - **Fixed Critical Authentication Bug**: Resolved major issue where Supabase users weren't being properly synced to our database
   - Users were authenticating through Supabase but not being added to our PostgreSQL users table
   - This prevented proper tracking of learning progress, vocabulary, and user preferences
@@ -106,15 +106,22 @@ Preferred communication style: Simple, everyday language.
   - Added comprehensive error handling and logging to user sync process
   - Created `/api/users/check/:email` endpoint to verify user existence in our database
   - Enhanced both auth context and login form with better sync error handling
+- **Fixed Invite Code Tracking**: Resolved issue where `invitedBy` column remained empty despite using invite codes
+  - Added `pendingInviteCode` state to auth context for sharing invite codes across authentication flows
+  - Updated login form to set pending invite code in auth context for social login compatibility
+  - Removed duplicate user sync calls to prevent race conditions
+  - All authentication methods (email, Google, Facebook) now properly track invite code usage
+  - Verified complete invite code lifecycle: validation → user creation → usage tracking → database recording
 - **Improved Authentication Flow**: All login/registration methods now properly sync user data
-  - Email registration syncs users with invite code tracking
-  - Social login (Google/Facebook) syncs users via auth state change listener
+  - Email registration syncs users with invite code tracking in `invitedBy` field
+  - Social login (Google/Facebook) syncs users via auth state change listener with invite code support
   - Existing users are returned without creating duplicates
   - Better error logging for debugging sync issues
 - **Database Integrity**: Fixed underlying schema inconsistencies that were preventing proper user creation
   - Converted users.id from varchar to proper serial integer with auto-increment
   - All new users now get proper integer IDs starting from 1000+
   - Maintained backward compatibility with existing users in the database
+  - Verified invite code usage tracking in database with proper foreign key relationships
 
 ### July 16, 2025 - Invite-Only Registration System & User Invite Code Display
 - **Comprehensive Invite Code System**: Implemented complete invite-only registration system for controlled access
