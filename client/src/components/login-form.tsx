@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
-import { useFeatureFlag } from '@/hooks/use-feature-flags'
+import { useSocialLogin } from '@/hooks/use-social-login'
 import { useAuth } from '@/contexts/auth-context'
 import { InviteCodeInput } from './invite-code-input'
 
@@ -24,7 +24,7 @@ export default function LoginForm({
   const [isNewUser, setIsNewUser] = useState(false)
   const [validatedInviteCode, setValidatedInviteCode] = useState<string | null>(null)
   const { toast } = useToast()
-  const { isEnabled: socialLoginEnabled } = useFeatureFlag('ENABLE_SOCIAL_LOGIN')
+  const { showSocialLoginButtons } = useSocialLogin()
   const { requiresInviteCode, setPendingInviteCode } = useAuth()
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -127,7 +127,7 @@ export default function LoginForm({
       </div>
 
       {/* Social Auth Buttons - Only show if feature flag is enabled */}
-      {socialLoginEnabled && (
+      {showSocialLoginButtons && (
         <>
           <div className="space-y-2 mb-4">
             <button
