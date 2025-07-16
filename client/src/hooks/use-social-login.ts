@@ -10,6 +10,9 @@ export function useSocialLogin() {
   // Don't show social login buttons during loading or if flag is disabled
   const showSocialLoginButtons = !isLoading && isEnabled
   
+  // Debug logging
+  console.log('useSocialLogin:', { isEnabled, isLoading, showSocialLoginButtons })
+  
   return {
     showSocialLoginButtons,
     isLoading

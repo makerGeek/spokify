@@ -13,8 +13,20 @@ export function useFeatureFlag(flagName: string) {
     },
   })
 
+  const isEnabled = !isLoading && (flag?.enabled ?? false)
+  
+  // Debug logging for ENABLE_SOCIAL_LOGIN flag
+  if (flagName === 'ENABLE_SOCIAL_LOGIN') {
+    console.log('useFeatureFlag ENABLE_SOCIAL_LOGIN:', { 
+      flag, 
+      isLoading, 
+      isEnabled, 
+      flagEnabled: flag?.enabled 
+    })
+  }
+
   return {
-    isEnabled: !isLoading && (flag?.enabled ?? false),
+    isEnabled,
     flag,
     isLoading,
     error,
