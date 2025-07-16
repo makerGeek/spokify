@@ -11,6 +11,8 @@ export function useFeatureFlag(flagName: string) {
       }
       return response.json()
     },
+    staleTime: 0,  // Always fetch fresh data
+    refetchOnMount: true
   })
 
   const isEnabled = !isLoading && (flag?.enabled ?? false)

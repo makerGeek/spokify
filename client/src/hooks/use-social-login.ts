@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useFeatureFlag } from '@/hooks/use-feature-flags'
 
 /**
@@ -7,11 +8,12 @@ import { useFeatureFlag } from '@/hooks/use-feature-flags'
 export function useSocialLogin() {
   const { isEnabled, isLoading } = useFeatureFlag('ENABLE_SOCIAL_LOGIN')
   
-  // Don't show social login buttons during loading or if flag is disabled
-  const showSocialLoginButtons = !isLoading && isEnabled
-  
-  // Debug logging
-  console.log('useSocialLogin:', { isEnabled, isLoading, showSocialLoginButtons })
+  // Use useMemo to ensure proper reactivity
+  const showSocialLoginButtons = useMemo(() => {
+    const result = !isLoading && isEnabled
+    console.log('useSocialLogin computed:', { isEnabled, isLoading, result })
+    return result
+  }, [isLoading, isEnabled])
   
   return {
     showSocialLoginButtons,
