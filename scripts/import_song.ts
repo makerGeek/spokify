@@ -217,23 +217,18 @@ async function main() {
   if (lyrics && lyrics.length > 0) {
     // Convert lyrics to string format for translation
     const lyricsString = JSON.stringify(lyrics);
-    console.log(`\nTranslating lyrics to English using Gemini...`);
-    
     try {
       translatedLyrics = await translateLyrics(lyricsString, "English");
-      console.log(`Translation complete: ${translatedLyrics.length} lines translated`);
+      console.log(`\nTranslation complete: ${translatedLyrics.length} lines translated`);
       console.log('Translation preview:');
-      console.log(JSON.stringify(translatedLyrics.slice(0, 3), null, 2)); // Show first 3 lines as preview
+      console.log(JSON.stringify(translatedLyrics.slice(0, 3), null, 2));
     } catch (error) {
       console.error('Failed to translate lyrics:', error);
     }
 
-    // Assess difficulty using CEFR levels
-    console.log(`\nAssessing difficulty level using Gemini...`);
-    
     try {
       difficultyResult = await assessDifficulty(lyrics, spotifyResult.title, spotifyResult.artist);
-      console.log(`Difficulty assessment: ${difficultyResult.difficulty} level`);
+      console.log(`\nDifficulty assessment: ${difficultyResult.difficulty} level`);
       console.log(`Language detected: ${difficultyResult.language || 'unknown'}`);
       console.log(`Genre detected: ${difficultyResult.genre || 'unknown'}`);
       console.log(`Key words found: ${Object.keys(difficultyResult.key_words).length} words`);

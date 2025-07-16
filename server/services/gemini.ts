@@ -98,7 +98,6 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
     const response = await withTimeout(apiCall, 120000);
 
     const result = JSON.parse(response.text || "[]");
-    console.log("Gemini response:", result);
 
     if (!Array.isArray(result)) {
       console.error("Invalid response format from Gemini:", result);
@@ -160,7 +159,6 @@ Respond with JSON in this exact format:
       response.text ||
         '{"difficulty": "A1", "language": "en", "genre": "Pop", "key_words": {}}',
     );
-    console.log("Gemini difficulty assessment:", result);
 
     return {
       difficulty: result.difficulty || "A1",
