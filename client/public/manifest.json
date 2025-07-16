@@ -1,6 +1,6 @@
 {
-  "name": "LyricLingo - Learn Languages Through Music",
-  "short_name": "LyricLingo",
+  "name": "Spokify - Learn Languages Through Music",
+  "short_name": "Spokify",
   "description": "Learn languages through interactive song lyrics with AI-powered translations",
   "start_url": "/",
   "display": "standalone",

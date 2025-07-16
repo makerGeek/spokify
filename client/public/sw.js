@@ -1,6 +1,6 @@
-const CACHE_NAME = 'lyriclingo-v3';
-const STATIC_CACHE = 'lyriclingo-static-v3';
-const DYNAMIC_CACHE = 'lyriclingo-dynamic-v3';
+const CACHE_NAME = 'spokify-v3';
+const STATIC_CACHE = 'spokify-static-v3';
+const DYNAMIC_CACHE = 'spokify-dynamic-v3';
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
@@ -177,7 +177,7 @@ self.addEventListener('fetch', (event) => {
             <body>
               <div class="container">
                 <h1>You're Offline</h1>
-                <p>LyricLingo needs an internet connection to work properly. Please check your connection and try again.</p>
+                <p>Spokify needs an internet connection to work properly. Please check your connection and try again.</p>
                 <button onclick="window.location.reload()">Try Again</button>
               </div>
             </body>

@@ -1,8 +1,8 @@
-# LyricLingo - Language Learning Through Music
+# Spokify - Language Learning Through Music
 
 ## Overview
 
-LyricLingo is a modern web application that helps users learn languages through interactive song lyrics. The application combines music streaming with AI-powered translations and vocabulary building to create an engaging language learning experience. Built with React on the frontend and Express on the backend, it features a Spotify-inspired interface with real-time translation capabilities.
+Spokify is a modern web application that helps users learn languages through interactive song lyrics. The application combines music streaming with AI-powered translations and vocabulary building to create an engaging language learning experience. Built with React on the frontend and Express on the backend, it features a Spotify-inspired interface with real-time translation capabilities.
 
 ## User Preferences
 
@@ -97,7 +97,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 16, 2025 - Feature Flag System Implementation
+### July 16, 2025 - Rebranding to Spokify & Feature Flag System Implementation
+- **Complete Rebranding**: Updated all references from "LyricLingo" to "Spokify" across the entire application
+  - Updated app title, headers, PWA manifest, service worker cache names
+  - Modified all UI components, login forms, offline pages, and toast messages
+  - Refreshed PWA install prompts and profile sections
+  - Updated documentation and project README
+- **Feature Flag System Implementation
 - **Feature Flag Database Table**: Added `feature_flags` table with name, enabled status, and description fields
 - **ENABLE_SOCIAL_LOGIN Flag**: Created flag to control visibility of Facebook and Google login buttons
 - **Feature Flag API**: Implemented complete REST API for managing feature flags (GET, POST, PUT endpoints)
@@ -115,7 +121,7 @@ Preferred communication style: Simple, everyday language.
 - **Fixed PWA Offline Issue**: Completely rewrote service worker to properly cache production assets for offline functionality
   - Service worker now dynamically detects and caches CSS/JS assets from production HTML
   - Implemented separate static and dynamic cache strategies for optimal performance
-  - Added proper offline fallback page with LyricLingo branding when no cached content available
+  - Added proper offline fallback page with Spokify branding when no cached content available
   - Fixed blank screen issue when PWA is opened offline after installation
   - Enhanced error handling and console logging for better debugging
   - **Flag Image Caching**: Added caching for commonly used language flag images (en, es, fr, de, it, pt, jp, kr, cn)

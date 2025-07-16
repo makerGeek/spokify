@@ -300,7 +300,7 @@ export default function Profile() {
                 onClick={handleInstallApp}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Install LyricLingo
+                Install Spokify
               </button>
             ) : (
               <div className="text-center p-4 bg-[var(--spotify-light-gray)] rounded-lg">

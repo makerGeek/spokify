@@ -93,7 +93,7 @@ export function initializePWA() {
     installPrompt.id = 'pwa-install-prompt';
     installPrompt.className = 'fixed top-0 left-0 right-0 z-50 bg-spotify-green p-4 text-center';
     installPrompt.innerHTML = `
-      <p class="text-sm font-medium text-white">Install LyricLingo for the best experience!</p>
+      <p class="text-sm font-medium text-white">Install Spokify for the best experience!</p>
       <button id="install-btn" class="mt-2 bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-100">
         Install App
       </button>

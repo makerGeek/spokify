@@ -74,7 +74,7 @@ export default function Home() {
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center space-x-3">
             <Music className="text-spotify-green" size={24} />
-            <h1 className="text-xl font-bold circular-font">LyricLingo</h1>
+            <h1 className="text-xl font-bold circular-font">Spokify</h1>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-12 h-8 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform" onClick={handleLanguageLevelClick}>

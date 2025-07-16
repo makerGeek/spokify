@@ -43,7 +43,7 @@ export default function LoginForm({
         
         toast({
           title: 'Account created!',
-          description: 'Welcome to LyricLingo. Please check your email to verify your account.',
+          description: 'Welcome to Spokify. Please check your email to verify your account.',
         })
       }
       
@@ -82,7 +82,7 @@ export default function LoginForm({
     <div className="w-full max-w-sm">
       {/* Header */}
       <div className="text-center mb-4">
-        <h1 className="text-2xl font-bold mb-1 text-white">LyricLingo</h1>
+        <h1 className="text-2xl font-bold mb-1 text-white">Spokify</h1>
         <p className="spotify-text-muted text-xs mb-2">Learn languages through music</p>
         {contextMessage && (
           <div className="mt-3 p-3 bg-spotify-gray rounded-lg border border-spotify-border">
