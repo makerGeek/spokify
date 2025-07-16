@@ -14,7 +14,7 @@ export function useFeatureFlag(flagName: string) {
   })
 
   return {
-    isEnabled: flag?.enabled ?? false,
+    isEnabled: !isLoading && (flag?.enabled ?? false),
     flag,
     isLoading,
     error,
