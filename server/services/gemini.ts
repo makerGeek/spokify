@@ -149,19 +149,6 @@ Respond with JSON in this exact format:
       model: "gemini-2.0-flash",
       config: {
         responseMimeType: "application/json",
-        responseSchema: {
-          type: "object",
-          properties: {
-            difficulty: { type: "string" },
-            language: { type: "string" },
-            genre: { type: "string" },
-            key_words: { 
-              type: "object",
-              additionalProperties: { type: "string" }
-            }
-          },
-          required: ["difficulty", "language", "genre", "key_words"]
-        }
       },
       contents: prompt,
     });
