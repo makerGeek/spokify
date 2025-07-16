@@ -116,7 +116,7 @@ function Router() {
       </Switch>
       
       {/* Bottom Navigation - visible on main app pages */}
-      {location !== '/' && location !== '/song-offset' && (
+      {location !== '/' && location !== '/song-offset' && location !== '/test-flags' && (
         <BottomNavigation currentPage={getCurrentPage()} />
       )}
     </div>
