@@ -97,6 +97,32 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 16, 2025 - Invite-Only Registration System & User Invite Code Display
+- **Comprehensive Invite Code System**: Implemented complete invite-only registration system for controlled access
+  - Created `invite_codes` database table with usage tracking, expiration dates, and multi-use support
+  - Added invite code validation API endpoints with proper error handling
+  - Built InviteCodeInput component with Spotify-inspired design for new user registration flow
+  - Integrated invite code requirement with Supabase authentication via feature flag control
+  - Added InviteProvider context for managing invite code state across the application
+- **User Invite Code Display**: Added "Invite Friends" section to profile page
+  - Users can now see their personal invite code in their profile
+  - One-click copy functionality with toast notification feedback
+  - Clear instructions for sharing invite codes with friends
+  - Only displays when user has an invite code (conditional rendering)
+- **Admin Management**: Created invite code admin page at `/invite-admin`
+  - Generate new invite codes with customizable max uses and expiration dates
+  - View all created invite codes with status badges (Active, Used, Expired)
+  - Track usage statistics and creation dates for each code
+  - Copy codes to clipboard for distribution
+- **Feature Flag Integration**: Added `ENABLE_INVITE_CODES` feature flag to control system activation
+  - When enabled, new users must provide valid invite codes during registration
+  - Existing users can still sign in normally without invite codes
+  - System integrates seamlessly with existing Supabase authentication flow
+- **Database Enhancements**: Extended users table with invite relationship tracking
+  - Added `invitedBy` field to track who invited each user
+  - Added unique `inviteCode` field for each user to share with friends
+  - Created comprehensive invite codes table for usage analytics and management
+
 ### July 16, 2025 - Rebranding to Spokify & Feature Flag System Implementation
 - **Complete Rebranding**: Updated all references from "LyricLingo" to "Spokify" across the entire application
   - Updated app title, headers, PWA manifest, service worker cache names
