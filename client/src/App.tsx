@@ -10,7 +10,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
 import LyricsPlayer from "@/pages/lyrics-player";
-
+import { SearchPage } from "@/pages/search";
 import Profile from "@/pages/profile";
 import Login from "@/pages/login";
 import Library from "@/pages/library";
@@ -90,9 +90,7 @@ function Router() {
         <Route path="/" component={LanguageSelection} />
         <Route path="/login" component={Login} />
         <Route path="/home" component={Home} />
-        <Route path="/search">
-          <Home />
-        </Route>
+        <Route path="/search" component={SearchPage} />
         <Route path="/lyrics/:id" component={LyricsPlayer} />
         <Route path="/library">
           <AuthenticatedOnly contextMessage="Login to see your favorite songs and learned vocabulary">
