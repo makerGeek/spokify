@@ -44,9 +44,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Current user endpoint (for auth purposes)
   app.get("/api/user", async (req, res) => {
     try {
-      // For demo purposes, get user with ID 1 (first user in database)
-      // In a real app, this would be from session/JWT token
-      const user = await storage.getUser(1);
+      // TODO: In a real app, get user ID from session/JWT token
+      // For now, check if there's an email parameter to find the user
+      const { email } = req.query;
+      
+      let user;
+      if (email) {
+        user = await storage.getUserByUsername(email as string);
+      } else {
+        // Fallback to demo user with ID 1
+        user = await storage.getUser(1);
+      }
       
       if (!user) {
         return res.status(401).json({ error: "User not found" });
@@ -55,6 +63,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error: any) {
       console.error("Error fetching user:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Sync Supabase user to our database
+  app.post("/api/users/sync", async (req, res) => {
+    try {
+      const { email, firstName, lastName, profileImageUrl, inviteCode } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Check if user already exists in our database
+      const existingUser = await storage.getUserByUsername(email);
+      if (existingUser) {
+        return res.json(existingUser);
+      }
+
+      // Generate unique invite code for new user
+      const userInviteCode = await storage.generateUniqueInviteCode();
+
+      // Create user in our database
+      const userData = {
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        profileImageUrl: profileImageUrl || null,
+        nativeLanguage: "en",
+        targetLanguage: "es",
+        level: "A1",
+        weeklyGoal: 50,
+        wordsLearned: 0,
+        streak: 0,
+        isAdmin: false,
+        invitedBy: inviteCode || null,
+        inviteCode: userInviteCode,
+      };
+
+      const user = await storage.createUser(userData);
+
+      // If they used an invite code, mark it as used
+      if (inviteCode) {
+        try {
+          await storage.useInviteCode(inviteCode, user.id);
+        } catch (error) {
+          console.warn("Failed to mark invite code as used:", error);
+        }
+      }
+
+      res.json(user);
+    } catch (error: any) {
+      console.error("Error syncing user:", error);
       res.status(500).json({ error: error.message });
     }
   });

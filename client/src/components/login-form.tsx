@@ -47,16 +47,31 @@ export default function LoginForm({
         }
 
         // Try to sign up
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         })
         if (signUpError) throw signUpError
         
-        // If we have an invite code, use it
-        if (validatedInviteCode) {
-          // Here we would associate the invite code with the user
-          // For now, just proceed with signup
+        // If user was created successfully, sync to our database
+        if (signUpData.user) {
+          try {
+            await fetch('/api/users/sync', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: signUpData.user.email,
+                firstName: null,
+                lastName: null,
+                profileImageUrl: null,
+                inviteCode: validatedInviteCode,
+              }),
+            });
+          } catch (syncError) {
+            console.warn('Failed to sync user to database:', syncError);
+          }
         }
         
         toast({
@@ -91,6 +106,9 @@ export default function LoginForm({
         },
       })
       if (error) throw error
+      
+      // Note: For social auth, user sync will happen in the auth state change listener
+      // since we need to wait for the redirect and get user data from Supabase
     } catch (error: any) {
       toast({
         title: 'Authentication Error',

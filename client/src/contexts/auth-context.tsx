@@ -38,20 +38,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
+      // Sync user to our database if they exist
+      if (session?.user) {
+        syncUserToDatabase(session.user)
+      }
+      
       setLoading(false)
     })
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
+      // Sync user to our database on sign up or sign in
+      if (session?.user && (event === 'SIGNED_UP' || event === 'SIGNED_IN')) {
+        await syncUserToDatabase(session.user)
+      }
+      
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  const syncUserToDatabase = async (user: any) => {
+    try {
+      await fetch('/api/users/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          firstName: user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.first_name || null,
+          lastName: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || user.user_metadata?.last_name || null,
+          profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+          inviteCode: null, // For existing users, no invite code needed
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to sync user to database:', error);
+    }
+  }
 
   const signOut = async () => {
     await supabase.auth.signOut()

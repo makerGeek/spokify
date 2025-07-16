@@ -21,18 +21,41 @@ export default function Profile() {
 
   // Fetch user data from your backend
   const { data: userData } = useQuery<User>({
-    queryKey: ["/api/user"],
-    retry: false
+    queryKey: user?.email ? ["/api/user", { email: user.email }] : ["/api/user"],
+    queryFn: async () => {
+      const url = user?.email ? `/api/user?email=${encodeURIComponent(user.email)}` : '/api/user';
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      return response.json();
+    },
+    retry: false,
+    enabled: !!user // Only run when we have a Supabase user
   })
 
   const { data: vocabulary = [] } = useQuery<Vocabulary[]>({
-    queryKey: ["/api/users/1/vocabulary"],
-    retry: false
+    queryKey: userData?.id ? ["/api/users", userData.id, "vocabulary"] : [],
+    queryFn: async () => {
+      if (!userData?.id) return [];
+      const response = await fetch(`/api/users/${userData.id}/vocabulary`);
+      if (!response.ok) throw new Error('Failed to fetch vocabulary');
+      return response.json();
+    },
+    retry: false,
+    enabled: !!userData?.id
   })
 
   const { data: userProgress = [] } = useQuery<UserProgress[]>({
-    queryKey: ["/api/users/1/progress"],
-    retry: false
+    queryKey: userData?.id ? ["/api/users", userData.id, "progress"] : [],
+    queryFn: async () => {
+      if (!userData?.id) return [];
+      const response = await fetch(`/api/users/${userData.id}/progress`);
+      if (!response.ok) throw new Error('Failed to fetch progress');
+      return response.json();
+    },
+    retry: false,
+    enabled: !!userData?.id
   })
 
   // PWA Install functionality

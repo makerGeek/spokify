@@ -20,7 +20,7 @@ export default function Library() {
   })
 
   const { data: vocabulary = [] } = useQuery<Vocabulary[]>({
-    queryKey: ["/api/users/1/vocabulary"],
+    queryKey: ["/api/users/1/vocabulary"], // Keep using ID 1 for demo purposes in library
     retry: false
   })
 
