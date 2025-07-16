@@ -97,6 +97,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 16, 2025 - Feature Flag System Implementation
+- **Feature Flag Database Table**: Added `feature_flags` table with name, enabled status, and description fields
+- **ENABLE_SOCIAL_LOGIN Flag**: Created flag to control visibility of Facebook and Google login buttons
+- **Feature Flag API**: Implemented complete REST API for managing feature flags (GET, POST, PUT endpoints)
+- **React Hook Integration**: Created `useFeatureFlag` hook for easy flag consumption in components
+- **Conditional Social Login**: Login components now show social auth buttons only when ENABLE_SOCIAL_LOGIN is true
+- **Code Deduplication**: Refactored duplicate login forms into shared `LoginForm` component
+  - Eliminated code duplication between `/login` page and `AuthenticatedOnly` component
+  - Centralized feature flag logic in single reusable component
+  - Maintained consistent behavior across all login interfaces
+- **Database Storage Integration**: Extended storage interface with feature flag CRUD operations
+
+## Recent Changes
+
 ### July 15, 2025 - PWA Offline Functionality Fix & UI Improvements
 - **Fixed PWA Offline Issue**: Completely rewrote service worker to properly cache production assets for offline functionality
   - Service worker now dynamically detects and caches CSS/JS assets from production HTML
