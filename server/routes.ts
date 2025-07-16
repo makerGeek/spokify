@@ -71,8 +71,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/check/:email", async (req, res) => {
     try {
       const email = decodeURIComponent(req.params.email);
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+      
       const user = await storage.getUserByUsername(email);
-      res.json({ exists: !!user, user: user || null });
+      // Don't return full user data for security - just existence check
+      res.json({ exists: !!user });
     } catch (error: any) {
       console.error("Error checking user existence:", error);
       res.status(500).json({ error: error.message });
@@ -82,11 +90,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sync Supabase user to our database
   app.post("/api/users/sync", async (req, res) => {
     try {
+      // Basic protection: check for required email format and reasonable request structure
       const { email, firstName, lastName, profileImageUrl, inviteCode } = req.body;
       
-      if (!email) {
-        return res.status(400).json({ message: "Email is required" });
+      // Validate email format to prevent abuse
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        return res.status(400).json({ message: "Valid email is required" });
       }
+      
+      // Rate limiting check: prevent too many sync requests from same IP
+      const clientIp = req.ip || req.connection.remoteAddress;
+      // In production, implement proper rate limiting here
 
       // Check if user already exists in our database
       const existingUser = await storage.getUserByUsername(email);
