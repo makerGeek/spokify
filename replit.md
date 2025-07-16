@@ -114,6 +114,11 @@ Preferred communication style: Simple, everyday language.
   - Centralized feature flag logic in single reusable component
   - Maintained consistent behavior across all login interfaces
 - **Database Storage Integration**: Extended storage interface with feature flag CRUD operations
+- **AI Genre Detection Enhancement**: Updated Gemini service to detect music genres during difficulty assessment
+  - Enhanced `assessDifficulty` function to accept song title and artist for better genre classification
+  - Added genre field to DifficultyAssessment interface and database storage
+  - Updated import script to pass song metadata to AI and save detected genres to database
+  - AI now provides comprehensive analysis: CEFR difficulty level, language detection, and genre classification
 
 ## Recent Changes
 

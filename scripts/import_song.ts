@@ -152,8 +152,8 @@ async function saveSongToDatabase(songData: {
       translation: line.text // Default to original text if no translation
     }));
 
-    // Determine genre and language (can be enhanced with more logic)
-    const genre = "Pop"; // Default genre for now
+    // Use AI-detected genre and language
+    const genre = songData.difficultyResult?.genre || "Pop"; // Use AI-detected genre or default to Pop
     const language = songData.difficultyResult?.language || "en"; // Use detected language or default to English
     
     const songRecord = {
@@ -232,9 +232,10 @@ async function main() {
     console.log(`\nAssessing difficulty level using Gemini...`);
     
     try {
-      difficultyResult = await assessDifficulty(lyrics);
+      difficultyResult = await assessDifficulty(lyrics, spotifyResult.title, spotifyResult.artist);
       console.log(`Difficulty assessment: ${difficultyResult.difficulty} level`);
       console.log(`Language detected: ${difficultyResult.language || 'unknown'}`);
+      console.log(`Genre detected: ${difficultyResult.genre || 'unknown'}`);
       console.log(`Key words found: ${Object.keys(difficultyResult.key_words).length} words`);
     } catch (error) {
       console.error('Failed to assess difficulty:', error);
@@ -268,6 +269,7 @@ async function main() {
   console.log(`Lyrics Found: ${lyrics ? 'Yes (' + lyrics.length + ' lines)' : 'No'}`);
   console.log(`Translated Lyrics: ${translatedLyrics ? 'Yes (' + translatedLyrics.length + ' lines)' : 'No'}`);
   console.log(`Language Detected: ${difficultyResult?.language || 'Not detected'}`);
+  console.log(`Genre Detected: ${difficultyResult?.genre || 'Not detected'}`);
   console.log(`Difficulty Level: ${difficultyResult ? difficultyResult.difficulty : 'Not assessed'}`);
   console.log(`Key Words: ${difficultyResult ? Object.keys(difficultyResult.key_words).length : 0} found`);
   
@@ -286,6 +288,8 @@ async function main() {
   if (difficultyResult && Object.keys(difficultyResult.key_words).length > 0) {
     console.log('\n=== DIFFICULTY ASSESSMENT ===');
     console.log(`CEFR Level: ${difficultyResult.difficulty}`);
+    console.log(`Genre: ${difficultyResult.genre}`);
+    console.log(`Language: ${difficultyResult.language}`);
     console.log('Key vocabulary sample:');
     const keyWordsSample = Object.entries(difficultyResult.key_words).slice(0, 5);
     keyWordsSample.forEach(([word, translation]) => {

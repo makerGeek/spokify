@@ -18,6 +18,7 @@ export interface DifficultyAssessment {
   difficulty: string;
   key_words: Record<string, string>;
   language?: string;
+  genre?: string;
 }
 
 async function withTimeout<T>(
@@ -117,23 +118,50 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
 
 export async function assessDifficulty(
   lyricsData: Array<{ startMs: number; durMs: number; text: string }>,
+  title?: string,
+  artist?: string,
 ): Promise<DifficultyAssessment> {
   try {
     // Concatenate all text from the lyrics
     const concatenatedText = lyricsData.map((line) => line.text).join(" ");
 
-    const prompt = `You are a language learning expert. Assess the difficulty level of the given text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length. 
+    const songInfo = title && artist ? `Song: "${title}" by ${artist}\n\n` : "";
+    
+    const prompt = `You are a language learning expert and music genre classifier. Analyze the following song lyrics and provide:
 
-Also detect the language of the text and return it using the standard 2-letter ISO 639-1 language code (e.g., "en" for English, "es" for Spanish, "fr" for French, "de" for German, "it" for Italian, "pt" for Portuguese, etc.).
+1. Difficulty level according to CEFR levels (A1, A2, B1, B2, C1, C2) based on vocabulary complexity, grammar structures, and sentence length
+2. Language detection using standard 2-letter ISO 639-1 codes (e.g., "en", "es", "fr", "de", "it", "pt", etc.)
+3. Music genre classification (e.g., "Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "Electronic", "Folk", "Country", "R&B", "Reggaeton", "Alternative", "Indie", etc.)
 
-Respond with JSON in this format: { "difficulty": "A1|A2|B1|B2|C1|C2", "language": "2-letter-code", "key_words":{"hallo" : "hello", "machen" : "make", "wie geht es ?" : "how is it going ?"} }
+Consider the song title, artist, and lyrical content to determine the most appropriate genre.
 
-Text to analyze: ${concatenatedText}`;
+${songInfo}Lyrics to analyze: ${concatenatedText}
+
+Respond with JSON in this exact format: 
+{
+  "difficulty": "A1|A2|B1|B2|C1|C2", 
+  "language": "2-letter-code", 
+  "genre": "Genre Name",
+  "key_words": {"word1": "translation1", "word2": "translation2"}
+}`;
 
     const apiCall = ai.models.generateContent({
       model: "gemini-2.0-flash",
       config: {
         responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            difficulty: { type: "string" },
+            language: { type: "string" },
+            genre: { type: "string" },
+            key_words: { 
+              type: "object",
+              additionalProperties: { type: "string" }
+            }
+          },
+          required: ["difficulty", "language", "genre", "key_words"]
+        }
       },
       contents: prompt,
     });
@@ -143,13 +171,14 @@ Text to analyze: ${concatenatedText}`;
 
     const result = JSON.parse(
       response.text ||
-        '{"difficulty": "A1", "language": "en", "key_words": {}}',
+        '{"difficulty": "A1", "language": "en", "genre": "Pop", "key_words": {}}',
     );
     console.log("Gemini difficulty assessment:", result);
 
     return {
       difficulty: result.difficulty || "A1",
       language: result.language || "en",
+      genre: result.genre || "Pop",
       key_words: result.key_words || {},
     };
   } catch (error) {
