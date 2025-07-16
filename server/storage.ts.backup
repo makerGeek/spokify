@@ -143,6 +143,9 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(userProgress.userId, userId), eq(userProgress.songId, songId)));
     return progress || undefined;
   }
+      .where(eq(userProgress.songId, songId));
+    return progress || undefined;
+  }
 
   async createUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
     const [progress] = await db

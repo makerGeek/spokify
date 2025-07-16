@@ -1,135 +1,195 @@
 import { supabase } from './supabase';
 
-/**
- * Get authenticated user's JWT token
- */
-export async function getAuthToken(): Promise<string | null> {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
-  } catch (error) {
-    console.error('Error getting auth token:', error);
-    return null;
-  }
+export interface AuthUser {
+  id: string;
+  email: string;
+  user_metadata?: any;
+}
+
+export interface DatabaseUser {
+  id: number;
+  email: string;
+  supabaseId: string;
+  firstName?: string;
+  lastName?: string;
+  profileImageUrl?: string;
+  nativeLanguage?: string;
+  targetLanguage?: string;
+  level?: string;
+  weeklyGoal?: number;
+  wordsLearned: number;
+  streak: number;
+  lastActiveDate?: Date;
+  isAdmin: boolean;
+  isActive: boolean;
+  invitedBy?: string;
+  inviteCode?: string;
+  activatedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface UserSyncResult {
+  user: DatabaseUser;
+  isNewUser: boolean;
+  inviteCodeUsed: boolean;
 }
 
 /**
- * Make authenticated API request
+ * Get current Supabase session token
  */
-export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+export async function getAuthToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token || null;
+}
+
+/**
+ * Sync authenticated Supabase user to our database
+ */
+export async function syncUserToDatabase(inviteCode?: string): Promise<UserSyncResult> {
   const token = await getAuthToken();
-  
   if (!token) {
     throw new Error('No authentication token available');
   }
-  
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    ...options.headers
-  };
-  
-  return fetch(url, {
-    ...options,
-    headers
-  });
-}
 
-/**
- * Validate invite code with server
- */
-export async function validateInviteCode(code: string): Promise<boolean> {
-  try {
-    const response = await fetch('/api/auth/validate-invite', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ code })
-    });
-    
-    const data = await response.json();
-    return response.ok && data.valid;
-  } catch (error) {
-    console.error('Error validating invite code:', error);
-    return false;
-  }
-}
-
-/**
- * Sync user to database with authentication
- */
-export async function syncUserToDatabase(inviteCode?: string): Promise<any> {
-  const response = await authFetch('/api/auth/sync', {
+  const response = await fetch('/api/auth/sync', {
     method: 'POST',
-    body: JSON.stringify({ inviteCode })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ inviteCode }),
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to sync user');
   }
-  
+
   return response.json();
 }
 
 /**
- * Get current authenticated user
+ * Get current authenticated user from our database
  */
-export async function getCurrentUser(): Promise<any> {
-  const response = await authFetch('/api/auth/user');
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch user');
+export async function getCurrentUser(): Promise<DatabaseUser | null> {
+  const token = await getAuthToken();
+  if (!token) {
+    return null;
   }
-  
-  return response.json();
-}
 
-/**
- * Get user's invite codes
- */
-export async function getUserInviteCodes(): Promise<any[]> {
-  const response = await authFetch('/api/auth/invite-codes');
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch invite codes');
-  }
-  
-  return response.json();
-}
-
-/**
- * Generate new invite code
- */
-export async function generateInviteCode(): Promise<any> {
-  const response = await authFetch('/api/auth/generate-invite', {
-    method: 'POST'
+  const response = await fetch('/api/auth/user', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
   });
-  
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to generate invite code');
+    if (response.status === 401 || response.status === 404) {
+      return null;
+    }
+    throw new Error('Failed to get current user');
   }
-  
+
+  const data = await response.json();
+  return data.user;
+}
+
+/**
+ * Validate invite code
+ */
+export async function validateInviteCode(code: string): Promise<{ valid: boolean; message: string }> {
+  const response = await fetch('/api/auth/validate-invite', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ code }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to validate invite code');
+  }
+
   return response.json();
 }
 
 /**
  * Update user profile
  */
-export async function updateProfile(updates: any): Promise<any> {
-  const response = await authFetch('/api/auth/profile', {
+export async function updateUserProfile(updates: Partial<DatabaseUser>): Promise<DatabaseUser> {
+  const token = await getAuthToken();
+  if (!token) {
+    throw new Error('No authentication token available');
+  }
+
+  const response = await fetch('/api/auth/profile', {
     method: 'PUT',
-    body: JSON.stringify(updates)
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(updates),
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to update profile');
   }
-  
-  return response.json();
+
+  const data = await response.json();
+  return data.user;
+}
+
+/**
+ * Generate new invite code
+ */
+export async function generateInviteCode(options: { maxUses?: number; expiresInDays?: number } = {}): Promise<any> {
+  const token = await getAuthToken();
+  if (!token) {
+    throw new Error('No authentication token available');
+  }
+
+  const response = await fetch('/api/auth/generate-invite', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(options),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to generate invite code');
+  }
+
+  const data = await response.json();
+  return data.inviteCode;
+}
+
+/**
+ * Get user's invite codes
+ */
+export async function getUserInviteCodes(): Promise<any[]> {
+  const token = await getAuthToken();
+  if (!token) {
+    throw new Error('No authentication token available');
+  }
+
+  const response = await fetch('/api/auth/invite-codes', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to get invite codes');
+  }
+
+  const data = await response.json();
+  return data.inviteCodes;
 }

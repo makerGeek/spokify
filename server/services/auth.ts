@@ -1,21 +1,6 @@
 import { storage } from '../storage';
-import { createClient } from '@supabase/supabase-js';
-import { InsertUser } from '../../shared/schema';
-
-// Use existing environment variables
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-
-let supabase: any = null;
-
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-}
+import type { InsertUser, ActivateUser } from '@shared/schema';
+import { nanoid } from 'nanoid';
 
 export interface SupabaseUser {
   id: string;
@@ -41,46 +26,49 @@ export interface UserSyncResult {
  */
 export async function syncUserToDatabase(
   supabaseUser: SupabaseUser,
-  validatedInviteCode?: string
+  inviteCode?: string
 ): Promise<UserSyncResult> {
   try {
-    // Check if user already exists in our database
-    const existingUser = await storage.getUserByUsername(supabaseUser.email);
+    // Check if user already exists
+    let user = await storage.getUserBySupabaseId(supabaseUser.id);
     
-    if (existingUser) {
-      return { user: existingUser, isNewUser: false };
+    if (user) {
+      return { user, isNewUser: false };
     }
 
-    // Extract user data from verified Supabase user object
+    // Create new inactive user
     const userData: InsertUser = {
       email: supabaseUser.email,
+      supabaseId: supabaseUser.id,
       firstName: extractFirstName(supabaseUser.user_metadata),
       lastName: extractLastName(supabaseUser.user_metadata),
       profileImageUrl: extractProfileImage(supabaseUser.user_metadata),
-      invitedBy: validatedInviteCode || null,
-      inviteCode: await storage.generateUniqueInviteCode(),
-      nativeLanguage: 'en',
-      targetLanguage: 'es',
-      level: 'A1'
     };
 
-    // Create user in our database
-    const newUser = await storage.createUser(userData);
+    user = await storage.createUser(userData);
 
-    // If they used an invite code, mark it as used
-    let inviteCodeUsed = false;
-    if (validatedInviteCode) {
-      try {
-        await storage.useInviteCode(validatedInviteCode, newUser.id);
-        inviteCodeUsed = true;
-      } catch (error) {
-        console.warn('Failed to mark invite code as used:', error);
+    // If invite code provided, validate and activate
+    if (inviteCode) {
+      const validation = await storage.validateInviteCode(inviteCode);
+      if (validation.valid && validation.inviteCode) {
+        // Activate user with invite code
+        const activationData: ActivateUser = {
+          invitedBy: validation.inviteCode.createdBy.toString(),
+          inviteCode: await generateSecureInviteCode(),
+          isActive: true,
+          activatedAt: new Date(),
+        };
+
+        user = await storage.activateUser(user.id, activationData);
+        await storage.useInviteCode(inviteCode, user.id);
+        
+        return { user, isNewUser: true, inviteCodeUsed: true };
       }
     }
 
-    return { user: newUser, isNewUser: true, inviteCodeUsed };
+    return { user, isNewUser: true, inviteCodeUsed: false };
   } catch (error) {
-    console.error('Error syncing user to database:', error);
+    console.error('User sync error:', error);
     throw new Error('Failed to sync user to database');
   }
 }
@@ -90,10 +78,10 @@ export async function syncUserToDatabase(
  */
 export async function validateInviteCode(code: string): Promise<boolean> {
   try {
-    const result = await storage.validateInviteCode(code);
-    return result.valid;
+    const validation = await storage.validateInviteCode(code);
+    return validation.valid;
   } catch (error) {
-    console.error('Error validating invite code:', error);
+    console.error('Invite code validation error:', error);
     return false;
   }
 }
@@ -105,7 +93,8 @@ function extractFirstName(userMetadata?: any): string | null {
   if (!userMetadata) return null;
   
   return userMetadata.first_name || 
-         userMetadata.full_name?.split(' ')[0] || 
+         userMetadata.given_name ||
+         (userMetadata.full_name ? userMetadata.full_name.split(' ')[0] : null) ||
          null;
 }
 
@@ -116,7 +105,8 @@ function extractLastName(userMetadata?: any): string | null {
   if (!userMetadata) return null;
   
   return userMetadata.last_name || 
-         userMetadata.full_name?.split(' ').slice(1).join(' ') || 
+         userMetadata.family_name ||
+         (userMetadata.full_name ? userMetadata.full_name.split(' ').slice(1).join(' ') : null) ||
          null;
 }
 
@@ -135,16 +125,21 @@ function extractProfileImage(userMetadata?: any): string | null {
  * Generate secure invite code
  */
 export async function generateSecureInviteCode(): Promise<string> {
-  const words = [
-    'SWIFT', 'BRIGHT', 'STAR', 'MOON', 'WAVE', 'FIRE', 'BLUE', 'GOLD',
-    'DREAM', 'MAGIC', 'STORM', 'LIGHT', 'PEACE', 'HOPE', 'BRAVE', 'WISE'
-  ];
-  
-  const word1 = words[Math.floor(Math.random() * words.length)];
-  const word2 = words[Math.floor(Math.random() * words.length)];
-  const digits = Math.floor(1000 + Math.random() * 9000);
-  
-  return `${word1}-${word2}-${digits}`;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code: string;
+  let isUnique = false;
+
+  do {
+    code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    const validation = await storage.validateInviteCode(code);
+    isUnique = !validation.valid;
+  } while (!isUnique);
+
+  return code;
 }
 
 /**
@@ -152,10 +147,10 @@ export async function generateSecureInviteCode(): Promise<string> {
  */
 export async function checkAdminPrivileges(userId: string): Promise<boolean> {
   try {
-    const user = await storage.getUserByUsername(userId);
+    const user = await storage.getUserBySupabaseId(userId);
     return user?.isAdmin || false;
   } catch (error) {
-    console.error('Error checking admin privileges:', error);
+    console.error('Admin check error:', error);
     return false;
   }
 }

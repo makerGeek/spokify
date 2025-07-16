@@ -1,21 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import { storage } from '../storage';
 
-// Server-side Supabase client for token verification
-// Use existing environment variables
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'http://localhost:54321';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'fallback-key';
 
-let supabase: any = null;
-
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-}
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -35,43 +25,28 @@ export async function authenticateToken(
   next: NextFunction
 ) {
   try {
-    // Development mode: skip authentication if Supabase not configured
-    if (!supabase) {
-      console.warn('Supabase not configured, skipping authentication');
-      // For development, create a mock user
-      req.user = {
-        id: 'dev-user-1',
-        email: 'dev@example.com',
-        user_metadata: { full_name: 'Dev User' }
-      };
-      return next();
-    }
-
     const authHeader = req.headers.authorization;
-    const token = authHeader?.replace('Bearer ', '');
-
-    if (!token) {
-      return res.status(401).json({ error: 'No authentication token provided' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
     }
 
-    // Verify token with Supabase
+    const token = authHeader.split(' ')[1];
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+      return res.status(401).json({ error: 'Invalid token' });
     }
 
-    // Attach verified user data to request
     req.user = {
       id: user.id,
       email: user.email!,
-      user_metadata: user.user_metadata
+      user_metadata: user.user_metadata,
     };
 
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    res.status(401).json({ error: 'Token verification failed' });
+    res.status(500).json({ error: 'Authentication failed' });
   }
 }
 
@@ -85,30 +60,26 @@ export async function optionalAuth(
   next: NextFunction
 ) {
   try {
-    // Development mode: skip authentication if Supabase not configured
-    if (!supabase) {
-      return next();
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next(); // Continue without user
     }
 
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.replace('Bearer ', '');
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error } = await supabase.auth.getUser(token);
 
-    if (token) {
-      const { data: { user }, error } = await supabase.auth.getUser(token);
-      
-      if (!error && user) {
-        req.user = {
-          id: user.id,
-          email: user.email!,
-          user_metadata: user.user_metadata
-        };
-      }
+    if (!error && user) {
+      req.user = {
+        id: user.id,
+        email: user.email!,
+        user_metadata: user.user_metadata,
+      };
     }
 
     next();
   } catch (error) {
-    // Continue without authentication if token validation fails
-    next();
+    console.error('Optional auth error:', error);
+    next(); // Continue without user on error
   }
 }
 
@@ -120,36 +91,21 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 export function rateLimit(maxRequests = 10, windowMs = 60000) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const clientId = req.ip || req.connection.remoteAddress || 'unknown';
+    const key = req.ip || 'anonymous';
     const now = Date.now();
     
-    // Clean up expired entries
-    for (const [key, value] of rateLimitStore.entries()) {
-      if (now > value.resetTime) {
-        rateLimitStore.delete(key);
-      }
-    }
+    const record = rateLimitStore.get(key);
     
-    const clientData = rateLimitStore.get(clientId);
-    
-    if (!clientData) {
-      rateLimitStore.set(clientId, { count: 1, resetTime: now + windowMs });
+    if (!record || now > record.resetTime) {
+      rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
       return next();
     }
     
-    if (now > clientData.resetTime) {
-      rateLimitStore.set(clientId, { count: 1, resetTime: now + windowMs });
-      return next();
+    if (record.count >= maxRequests) {
+      return res.status(429).json({ error: 'Too many requests' });
     }
     
-    if (clientData.count >= maxRequests) {
-      return res.status(429).json({
-        error: 'Too many requests',
-        retryAfter: Math.ceil((clientData.resetTime - now) / 1000)
-      });
-    }
-    
-    clientData.count++;
+    record.count++;
     next();
   };
 }
@@ -162,8 +118,11 @@ export function validateInput(schema: any) {
     try {
       req.body = schema.parse(req.body);
       next();
-    } catch (error) {
-      res.status(400).json({ error: 'Invalid input data', details: error });
+    } catch (error: any) {
+      res.status(400).json({
+        error: 'Validation failed',
+        details: error.errors || error.message,
+      });
     }
   };
 }

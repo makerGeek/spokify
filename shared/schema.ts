@@ -5,19 +5,22 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
+  supabaseId: text("supabase_id").notNull().unique(),
   firstName: text("first_name"),
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
-  nativeLanguage: text("native_language").notNull().default("en"),
-  targetLanguage: text("target_language").notNull().default("es"),
-  level: text("level").notNull().default("A1"),
-  weeklyGoal: integer("weekly_goal").notNull().default(50),
+  nativeLanguage: text("native_language").default("en"),
+  targetLanguage: text("target_language").default("es"),
+  level: text("level").default("A1"),
+  weeklyGoal: integer("weekly_goal").default(50),
   wordsLearned: integer("words_learned").notNull().default(0),
   streak: integer("streak").notNull().default(0),
   lastActiveDate: timestamp("last_active_date").defaultNow(),
   isAdmin: boolean("is_admin").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(false),
   invitedBy: text("invited_by"),
-  inviteCode: text("invite_code").notNull().unique(),
+  inviteCode: text("invite_code").unique(),
+  activatedAt: timestamp("activated_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -85,14 +88,20 @@ export const inviteCodes = pgTable("invite_codes", {
 
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
+  supabaseId: true,
   firstName: true,
   lastName: true,
-  invitedBy: true,
-  inviteCode: true,
   profileImageUrl: true,
   nativeLanguage: true,
   targetLanguage: true,
   level: true,
+});
+
+export const activateUserSchema = createInsertSchema(users).pick({
+  invitedBy: true,
+  inviteCode: true,
+  isActive: true,
+  activatedAt: true,
 });
 
 export const insertSongSchema = createInsertSchema(songs).pick({
@@ -143,6 +152,7 @@ export const insertInviteCodeSchema = createInsertSchema(inviteCodes).pick({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type ActivateUser = z.infer<typeof activateUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSong = z.infer<typeof insertSongSchema>;
 export type Song = typeof songs.$inferSelect;
