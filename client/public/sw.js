@@ -146,7 +146,7 @@ self.addEventListener('fetch', (event) => {
             <!DOCTYPE html>
             <html>
             <head>
-              <title>LyricLingo - Offline</title>
+              <title>Spokify - Offline</title>
               <meta name="viewport" content="width=device-width, initial-scale=1">
               <style>
                 body { 

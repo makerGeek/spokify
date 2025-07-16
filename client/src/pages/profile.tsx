@@ -52,7 +52,7 @@ export default function Profile() {
       setCanInstall(false)
       toast({
         title: 'App Installed!',
-        description: 'LyricLingo has been installed successfully.',
+        description: 'Spokify has been installed successfully.',
       })
     }
 
@@ -104,7 +104,7 @@ export default function Profile() {
       if (result.outcome === 'accepted') {
         toast({
           title: 'Installing App...',
-          description: 'LyricLingo is being installed.',
+          description: 'Spokify is being installed.',
         })
       } else {
         toast({

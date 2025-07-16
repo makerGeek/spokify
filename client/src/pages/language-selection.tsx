@@ -29,7 +29,7 @@ export default function LanguageSelection() {
         {/* Header */}
         <div className="text-center mb-12">
           <Music className="text-spotify-green mx-auto mb-6" size={80} />
-          <h1 className="spotify-heading-xl mb-4">LyricLingo</h1>
+          <h1 className="spotify-heading-xl mb-4">Spokify</h1>
           <p className="spotify-text-secondary text-lg">Learn languages through music</p>
         </div>
 
