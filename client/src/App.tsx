@@ -8,6 +8,7 @@ import { initializePWA } from "@/lib/pwa";
 import { AudioProvider } from "@/hooks/use-audio";
 import { AuthProvider } from "@/contexts/auth-context";
 import { InviteProvider } from "@/contexts/invite-context";
+import SmartRedirect from "@/components/smart-redirect";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
 import LyricsPlayer from "@/pages/lyrics-player";
@@ -89,7 +90,8 @@ function Router() {
   return (
     <div className="relative min-h-screen">
       <Switch>
-        <Route path="/" component={LanguageSelection} />
+        <Route path="/" component={SmartRedirect} />
+        <Route path="/language-selection" component={LanguageSelection} />
         <Route path="/login" component={Login} />
         <Route path="/home" component={Home} />
         <Route path="/search" component={SearchPage} />
@@ -115,7 +117,7 @@ function Router() {
       </Switch>
       
       {/* Bottom Navigation - visible on main app pages */}
-      {location !== '/' && location !== '/song-offset' && (
+      {location !== '/' && location !== '/language-selection' && location !== '/song-offset' && (
         <BottomNavigation currentPage={getCurrentPage()} />
       )}
     </div>

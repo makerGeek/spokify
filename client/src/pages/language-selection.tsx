@@ -14,7 +14,9 @@ export default function LanguageSelection() {
   const [selectedLanguage, setSelectedLanguage] = useState("");
 
   const handleLanguageSelect = (languageCode: string) => {
-    // Store simplified user preferences in localStorage
+    // Store language preferences in localStorage (both individual keys and userPreferences for compatibility)
+    localStorage.setItem("nativeLanguage", "en");
+    localStorage.setItem("targetLanguage", languageCode);
     localStorage.setItem("userPreferences", JSON.stringify({
       nativeLanguage: "en", // Default to English
       targetLanguage: languageCode,
