@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api-client";
+import { AuthModal } from "@/components/auth-modal";
 
 interface TranslationOverlayProps {
   line: {
@@ -22,6 +23,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
     word: string;
     translation: string;
   }>>([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { databaseUser } = useAuth();
@@ -126,7 +128,13 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
                       variant="ghost"
                       size="sm"
                       className="bg-spotify-green text-white hover:bg-spotify-accent px-2 py-1 rounded-full text-xs flex items-center gap-1"
-                      onClick={() => addVocabularyMutation.mutate(word)}
+                      onClick={() => {
+                        if (!databaseUser?.id) {
+                          setShowAuthModal(true);
+                        } else {
+                          addVocabularyMutation.mutate(word);
+                        }
+                      }}
                     >
                       <Plus size={12} />
                       {word.word} ({word.translation})
@@ -140,6 +148,22 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
           
         </CardContent>
       </Card>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal fallback={
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAuthModal(false)}
+            className="w-full"
+          >
+            Cancel
+          </Button>
+        }>
+          {/* This content won't be shown since we're in auth modal mode, but required for component structure */}
+          <div></div>
+        </AuthModal>
+      )}
     </div>
   );
 }
