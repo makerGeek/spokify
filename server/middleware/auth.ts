@@ -54,8 +54,7 @@ async function getOrCreateUser(supabaseUser: any) {
       isAdmin: false
     };
     
-    const userId = await storage.createUser(newUser);
-    user = { id: userId, ...newUser };
+    user = await storage.createUser(newUser);
   }
   
   return user;
