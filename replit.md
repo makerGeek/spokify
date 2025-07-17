@@ -98,32 +98,6 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 17, 2025 - Complete Migration from Supabase to Passport.js Authentication
-- **Major Authentication System Overhaul**: Completely replaced Supabase authentication with Passport.js
-  - Removed Supabase client-side authentication and @supabase/supabase-js dependency
-  - Implemented comprehensive Passport.js server-side authentication with local, Google, and Facebook strategies
-  - Created new database schema with passwordHash, googleId, facebookId fields for multi-provider auth
-  - Built complete authentication API endpoints (/auth/login, /auth/register, /auth/logout, /auth/user)
-  - Added session management with express-session for secure server-side authentication
-  - Created new PassportAuthProvider context to replace Supabase auth context
-  - Updated all protected routes to use new PassportAuthenticatedOnly component
-  - Migrated user profile management to work with Passport.js user structure
-- **Enhanced Security Features**:
-  - Password hashing with bcryptjs (12 salt rounds)
-  - Server-side session management with secure cookie configuration
-  - OAuth callback handling for Google and Facebook login
-  - Proper authentication middleware and route protection
-  - Invite code integration with registration flow
-- **Database Schema Updates**:
-  - Removed supabaseId field, added passwordHash, googleId, facebookId fields
-  - Updated user creation and authentication flows to work with new schema
-  - Maintained backward compatibility with existing user data structure
-- **Frontend Migration**:
-  - Created new PassportLoginForm component with email/password and social login
-  - Updated all auth-dependent pages (Profile, Library, Review) to use new auth context
-  - Replaced Supabase user object references with Passport.js user structure
-  - Maintained invite code functionality with new authentication system
-
 ### July 16, 2025 - Query Caching Strategy & Social Login Bug Fix
 - **Intelligent Query Caching Strategy**: Implemented data-specific caching configurations
   - `REAL_TIME_CONFIG`: No caching for feature flags, auth status, real-time data

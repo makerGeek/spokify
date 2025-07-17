@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuth } from '@/contexts/passport-auth-context'
+import { useAuth } from '@/contexts/auth-context'
 import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Download, Smartphone, Crown, Users, Copy } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
 
 export default function Profile() {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const { toast } = useToast()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [canInstall, setCanInstall] = useState(false)
@@ -19,8 +19,20 @@ export default function Profile() {
     return saved ? JSON.parse(saved) : false;
   })
 
-  // User data comes directly from the auth context in Passport.js
-  const userData = user;
+  // Fetch user data from your backend
+  const { data: userData } = useQuery<User>({
+    queryKey: user?.email ? ["/api/user", { email: user.email }] : ["/api/user"],
+    queryFn: async () => {
+      const url = user?.email ? `/api/user?email=${encodeURIComponent(user.email)}` : '/api/user';
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      return response.json();
+    },
+    retry: false,
+    enabled: !!user // Only run when we have a Supabase user
+  })
 
   const { data: vocabulary = [] } = useQuery<Vocabulary[]>({
     queryKey: userData?.id ? ["/api/users", userData.id, "vocabulary"] : [],
@@ -146,7 +158,7 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     try {
-      await logout()
+      await signOut()
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -176,7 +188,7 @@ export default function Profile() {
           <div className="flex items-end space-x-6 mb-8">
             <div className="relative">
               <Avatar className="h-32 w-32 border-0 shadow-2xl">
-                <AvatarImage src={user?.profilePicture} className="object-cover" />
+                <AvatarImage src={user?.user_metadata?.avatar_url} className="object-cover" />
                 <AvatarFallback className="text-4xl bg-[var(--spotify-light-gray)] spotify-text-primary font-bold border-0">
                   {user?.email ? getInitials(user.email) : 'U'}
                 </AvatarFallback>
@@ -185,7 +197,7 @@ export default function Profile() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium spotify-text-secondary uppercase tracking-wide mb-2">Profile</p>
               <h1 className="spotify-heading-xl mb-4">
-                {user?.name || user?.email?.split('@')[0] || 'User'}
+                {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
               </h1>
               <div className="flex items-center space-x-1 text-sm spotify-text-secondary">
                 <span>{wordsLearned} words learned</span>

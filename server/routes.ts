@@ -3,9 +3,30 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { translateText, assessDifficulty, generateVocabularyExplanation } from "./services/openai";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema } from "@shared/schema";
-import { requireAuth, optionalAuth, AuthenticatedRequest } from "./middleware/passport-auth";
+import { authenticateToken, optionalAuth, rateLimit, AuthenticatedRequest } from "./middleware/auth";
+import authRoutes from "./routes/auth";
+import session from "express-session";
+import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Session configuration for invite code validation
+  const MemoryStoreSession = MemoryStore(session);
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    store: new MemoryStoreSession({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Use new secure authentication routes
+  app.use('/api/auth', authRoutes);
   
   // User routes
   app.post("/api/users", async (req, res) => {
@@ -21,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const user = await storage.getUserById(id);
+      const user = await storage.getUser(id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -62,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid email format" });
       }
       
-      const user = await storage.getUserByEmail(email);
+      const user = await storage.getUserByUsername(email);
       // Don't return full user data for security - just existence check
       res.json({ exists: !!user });
     } catch (error: any) {
@@ -108,13 +129,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Progress routes - now protected with Passport.js
-  app.get("/api/users/:userId/progress", requireAuth, async (req: AuthenticatedRequest, res) => {
+  // Progress routes - now protected
+  app.get("/api/users/:userId/progress", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = parseInt(req.params.userId);
       
       // Users can only access their own progress
-      if (!req.user || req.user.id !== userId) {
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -125,12 +147,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/progress", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/progress", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const progressData = insertUserProgressSchema.parse(req.body);
       
       // Verify user owns this progress record
-      if (!req.user || req.user.id !== progressData.userId) {
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== progressData.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -152,13 +175,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Vocabulary routes - now protected with Passport.js
-  app.get("/api/users/:userId/vocabulary", requireAuth, async (req: AuthenticatedRequest, res) => {
+  // Vocabulary routes - now protected
+  app.get("/api/users/:userId/vocabulary", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = parseInt(req.params.userId);
       
       // Users can only access their own vocabulary
-      if (!req.user || req.user.id !== userId) {
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -169,12 +193,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/vocabulary", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/vocabulary", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const vocabularyData = insertVocabularySchema.parse(req.body);
       
       // Verify user owns this vocabulary record
-      if (!req.user || req.user.id !== vocabularyData.userId) {
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== vocabularyData.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
       

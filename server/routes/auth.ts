@@ -1,199 +1,205 @@
 import { Router } from 'express';
-import passport from 'passport';
-import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { storage } from '../storage.js';
-import { nanoid } from 'nanoid';
+import { authenticateToken, rateLimit, validateInput, type AuthenticatedRequest } from '../middleware/auth';
+import { 
+  syncUserToDatabase, 
+  validateInviteCode, 
+  generateSecureInviteCode,
+  checkAdminPrivileges,
+  type SupabaseUser 
+} from '../services/auth';
+import { storage } from '../storage';
 
 const router = Router();
 
-// Validation schemas
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().optional(),
-  inviteCode: z.string().optional()
-});
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string()
-});
-
-// Local registration
-router.post('/register', async (req, res) => {
-  try {
-    const { email, password, name, inviteCode } = registerSchema.parse(req.body);
-
-    // Check if user already exists
-    const existingUser = await storage.getUserByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
-
-    // Validate invite code if provided
-    let invitedBy = null;
-    if (inviteCode) {
-      const { valid, inviteCode: validInviteCode } = await storage.validateInviteCode(inviteCode);
-      if (!valid || !validInviteCode) {
-        return res.status(400).json({ error: 'Invalid invite code' });
-      }
-      invitedBy = validInviteCode.createdBy;
-    }
-
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    // Create user
-    const user = await storage.createUser({
-      email,
-      passwordHash,
-      name: name || email.split('@')[0],
-      invitedBy,
-      inviteCode: nanoid(10),
-      isEmailVerified: false
-    });
-
-    // Use invite code if provided
-    if (inviteCode) {
-      await storage.useInviteCode(inviteCode, user.id);
-    }
-
-    // Auto-login after registration
-    req.login(user, (err) => {
-      if (err) {
-        return res.status(500).json({ error: 'Login failed after registration' });
-      }
+/**
+ * Validate invite code
+ * POST /api/auth/validate-invite
+ */
+router.post('/validate-invite', 
+  rateLimit(5, 60000), // 5 attempts per minute
+  validateInput(z.object({
+    code: z.string().min(1).max(20),
+  })),
+  async (req, res) => {
+    try {
+      const { code } = req.body;
+      const isValid = await validateInviteCode(code);
+      
       res.json({ 
-        success: true, 
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          isEmailVerified: user.isEmailVerified
-        }
+        valid: isValid,
+        message: isValid ? 'Invite code is valid' : 'Invalid invite code'
       });
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid input data' });
+    } catch (error) {
+      console.error('Invite validation error:', error);
+      res.status(500).json({ error: 'Failed to validate invite code' });
     }
-    res.status(500).json({ error: 'Registration failed' });
-  }
-});
-
-// Local login
-router.post('/login', (req, res, next) => {
-  const validation = loginSchema.safeParse(req.body);
-  if (!validation.success) {
-    return res.status(400).json({ error: 'Invalid input data' });
-  }
-
-  passport.authenticate('local', (err: any, user: any, info: any) => {
-    if (err) {
-      return res.status(500).json({ error: 'Authentication error' });
-    }
-    if (!user) {
-      return res.status(401).json({ error: info?.message || 'Invalid credentials' });
-    }
-
-    req.login(user, (loginErr) => {
-      if (loginErr) {
-        return res.status(500).json({ error: 'Login failed' });
-      }
-      res.json({ 
-        success: true, 
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          isEmailVerified: user.isEmailVerified
-        }
-      });
-    });
-  })(req, res, next);
-});
-
-// Google OAuth
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login?error=google_auth_failed' }),
-  (req, res) => {
-    // Successful authentication, redirect to home
-    res.redirect('/?auth=success');
   }
 );
 
-// Facebook OAuth
-router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+/**
+ * Sync authenticated user to database
+ * POST /api/auth/sync
+ * Requires valid Supabase JWT token
+ */
+router.post('/sync',
+  authenticateToken,
+  rateLimit(10, 300000), // 10 attempts per 5 minutes
+  validateInput(z.object({
+    inviteCode: z.string().optional(),
+  })),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'No authenticated user' });
+      }
 
-router.get('/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/login?error=facebook_auth_failed' }),
-  (req, res) => {
-    // Successful authentication, redirect to home
-    res.redirect('/?auth=success');
+      const supabaseUser: SupabaseUser = {
+        id: req.user.id,
+        email: req.user.email,
+        user_metadata: req.user.user_metadata,
+      };
+
+      const result = await syncUserToDatabase(supabaseUser, req.body.inviteCode);
+      
+      res.json({
+        user: result.user,
+        isNewUser: result.isNewUser,
+        inviteCodeUsed: result.inviteCodeUsed || false,
+      });
+    } catch (error) {
+      console.error('User sync error:', error);
+      res.status(500).json({ error: 'Failed to sync user' });
+    }
   }
 );
 
-// Logout
-router.post('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Logout failed' });
+/**
+ * Get current authenticated user
+ * GET /api/auth/user
+ */
+router.get('/user',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'No authenticated user' });
+      }
+
+      const user = await storage.getUserBySupabaseId(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found in database' });
+      }
+
+      res.json({ user });
+    } catch (error) {
+      console.error('Get user error:', error);
+      res.status(500).json({ error: 'Failed to get user' });
     }
-    res.json({ success: true });
-  });
-});
-
-// Get current user
-router.get('/user', (req, res) => {
-  if (req.isAuthenticated() && req.user) {
-    const user = req.user as any;
-    res.json({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      profilePicture: user.profilePicture,
-      nativeLanguage: user.nativeLanguage,
-      targetLanguage: user.targetLanguage,
-      level: user.level,
-      weeklyGoal: user.weeklyGoal,
-      wordsLearned: user.wordsLearned,
-      streak: user.streak,
-      isAdmin: user.isAdmin,
-      isEmailVerified: user.isEmailVerified
-    });
-  } else {
-    res.status(401).json({ error: 'Not authenticated' });
   }
-});
+);
 
-// Update user profile
-router.put('/profile', async (req, res) => {
-  if (!req.isAuthenticated() || !req.user) {
-    return res.status(401).json({ error: 'Not authenticated' });
+/**
+ * Get user's invite codes
+ * GET /api/auth/invite-codes
+ */
+router.get('/invite-codes',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'No authenticated user' });
+      }
+
+      const user = await storage.getUserBySupabaseId(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const inviteCodes = await storage.getUserInviteCodes(user.id);
+      res.json({ inviteCodes });
+    } catch (error) {
+      console.error('Get invite codes error:', error);
+      res.status(500).json({ error: 'Failed to get invite codes' });
+    }
   }
+);
 
-  try {
-    const user = req.user as any;
-    const updates = req.body;
-    
-    // Remove sensitive fields that shouldn't be updated via this endpoint
-    delete updates.id;
-    delete updates.passwordHash;
-    delete updates.email;
-    delete updates.googleId;
-    delete updates.facebookId;
-    delete updates.isAdmin;
+/**
+ * Generate new invite code for user
+ * POST /api/auth/generate-invite
+ */
+router.post('/generate-invite',
+  authenticateToken,
+  rateLimit(3, 300000), // 3 codes per 5 minutes
+  validateInput(z.object({
+    maxUses: z.number().min(1).max(10).default(1),
+    expiresInDays: z.number().min(1).max(365).default(30),
+  })),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'No authenticated user' });
+      }
 
-    const updatedUser = await storage.updateUser(user.id, updates);
-    res.json({ success: true, user: updatedUser });
-  } catch (error) {
-    console.error('Profile update error:', error);
-    res.status(500).json({ error: 'Profile update failed' });
+      const user = await storage.getUserBySupabaseId(req.user.id);
+      if (!user || !user.isActive) {
+        return res.status(403).json({ error: 'User not activated' });
+      }
+
+      const { maxUses, expiresInDays } = req.body;
+      const code = await generateSecureInviteCode();
+      
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+      const inviteCode = await storage.createInviteCode({
+        code,
+        createdBy: user.id,
+        maxUses,
+        expiresAt,
+      });
+
+      res.json({ inviteCode });
+    } catch (error) {
+      console.error('Generate invite error:', error);
+      res.status(500).json({ error: 'Failed to generate invite code' });
+    }
   }
-});
+);
+
+/**
+ * Update user profile
+ * PUT /api/auth/profile
+ */
+router.put('/profile',
+  authenticateToken,
+  validateInput(z.object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    nativeLanguage: z.string().optional(),
+    targetLanguage: z.string().optional(),
+    level: z.string().optional(),
+    weeklyGoal: z.number().optional(),
+  })),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'No authenticated user' });
+      }
+
+      const user = await storage.getUserBySupabaseId(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const updatedUser = await storage.updateUser(user.id, req.body);
+      res.json({ user: updatedUser });
+    } catch (error) {
+      console.error('Update profile error:', error);
+      res.status(500).json({ error: 'Failed to update profile' });
+    }
+  }
+);
 
 export default router;

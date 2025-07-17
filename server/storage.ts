@@ -5,10 +5,9 @@ import { nanoid } from "nanoid";
 
 export interface IStorage {
   // User methods
-  getUserById(id: number): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  getUserByGoogleId(googleId: string): Promise<User | undefined>;
-  getUserByFacebookId(facebookId: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserBySupabaseId(supabaseId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User>;
   activateUser(userId: number, activationData: ActivateUser): Promise<User>;
@@ -45,23 +44,18 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUserById(id: number): Promise<User | undefined> {
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, username));
     return user || undefined;
   }
 
-  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
-    return user || undefined;
-  }
-
-  async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.facebookId, facebookId));
+  async getUserBySupabaseId(supabaseId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.supabaseId, supabaseId));
     return user || undefined;
   }
 
