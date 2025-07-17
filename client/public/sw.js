@@ -113,6 +113,17 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
   
+  // NEVER cache development assets or API calls
+  if (url.pathname.includes('/@vite/') || 
+      url.pathname.includes('/src/') ||
+      url.pathname.includes('/node_modules/') ||
+      url.pathname.includes('/api/') ||
+      url.search.includes('?v=') ||
+      url.search.includes('hot-update')) {
+    console.log('SW: Bypassing cache for development/API request:', url.pathname);
+    return; // Let browser handle normally
+  }
+  
   // Handle navigation requests (HTML pages)
   if (event.request.mode === 'navigate') {
     event.respondWith(
@@ -120,27 +131,36 @@ self.addEventListener('fetch', (event) => {
         try {
           console.log('SW: Navigation request for:', url.pathname);
           
-          // Try to get from static cache first
+          // Always try network first for navigation in production to avoid stale content
+          try {
+            const networkResponse = await fetch(event.request, { 
+              cache: 'no-cache',
+              headers: { 'Cache-Control': 'no-cache' }
+            });
+            
+            if (networkResponse.ok) {
+              // Cache the fresh response
+              const staticCache = await caches.open(STATIC_CACHE);
+              await staticCache.put('/', networkResponse.clone());
+              console.log('SW: Fetched and cached fresh main page');
+              return networkResponse;
+            }
+          } catch (networkError) {
+            console.log('SW: Network failed, trying cache:', networkError);
+          }
+          
+          // Fallback to cache if network fails
           const staticCache = await caches.open(STATIC_CACHE);
           let cachedResponse = await staticCache.match('/');
           
           if (cachedResponse) {
-            console.log('SW: Serving main page from cache');
+            console.log('SW: Serving main page from cache (network failed)');
             return cachedResponse;
           }
           
-          // Try to fetch from network
-          const networkResponse = await fetch('/');
-          if (networkResponse.ok) {
-            // Cache the response
-            await staticCache.put('/', networkResponse.clone());
-            console.log('SW: Fetched and cached main page from network');
-            return networkResponse;
-          }
-          
-          throw new Error('Network response not ok');
+          throw new Error('No network and no cache available');
         } catch (error) {
-          console.log('SW: Network failed, serving offline page');
+          console.log('SW: Complete failure, serving offline page:', error);
           // Create a basic offline page
           return new Response(`
             <!DOCTYPE html>
@@ -191,11 +211,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle static asset requests
+  // Handle static asset requests with network-first strategy for critical assets
   event.respondWith(
     (async () => {
       try {
-        // Check static cache first
+        // For critical assets, always try network first to avoid stale JS/CSS
+        if (url.pathname.includes('/assets/')) {
+          try {
+            const networkResponse = await fetch(event.request);
+            if (networkResponse.ok) {
+              // Cache the fresh response
+              const staticCache = await caches.open(STATIC_CACHE);
+              await staticCache.put(event.request, networkResponse.clone());
+              console.log('SW: Fresh asset cached:', url.pathname);
+              return networkResponse;
+            }
+          } catch (networkError) {
+            console.log('SW: Network failed for asset, trying cache:', url.pathname);
+          }
+        }
+        
+        // Check static cache
         const staticCache = await caches.open(STATIC_CACHE);
         let cachedResponse = await staticCache.match(event.request);
         
@@ -213,7 +249,7 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
         
-        // Try to fetch from network
+        // Try to fetch from network as last resort
         const networkResponse = await fetch(event.request);
         
         if (networkResponse.ok) {

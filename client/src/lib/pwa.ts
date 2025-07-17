@@ -1,13 +1,58 @@
 export function initializePWA() {
   // Service Worker registration - skip in development to avoid caching issues
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    // Check if SW was previously disabled due to errors
+    const swDisabled = localStorage.getItem('sw-disabled');
+    if (swDisabled) {
+      console.log('Service Worker disabled due to previous errors');
+      return;
+    }
+
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
         console.log('SW registered: ', registration);
+        
+        // Listen for service worker errors
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'activated') {
+                console.log('SW activated successfully');
+              }
+            });
+          }
+        });
       })
       .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
+        console.error('SW registration failed: ', registrationError);
+        // Disable SW temporarily if registration fails repeatedly
+        const failCount = parseInt(localStorage.getItem('sw-fail-count') || '0') + 1;
+        localStorage.setItem('sw-fail-count', failCount.toString());
+        
+        if (failCount >= 3) {
+          console.log('SW failed 3 times, disabling for 1 hour');
+          localStorage.setItem('sw-disabled', Date.now().toString());
+          // Re-enable after 1 hour
+          setTimeout(() => {
+            localStorage.removeItem('sw-disabled');
+            localStorage.removeItem('sw-fail-count');
+          }, 60 * 60 * 1000);
+        }
       });
+
+    // Add global error handler for service worker
+    navigator.serviceWorker.addEventListener('error', (error) => {
+      console.error('SW runtime error:', error);
+      // If SW is causing critical errors, provide bypass mechanism
+      if (error.message && error.message.includes('503')) {
+        console.log('SW causing 503 errors, temporarily disabling');
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => registration.unregister());
+        });
+      }
+    });
+
   } else if (import.meta.env.DEV) {
     console.log('Service Worker disabled in development mode');
     // Unregister any existing service workers in development

@@ -20,6 +20,7 @@ import Review from "@/pages/review";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import InviteAdmin from "@/pages/invite-admin";
+import ServiceWorkerAdmin from "@/pages/service-worker-admin";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -113,6 +114,7 @@ function Router() {
         </Route>
         <Route path="/song-offset" component={ProtectedAdminRoute} />
         <Route path="/invite-admin" component={InviteAdmin} />
+        <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
         <Route component={NotFound} />
       </Switch>
       
