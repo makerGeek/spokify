@@ -99,6 +99,17 @@ export const vocabularyExplanations = pgTable("vocabulary_explanations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const translations = pgTable("translations", {
+  id: serial("id").primaryKey(),
+  text: text("text").notNull(),
+  fromLanguage: text("from_language").notNull(),
+  toLanguage: text("to_language").notNull(),
+  translation: text("translation").notNull(),
+  confidence: integer("confidence").notNull(), // Stored as percentage (0-100)
+  vocabulary: jsonb("vocabulary").notNull(), // Array of vocabulary objects
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   supabaseId: true,
@@ -175,6 +186,15 @@ export const insertVocabularyExplanationSchema = createInsertSchema(vocabularyEx
   difficulty: true,
 });
 
+export const insertTranslationSchema = createInsertSchema(translations).pick({
+  text: true,
+  fromLanguage: true,
+  toLanguage: true,
+  translation: true,
+  confidence: true,
+  vocabulary: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ActivateUser = z.infer<typeof activateUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -190,3 +210,5 @@ export type InsertInviteCode = z.infer<typeof insertInviteCodeSchema>;
 export type InviteCode = typeof inviteCodes.$inferSelect;
 export type InsertVocabularyExplanation = z.infer<typeof insertVocabularyExplanationSchema>;
 export type VocabularyExplanation = typeof vocabularyExplanations.$inferSelect;
+export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
+export type Translation = typeof translations.$inferSelect;

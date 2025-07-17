@@ -218,7 +218,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required fields: text, fromLanguage, toLanguage" });
       }
       
+      // Check if translation already exists in cache
+      const cached = await storage.getTranslation(text, fromLanguage, toLanguage);
+      
+      if (cached) {
+        // Return cached result
+        res.json({
+          translation: cached.translation,
+          confidence: cached.confidence / 100, // Convert back to decimal
+          vocabulary: cached.vocabulary
+        });
+        return;
+      }
+      
+      // Generate new translation if not cached
       const result = await translateText(text, fromLanguage, toLanguage);
+      
+      // Cache the result in database
+      await storage.createTranslation({
+        text,
+        fromLanguage,
+        toLanguage,
+        translation: result.translation,
+        confidence: Math.round(result.confidence * 100), // Store as percentage
+        vocabulary: result.vocabulary
+      });
+      
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Translation failed" });
