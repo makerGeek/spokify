@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { Dialog, DialogContent, DialogOverlay } from '@/components/ui/dialog'
-import { LoginForm } from '@/components/login-form'
+import LoginForm from '@/components/login-form'
 
 interface AuthModalProps {
   children: ReactNode
