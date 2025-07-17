@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { initializePWA } from "@/lib/pwa";
 import { AudioProvider } from "@/hooks/use-audio";
-import { AuthProvider } from "@/contexts/auth-context";
+import { AuthProvider, useAuth } from "@/contexts/passport-auth-context";
 import { InviteProvider } from "@/contexts/invite-context";
 import SmartRedirect from "@/components/smart-redirect";
 import LanguageSelection from "@/pages/language-selection";
@@ -20,22 +20,17 @@ import Review from "@/pages/review";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import InviteAdmin from "@/pages/invite-admin";
-import ProtectedRoute from "@/components/protected-route";
-import AuthenticatedOnly from "@/components/authenticated-only";
+import PassportAuthenticatedOnly from "@/components/passport-authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
 import { type User } from "@shared/schema";
 
 function ProtectedAdminRoute() {
   const [, setLocation] = useLocation();
-
-  const { data: user, isLoading, error } = useQuery<User>({
-    queryKey: ["/api/user"],
-    retry: false
-  });
+  const { user, loading, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (error || !user) {
+    if (!loading) {
+      if (!isAuthenticated || !user) {
         // User not authenticated, redirect to home
         setLocation("/");
         return;
@@ -47,9 +42,9 @@ function ProtectedAdminRoute() {
         return;
       }
     }
-  }, [user, isLoading, error, setLocation]);
+  }, [user, loading, isAuthenticated, setLocation]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
         <div className="text-center">
@@ -60,7 +55,7 @@ function ProtectedAdminRoute() {
     );
   }
 
-  if (error || !user || !user.isAdmin) {
+  if (!isAuthenticated || !user || !user.isAdmin) {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
         <div className="text-center">
@@ -97,19 +92,19 @@ function Router() {
         <Route path="/search" component={SearchPage} />
         <Route path="/lyrics/:id" component={LyricsPlayer} />
         <Route path="/library">
-          <AuthenticatedOnly contextMessage="Login to see your favorite songs and learned vocabulary">
+          <PassportAuthenticatedOnly>
             <Library />
-          </AuthenticatedOnly>
+          </PassportAuthenticatedOnly>
         </Route>
         <Route path="/review">
-          <AuthenticatedOnly contextMessage="Login to practice vocabulary with interactive quizzes">
+          <PassportAuthenticatedOnly>
             <Review />
-          </AuthenticatedOnly>
+          </PassportAuthenticatedOnly>
         </Route>
         <Route path="/profile">
-          <AuthenticatedOnly contextMessage="Login to view your learning progress and stats">
+          <PassportAuthenticatedOnly>
             <Profile />
-          </AuthenticatedOnly>
+          </PassportAuthenticatedOnly>
         </Route>
         <Route path="/song-offset" component={ProtectedAdminRoute} />
         <Route path="/invite-admin" component={InviteAdmin} />

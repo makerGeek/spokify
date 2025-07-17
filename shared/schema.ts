@@ -5,10 +5,11 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
-  supabaseId: text("supabase_id").notNull().unique(),
+  passwordHash: text("password_hash"), // For local auth
+  name: text("name"),
   firstName: text("first_name"),
   lastName: text("last_name"),
-  profileImageUrl: text("profile_image_url"),
+  profilePicture: text("profile_picture"),
   nativeLanguage: text("native_language").default("en"),
   targetLanguage: text("target_language").default("es"),
   level: text("level").default("A1"),
@@ -17,7 +18,12 @@ export const users = pgTable("users", {
   streak: integer("streak").notNull().default(0),
   lastActiveDate: timestamp("last_active_date").defaultNow(),
   isAdmin: boolean("is_admin").notNull().default(false),
-  isActive: boolean("is_active").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  isEmailVerified: boolean("is_email_verified").notNull().default(false),
+  // OAuth provider IDs
+  googleId: text("google_id").unique(),
+  facebookId: text("facebook_id").unique(),
+  // Invite system
   invitedBy: text("invited_by"),
   inviteCode: text("invite_code").unique(),
   activatedAt: timestamp("activated_at"),
@@ -88,13 +94,19 @@ export const inviteCodes = pgTable("invite_codes", {
 
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
-  supabaseId: true,
+  passwordHash: true,
+  name: true,
   firstName: true,
   lastName: true,
-  profileImageUrl: true,
+  profilePicture: true,
   nativeLanguage: true,
   targetLanguage: true,
   level: true,
+  googleId: true,
+  facebookId: true,
+  invitedBy: true,
+  inviteCode: true,
+  isEmailVerified: true,
 });
 
 export const activateUserSchema = createInsertSchema(users).pick({
