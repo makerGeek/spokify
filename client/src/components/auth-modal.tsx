@@ -1,6 +1,5 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { Dialog, DialogContent, DialogOverlay } from '@/components/ui/dialog'
 import LoginForm from '@/components/login-form'
 
 interface AuthModalProps {
@@ -10,6 +9,11 @@ interface AuthModalProps {
 
 export function AuthModal({ children, fallback }: AuthModalProps) {
   const { user, loading } = useAuth()
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    setIsVisible(true)
+  }, [])
 
   // Show loading state
   if (loading) {
@@ -25,41 +29,56 @@ export function AuthModal({ children, fallback }: AuthModalProps) {
     return <>{children}</>
   }
 
-  // If not authenticated, show blurred background with modal
+  // If not authenticated, show blurred background with compact modal
   return (
-    <div className="relative min-h-screen">
+    <div className="relative">
       {/* Blurred background content */}
       <div 
-        className="absolute inset-0 filter blur-md pointer-events-none select-none"
-        style={{ filter: 'blur(8px) brightness(0.3)' }}
+        className={`transition-all duration-500 ${isVisible ? 'filter blur-sm brightness-50' : ''} pointer-events-none select-none`}
       >
         {children}
       </div>
       
-      {/* Modal overlay */}
-      <Dialog open={true} modal>
-        <DialogOverlay className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
-        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-spotify-gray bg-spotify-card p-6 shadow-lg duration-200 sm:rounded-lg">
-          <div className="flex flex-col space-y-2 text-center sm:text-left">
-            <h2 className="text-lg font-semibold text-spotify-text-primary">
-              Sign in to continue
+      {/* Compact Modal Overlay */}
+      <div 
+        className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-300 ${
+          isVisible ? 'bg-black/60 backdrop-blur-sm opacity-100' : 'opacity-0'
+        }`}
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+      >
+        <div 
+          className={`spotify-card-glass border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 transition-all duration-500 transform ${
+            isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'
+          }`}
+          style={{
+            background: 'rgba(24, 24, 24, 0.95)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)'
+          }}
+        >
+          {/* Compact header */}
+          <div className="text-center mb-6">
+            <h2 className="spotify-heading-sm text-white mb-2">
+              Sign in to save words
             </h2>
-            <p className="text-sm text-spotify-text-secondary">
-              You need to be signed in to access this content
+            <p className="spotify-text-muted text-sm">
+              Create an account to build your vocabulary
             </p>
           </div>
           
-          {/* Use the existing LoginForm component */}
-          <LoginForm />
+          {/* Compact login form */}
+          <div className="space-y-4">
+            <LoginForm />
+          </div>
           
-          {/* Custom fallback content if provided */}
+          {/* Compact fallback */}
           {fallback && (
-            <div className="mt-4 pt-4 border-t border-spotify-gray">
+            <div className="mt-4 pt-4 border-t border-white/10">
               {fallback}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
     </div>
   )
 }
