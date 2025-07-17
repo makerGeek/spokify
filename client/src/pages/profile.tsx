@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
+import { getBuildVersion, getBuildInfo } from '@/lib/build-info'
 
 export default function Profile() {
   const { user, signOut } = useAuth()
@@ -409,7 +410,7 @@ export default function Profile() {
         </div>
 
         {/* Sign Out Section */}
-        <div className="spotify-card p-6">
+        <div className="spotify-card p-6 mb-4">
           <button
             className="spotify-btn-secondary w-full !border-red-500/20 !text-red-400 hover:!bg-red-500/10 hover:!text-red-300"
             onClick={handleSignOut}
@@ -417,6 +418,13 @@ export default function Profile() {
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </button>
+        </div>
+
+        {/* Build Version */}
+        <div className="text-center pb-4">
+          <p className="text-xs text-spotify-muted opacity-60">
+            Build: {getBuildVersion()}
+          </p>
         </div>
       </div>
     </div>
