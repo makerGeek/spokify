@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowDown, Bookmark, Languages, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import TranslationOverlay from "@/components/translation-overlay";
 
 import MiniPlayer from "@/components/mini-player";
@@ -136,14 +137,27 @@ export default function LyricsPlayer() {
             <ArrowDown className="text-spotify-muted" size={20} />
           </Button>
           <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2 bg-spotify-card rounded-full px-3 py-1">
-              <RotateCcw size={14} className={autoScroll ? "text-spotify-green" : "text-spotify-muted"} />
-              <Switch
-                checked={autoScroll}
-                onCheckedChange={setAutoScroll}
-                className="data-[state=checked]:bg-spotify-green"
-              />
-            </div>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <div className="flex items-center space-x-2 bg-spotify-card rounded-full px-3 py-1 cursor-pointer">
+                  <RotateCcw size={14} className={autoScroll ? "text-spotify-green" : "text-spotify-muted"} />
+                  <Switch
+                    checked={autoScroll}
+                    onCheckedChange={setAutoScroll}
+                    className="data-[state=checked]:bg-spotify-green"
+                  />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 bg-spotify-card border-spotify-muted">
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-spotify-text-primary">Auto-scroll</h4>
+                  <p className="text-xs text-spotify-text-secondary">
+                    When enabled, the lyrics will automatically scroll to keep the currently playing line centered on screen. 
+                    Turn off to manually scroll through the lyrics at your own pace.
+                  </p>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
             <Button
               size="sm"
               className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white`}
