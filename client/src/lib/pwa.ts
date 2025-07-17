@@ -1,6 +1,6 @@
 export function initializePWA() {
-  // Service Worker registration
-  if ('serviceWorker' in navigator) {
+  // Service Worker registration - skip in development to avoid caching issues
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
         console.log('SW registered: ', registration);
@@ -8,6 +8,17 @@ export function initializePWA() {
       .catch((registrationError) => {
         console.log('SW registration failed: ', registrationError);
       });
+  } else if (import.meta.env.DEV) {
+    console.log('Service Worker disabled in development mode');
+    // Unregister any existing service workers in development
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+          console.log('Unregistered existing service worker');
+        }
+      });
+    }
   }
 
   // Track user engagement
