@@ -137,7 +137,7 @@ export default function LyricsPlayer() {
             <ArrowDown className="text-spotify-muted" size={20} />
           </Button>
           <div className="flex items-center space-x-2">
-            <TooltipProvider>
+            <TooltipProvider delayDuration={700}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center space-x-2 bg-spotify-card rounded-full px-3 py-1 cursor-pointer">
@@ -149,8 +149,11 @@ export default function LyricsPlayer() {
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="bg-black text-white border-gray-700">
-                  <p>Auto-scroll keeps lyrics centered with playback</p>
+                <TooltipContent 
+                  className="bg-black text-white border-gray-700 text-sm px-3 py-2 max-w-xs"
+                  sideOffset={8}
+                >
+                  <p>Auto-scroll</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
