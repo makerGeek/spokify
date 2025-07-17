@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, CheckCircle, XCircle, Music } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import AuthenticatedOnly from "@/components/authenticated-only";
+import { useAuth } from "@/contexts/auth-context";
+import { authenticatedApiRequest } from "@/lib/authenticated-fetch";
 import { type Vocabulary } from "@shared/schema";
 
 interface ReviewQuestion {
@@ -23,9 +25,16 @@ export default function Review() {
     return saved ? JSON.parse(saved) : false;
   });
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { user, databaseUser } = useAuth();
 
   const { data: vocabulary, isLoading, refetch } = useQuery<Vocabulary[]>({
-    queryKey: ["/api/users/1/vocabulary"], // TODO: Use actual user ID from auth
+    queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary"] : [],
+    queryFn: async () => {
+      if (!databaseUser?.id) return [];
+      return authenticatedApiRequest<Vocabulary[]>(`/api/users/${databaseUser.id}/vocabulary`);
+    },
+    retry: false,
+    enabled: !!databaseUser?.id && !!user
   });
 
   // Generate random incorrect answers for multiple choice

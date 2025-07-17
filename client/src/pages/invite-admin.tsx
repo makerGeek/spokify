@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Plus, Trash2, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
+import { authenticatedApiRequest } from '@/lib/authenticated-fetch';
 import { apiRequest } from '@/lib/queryClient';
 
 interface InviteCode {
@@ -26,24 +28,35 @@ export default function InviteAdmin() {
   const [expiresIn, setExpiresIn] = useState(7); // days
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, databaseUser } = useAuth();
 
   const { data: inviteCodes, isLoading } = useQuery<InviteCode[]>({
-    queryKey: ['/api/users/1/invite-codes'], // For demo, using user ID 1
+    queryKey: databaseUser?.id ? ['/api/users', databaseUser.id, 'invite-codes'] : [],
+    queryFn: async () => {
+      if (!databaseUser?.id) return [];
+      return authenticatedApiRequest<InviteCode[]>(`/api/users/${databaseUser.id}/invite-codes`);
+    },
+    retry: false,
+    enabled: !!databaseUser?.id && !!user
   });
 
   const generateCodeMutation = useMutation({
     mutationFn: async () => {
+      if (!databaseUser?.id) throw new Error('User not authenticated');
+      
       const expiresAt = expiresIn > 0 
         ? new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000).toISOString()
         : null;
       
       return apiRequest('/api/invite-codes/generate', {
         method: 'POST',
-        body: { userId: 1, maxUses, expiresAt }
+        body: { userId: databaseUser.id, maxUses, expiresAt }
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/users/1/invite-codes'] });
+      if (databaseUser?.id) {
+        queryClient.invalidateQueries({ queryKey: ['/api/users', databaseUser.id, 'invite-codes'] });
+      }
       toast({
         title: 'Invite Code Generated',
         description: 'New invite code has been created successfully.',

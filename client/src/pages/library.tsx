@@ -6,12 +6,15 @@ import { useLocation } from 'wouter'
 import { type Song, type Vocabulary, type UserProgress } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
 import { useMarquee } from '@/hooks/use-marquee'
+import { useAuth } from '@/contexts/auth-context'
+import { authenticatedApiRequest } from '@/lib/authenticated-fetch'
 import SongCard from '@/components/song-card'
 
 export default function Library() {
   const [_, setLocation] = useLocation()
   const [activeTab, setActiveTab] = useState<'saved' | 'history' | 'vocabulary'>('saved')
   const { setCurrentSong } = useAudio()
+  const { user, databaseUser } = useAuth()
 
   // Fetch data for each tab
   const { data: songs = [] } = useQuery<Song[]>({
@@ -20,13 +23,23 @@ export default function Library() {
   })
 
   const { data: vocabulary = [] } = useQuery<Vocabulary[]>({
-    queryKey: ["/api/users/1/vocabulary"], // Keep using ID 1 for demo purposes in library
-    retry: false
+    queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary"] : [],
+    queryFn: async () => {
+      if (!databaseUser?.id) return [];
+      return authenticatedApiRequest<Vocabulary[]>(`/api/users/${databaseUser.id}/vocabulary`);
+    },
+    retry: false,
+    enabled: !!databaseUser?.id && !!user
   })
 
   const { data: userProgress = [] } = useQuery<UserProgress[]>({
-    queryKey: ["/api/users/1/progress"],
-    retry: false
+    queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "progress"] : [],
+    queryFn: async () => {
+      if (!databaseUser?.id) return [];
+      return authenticatedApiRequest<UserProgress[]>(`/api/users/${databaseUser.id}/progress`);
+    },
+    retry: false,
+    enabled: !!databaseUser?.id && !!user
   })
 
   // Mock saved songs (in real app, would come from user's saved songs)
