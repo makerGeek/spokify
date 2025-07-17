@@ -44,6 +44,11 @@ export default function SongCard({ song, onClick }: SongCardProps) {
             <span className="difficulty-badge text-xs px-2 py-1 rounded-full font-medium text-white">
               {song.difficulty}
             </span>
+            {song.isFree && (
+              <span className="text-xs px-2 py-1 rounded-full font-medium bg-spotify-green text-white">
+                FREE
+              </span>
+            )}
             <span className="text-xs text-spotify-muted">{song.genre}</span>
           </div>
         </div>
