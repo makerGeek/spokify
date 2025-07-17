@@ -25,32 +25,29 @@ import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
 import { type User } from "@shared/schema";
+import { useAuth } from "@/contexts/auth-context";
 
 function ProtectedAdminRoute() {
   const [, setLocation] = useLocation();
-
-  const { data: user, isLoading, error } = useQuery<User>({
-    queryKey: ["/api/user"],
-    retry: false
-  });
+  const { databaseUser, loading } = useAuth();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (error || !user) {
+    if (!loading) {
+      if (!databaseUser) {
         // User not authenticated, redirect to home
         setLocation("/");
         return;
       }
 
-      if (!user.isAdmin) {
+      if (!databaseUser.isAdmin) {
         // User authenticated but not admin, redirect to home
         setLocation("/home");
         return;
       }
     }
-  }, [user, isLoading, error, setLocation]);
+  }, [databaseUser, loading, setLocation]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
         <div className="text-center">
@@ -61,7 +58,7 @@ function ProtectedAdminRoute() {
     );
   }
 
-  if (error || !user || !user.isAdmin) {
+  if (!databaseUser || !databaseUser.isAdmin) {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
         <div className="text-center">

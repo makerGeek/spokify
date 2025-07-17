@@ -11,7 +11,7 @@ import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
 import { getBuildVersion, getBuildInfo } from '@/lib/build-info'
 
 export default function Profile() {
-  const { user, signOut } = useAuth()
+  const { user, databaseUser, signOut } = useAuth()
   const { toast } = useToast()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [canInstall, setCanInstall] = useState(false)
@@ -20,43 +20,55 @@ export default function Profile() {
     return saved ? JSON.parse(saved) : false;
   })
 
-  // Fetch user data from your backend
-  const { data: userData } = useQuery<User>({
-    queryKey: user?.email ? ["/api/user", { email: user.email }] : ["/api/user"],
-    queryFn: async () => {
-      const url = user?.email ? `/api/user?email=${encodeURIComponent(user.email)}` : '/api/user';
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      return response.json();
-    },
-    retry: false,
-    enabled: !!user // Only run when we have a Supabase user
-  })
+  // Use the user data from auth context instead of making another API call
+  const userData = databaseUser
 
   const { data: vocabulary = [] } = useQuery<Vocabulary[]>({
     queryKey: userData?.id ? ["/api/users", userData.id, "vocabulary"] : [],
     queryFn: async () => {
       if (!userData?.id) return [];
-      const response = await fetch(`/api/users/${userData.id}/vocabulary`);
+      
+      // Get auth token from Supabase session
+      const { data: { session } } = await (await import('@supabase/supabase-js')).createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      ).auth.getSession();
+      
+      const response = await fetch(`/api/users/${userData.id}/vocabulary`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch vocabulary');
       return response.json();
     },
     retry: false,
-    enabled: !!userData?.id
+    enabled: !!userData?.id && !!user
   })
 
   const { data: userProgress = [] } = useQuery<UserProgress[]>({
     queryKey: userData?.id ? ["/api/users", userData.id, "progress"] : [],
     queryFn: async () => {
       if (!userData?.id) return [];
-      const response = await fetch(`/api/users/${userData.id}/progress`);
+      
+      // Get auth token from Supabase session
+      const { data: { session } } = await (await import('@supabase/supabase-js')).createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      ).auth.getSession();
+      
+      const response = await fetch(`/api/users/${userData.id}/progress`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch progress');
       return response.json();
     },
     retry: false,
-    enabled: !!userData?.id
+    enabled: !!userData?.id && !!user
   })
 
   // PWA Install functionality
