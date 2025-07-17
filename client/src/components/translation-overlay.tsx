@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Plus, Loader2 } from "lucide-react";
+import { X, Plus, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
     word: string;
     translation: string;
   }>>([]);
+  const [addedWords, setAddedWords] = useState<Set<string>>(new Set());
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -59,14 +60,12 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
         context: line.text
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, word) => {
       if (databaseUser?.id) {
         queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary"] });
       }
-      toast({
-        title: "Added to vocabulary!",
-        description: "Word saved for review",
-      });
+      // Add word to the set of added words
+      setAddedWords(prev => new Set([...prev, word.word]));
     },
     onError: () => {
       toast({
@@ -122,24 +121,44 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {vocabulary.map((word, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      size="sm"
-                      className="bg-spotify-green text-white hover:bg-spotify-accent px-2 py-1 rounded-full text-xs flex items-center gap-1"
-                      onClick={() => {
-                        if (!databaseUser?.id) {
-                          setShowAuthModal(true);
-                        } else {
-                          addVocabularyMutation.mutate(word);
-                        }
-                      }}
-                    >
-                      <Plus size={12} />
-                      {word.word} ({word.translation})
-                    </Button>
-                  ))}
+                  {vocabulary.map((word, index) => {
+                    const isAdded = addedWords.has(word.word);
+                    const isLoading = addVocabularyMutation.isPending && addVocabularyMutation.variables?.word === word.word;
+                    
+                    return (
+                      <Button
+                        key={index}
+                        variant="ghost"
+                        size="sm"
+                        className={`${
+                          isAdded 
+                            ? 'bg-spotify-accent text-white' 
+                            : 'bg-spotify-green text-white hover:bg-spotify-accent'
+                        } px-2 py-1 rounded-full text-xs flex items-center gap-1 transition-all duration-300`}
+                        onClick={() => {
+                          if (isAdded) return; // Don't allow clicking already added words
+                          if (!databaseUser?.id) {
+                            setShowAuthModal(true);
+                          } else {
+                            addVocabularyMutation.mutate(word);
+                          }
+                        }}
+                        disabled={isAdded || isLoading}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : isAdded ? (
+                          <Check 
+                            size={12} 
+                            className="animate-in zoom-in-50 duration-300" 
+                          />
+                        ) : (
+                          <Plus size={12} />
+                        )}
+                        {word.word} ({word.translation})
+                      </Button>
+                    );
+                  })}
                 </div>
               )}
             </div>
