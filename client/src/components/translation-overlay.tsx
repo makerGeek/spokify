@@ -151,15 +151,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
 
       {/* Auth Modal */}
       {showAuthModal && (
-        <AuthModal fallback={
-          <Button 
-            variant="outline" 
-            onClick={() => setShowAuthModal(false)}
-            className="w-full"
-          >
-            Cancel
-          </Button>
-        }>
+        <AuthModal onClose={() => setShowAuthModal(false)}>
           {/* This content won't be shown since we're in auth modal mode, but required for component structure */}
           <div></div>
         </AuthModal>
