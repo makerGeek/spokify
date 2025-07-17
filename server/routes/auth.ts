@@ -2,11 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authenticateToken, rateLimit, validateInput, type AuthenticatedRequest } from '../middleware/auth';
 import { 
-  syncUserToDatabase, 
   validateInviteCode, 
-  generateSecureInviteCode,
-  checkAdminPrivileges,
-  type SupabaseUser 
+  generateSecureInviteCode
 } from '../services/auth';
 import { storage } from '../storage';
 
@@ -38,45 +35,10 @@ router.post('/validate-invite',
 );
 
 /**
- * Sync authenticated user to database
- * POST /api/auth/sync
- * Requires valid Supabase JWT token
- */
-router.post('/sync',
-  authenticateToken,
-  rateLimit(10, 300000), // 10 attempts per 5 minutes
-  validateInput(z.object({
-    inviteCode: z.string().optional(),
-  })),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'No authenticated user' });
-      }
-
-      const supabaseUser: SupabaseUser = {
-        id: req.user.id,
-        email: req.user.email,
-        user_metadata: req.user.user_metadata,
-      };
-
-      const result = await syncUserToDatabase(supabaseUser, req.body.inviteCode);
-      
-      res.json({
-        user: result.user,
-        isNewUser: result.isNewUser,
-        inviteCodeUsed: result.inviteCodeUsed || false,
-      });
-    } catch (error) {
-      console.error('User sync error:', error);
-      res.status(500).json({ error: 'Failed to sync user' });
-    }
-  }
-);
-
-/**
  * Get current authenticated user
  * GET /api/auth/user
+ * Requires valid Supabase JWT token
+ * User is automatically synced by middleware
  */
 router.get('/user',
   authenticateToken,
@@ -86,18 +48,15 @@ router.get('/user',
         return res.status(401).json({ error: 'No authenticated user' });
       }
 
-      const user = await storage.getUserBySupabaseId(req.user.id);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found in database' });
-      }
-
-      res.json({ user });
+      res.json({ user: req.user });
     } catch (error) {
       console.error('Get user error:', error);
       res.status(500).json({ error: 'Failed to get user' });
     }
   }
 );
+
+
 
 /**
  * Get user's invite codes
@@ -111,12 +70,7 @@ router.get('/invite-codes',
         return res.status(401).json({ error: 'No authenticated user' });
       }
 
-      const user = await storage.getUserBySupabaseId(req.user.id);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const inviteCodes = await storage.getUserInviteCodes(user.id);
+      const inviteCodes = await storage.getUserInviteCodes(req.user.id);
       res.json({ inviteCodes });
     } catch (error) {
       console.error('Get invite codes error:', error);
@@ -142,11 +96,6 @@ router.post('/generate-invite',
         return res.status(401).json({ error: 'No authenticated user' });
       }
 
-      const user = await storage.getUserBySupabaseId(req.user.id);
-      if (!user || !user.isActive) {
-        return res.status(403).json({ error: 'User not activated' });
-      }
-
       const { maxUses, expiresInDays } = req.body;
       const code = await generateSecureInviteCode();
       
@@ -155,7 +104,7 @@ router.post('/generate-invite',
 
       const inviteCode = await storage.createInviteCode({
         code,
-        createdBy: user.id,
+        createdBy: req.user.id,
         maxUses,
         expiresAt,
       });
@@ -188,12 +137,7 @@ router.put('/profile',
         return res.status(401).json({ error: 'No authenticated user' });
       }
 
-      const user = await storage.getUserBySupabaseId(req.user.id);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const updatedUser = await storage.updateUser(user.id, req.body);
+      const updatedUser = await storage.updateUser(req.user.id, req.body);
       res.json({ user: updatedUser });
     } catch (error) {
       console.error('Update profile error:', error);

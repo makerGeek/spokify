@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useFeatureFlag } from '@/hooks/use-feature-flags'
-import { syncUserToDatabase as apiSyncUser, getCurrentUser, type DatabaseUser } from '@/lib/auth'
+import { getCurrentUser, type DatabaseUser } from '@/lib/auth'
 
 interface AuthContextType {
   session: Session | null
@@ -13,7 +13,6 @@ interface AuthContextType {
   requiresInviteCode: boolean
   setRequiresInviteCode: (required: boolean) => void
   setPendingInviteCode: (code: string | null) => void
-  syncUser: (inviteCode?: string) => Promise<any>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,8 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
   requiresInviteCode: false,
   setRequiresInviteCode: () => {},
-  setPendingInviteCode: () => {},
-  syncUser: async () => ({})
+  setPendingInviteCode: () => {}
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -47,12 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      
-      // Sync user to our database if they exist
-      if (session?.user) {
-        syncUserToDatabase(session.user)
-      }
-      
       setLoading(false)
     })
 
@@ -62,54 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
-      
-      // Sync user to our database on sign up or sign in
-      if (session?.user) {
-        await syncUserToDatabase(session.user)
-      }
-      
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  const syncUserToDatabase = async (user: any) => {
-    try {
-      console.log('Syncing user to database:', user.email);
-      
-      // Use new secure API to sync user
-      const result = await apiSyncUser(pendingInviteCode || undefined);
-      setDatabaseUser(result.user);
-      
-      // Clear pending invite code after successful sync
-      if (result.inviteCodeUsed) {
-        setPendingInviteCode(null);
-      }
-      
-      console.log('User sync completed:', result);
-    } catch (error) {
-      console.error('Failed to sync user:', error);
-      // Don't throw here to avoid breaking auth flow
-    }
-  };
-
-  const syncUser = async (inviteCode?: string) => {
-    try {
-      if (!user) throw new Error('No authenticated user');
-      
-      const result = await apiSyncUser(inviteCode);
-      setDatabaseUser(result.user);
-      return result;
-    } catch (error) {
-      console.error('Failed to sync user:', error);
-      throw error;
-    }
-  };
-
   // Load database user when session changes
+  // User sync happens automatically via middleware on first API call
   useEffect(() => {
-    if (session?.user && !databaseUser) {
+    if (session?.user) {
       getCurrentUser().then(dbUser => {
         if (dbUser) {
           setDatabaseUser(dbUser);
@@ -117,10 +71,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }).catch(error => {
         console.error('Failed to load database user:', error);
       });
-    } else if (!session?.user) {
+    } else {
       setDatabaseUser(null);
     }
-  }, [session?.user, databaseUser]);
+  }, [session?.user]);
 
   const signOut = async () => {
     await supabase.auth.signOut()
@@ -136,8 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut, 
       requiresInviteCode, 
       setRequiresInviteCode, 
-      setPendingInviteCode,
-      syncUser
+      setPendingInviteCode
     }}>
       {children}
     </AuthContext.Provider>

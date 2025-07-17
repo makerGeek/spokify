@@ -44,30 +44,9 @@ export async function getAuthToken(): Promise<string | null> {
 }
 
 /**
- * Sync authenticated Supabase user to our database
+ * Note: User sync is now handled automatically by backend middleware
+ * No need for manual sync calls - users are created/updated on first API request
  */
-export async function syncUserToDatabase(inviteCode?: string): Promise<UserSyncResult> {
-  const token = await getAuthToken();
-  if (!token) {
-    throw new Error('No authentication token available');
-  }
-
-  const response = await fetch('/api/auth/sync', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ inviteCode }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to sync user');
-  }
-
-  return response.json();
-}
 
 /**
  * Get current authenticated user from our database

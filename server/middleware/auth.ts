@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { storage } from '../storage';
+import { nanoid } from 'nanoid';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || 'http://localhost:54321';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'fallback-key';
@@ -9,15 +10,60 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    id: string;
+    id: number; // Our internal database ID
     email: string;
-    user_metadata?: any;
+    supabaseId: string;
+    name?: string;
+    targetLanguage?: string;
+    nativeLanguage?: string;
+    inviteCode?: string;
+    invitedBy?: number;
+    isAdmin?: boolean;
   };
 }
 
 /**
- * Middleware to verify Supabase JWT tokens
- * Attaches verified user data to request.user
+ * Get or create user in our database from Supabase user data
+ */
+async function getOrCreateUser(supabaseUser: any) {
+  const { id: supabaseId, email, user_metadata } = supabaseUser;
+  
+  // First try to find user by supabaseId
+  let user = await storage.getUserBySupabaseId(supabaseId);
+  
+  // If not found, try by email (for backward compatibility)
+  if (!user) {
+    user = await storage.getUserByEmail(email);
+    
+    // If found by email but missing supabaseId, update it
+    if (user && !user.supabaseId) {
+      await storage.updateUser(user.id, { supabaseId });
+      user.supabaseId = supabaseId;
+    }
+  }
+  
+  // If still not found, create new user
+  if (!user) {
+    const newUser = {
+      email,
+      supabaseId,
+      name: user_metadata?.full_name || user_metadata?.name || email.split('@')[0],
+      inviteCode: nanoid(8),
+      targetLanguage: 'es', // Default target language
+      nativeLanguage: 'en', // Default native language
+      isAdmin: false
+    };
+    
+    const userId = await storage.createUser(newUser);
+    user = { id: userId, ...newUser };
+  }
+  
+  return user;
+}
+
+/**
+ * Middleware to verify Supabase JWT tokens and sync user to our database
+ * Attaches complete user data to request.user
  */
 export async function authenticateToken(
   req: AuthenticatedRequest,
@@ -31,17 +77,15 @@ export async function authenticateToken(
     }
 
     const token = authHeader.split(' ')[1];
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
 
-    if (error || !user) {
+    if (error || !supabaseUser) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    req.user = {
-      id: user.id,
-      email: user.email!,
-      user_metadata: user.user_metadata,
-    };
+    // Get or create user in our database
+    const dbUser = await getOrCreateUser(supabaseUser);
+    req.user = dbUser;
 
     next();
   } catch (error) {
@@ -66,14 +110,12 @@ export async function optionalAuth(
     }
 
     const token = authHeader.split(' ')[1];
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
 
-    if (!error && user) {
-      req.user = {
-        id: user.id,
-        email: user.email!,
-        user_metadata: user.user_metadata,
-      };
+    if (!error && supabaseUser) {
+      // Get or create user in our database
+      const dbUser = await getOrCreateUser(supabaseUser);
+      req.user = dbUser;
     }
 
     next();
