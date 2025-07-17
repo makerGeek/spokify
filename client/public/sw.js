@@ -1,6 +1,6 @@
-const CACHE_NAME = 'spokify-v4';
-const STATIC_CACHE = 'spokify-static-v4';
-const DYNAMIC_CACHE = 'spokify-dynamic-v4';
+const CACHE_NAME = 'spokify-v3';
+const STATIC_CACHE = 'spokify-static-v3';
+const DYNAMIC_CACHE = 'spokify-dynamic-v3';
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
@@ -104,33 +104,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Helper function to check if the app is offline
-async function isOffline() {
-  // Check navigator.onLine first for immediate result
-  if (!navigator.onLine) {
-    return true;
-  }
-  
-  // Try a quick network test with a timeout
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-    
-    const response = await fetch('/', {
-      method: 'HEAD',
-      signal: controller.signal,
-      cache: 'no-cache'
-    });
-    
-    clearTimeout(timeoutId);
-    return !response.ok;
-  } catch (error) {
-    // Network error or timeout means we're offline
-    return true;
-  }
-}
-
-// Fetch event - serve from cache when offline, network when online
+// Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
@@ -143,21 +117,31 @@ self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        const offline = await isOffline();
-        console.log('SW: Navigation request for:', url.pathname, 'Offline:', offline);
-        
-        if (offline) {
-          // We're offline, serve from cache only
+        try {
+          console.log('SW: Navigation request for:', url.pathname);
+          
+          // Try to get from static cache first
           const staticCache = await caches.open(STATIC_CACHE);
           let cachedResponse = await staticCache.match('/');
           
           if (cachedResponse) {
-            console.log('SW: Serving main page from cache (offline mode)');
+            console.log('SW: Serving main page from cache');
             return cachedResponse;
           }
           
-          // No cached version available, show offline page
-          console.log('SW: No cached content, serving offline page');
+          // Try to fetch from network
+          const networkResponse = await fetch('/');
+          if (networkResponse.ok) {
+            // Cache the response
+            await staticCache.put('/', networkResponse.clone());
+            console.log('SW: Fetched and cached main page from network');
+            return networkResponse;
+          }
+          
+          throw new Error('Network response not ok');
+        } catch (error) {
+          console.log('SW: Network failed, serving offline page');
+          // Create a basic offline page
           return new Response(`
             <!DOCTYPE html>
             <html>
@@ -201,32 +185,6 @@ self.addEventListener('fetch', (event) => {
           `, {
             headers: { 'Content-Type': 'text/html' }
           });
-        } else {
-          // We're online, fetch from network
-          try {
-            const networkResponse = await fetch('/');
-            if (networkResponse.ok) {
-              // Cache the response for future offline use
-              const staticCache = await caches.open(STATIC_CACHE);
-              await staticCache.put('/', networkResponse.clone());
-              console.log('SW: Fetched and cached main page from network (online mode)');
-              return networkResponse;
-            }
-            throw new Error('Network response not ok');
-          } catch (error) {
-            // Network failed, fall back to cache
-            console.log('SW: Network failed, falling back to cache');
-            const staticCache = await caches.open(STATIC_CACHE);
-            const cachedResponse = await staticCache.match('/');
-            
-            if (cachedResponse) {
-              console.log('SW: Serving main page from cache (network failed)');
-              return cachedResponse;
-            }
-            
-            // No cache available, return error response
-            return new Response('Network Error', { status: 503 });
-          }
         }
       })()
     );
@@ -236,16 +194,13 @@ self.addEventListener('fetch', (event) => {
   // Handle static asset requests
   event.respondWith(
     (async () => {
-      const offline = await isOffline();
-      console.log('SW: Asset request for:', url.pathname, 'Offline:', offline);
-      
-      if (offline) {
-        // We're offline, serve from cache only
+      try {
+        // Check static cache first
         const staticCache = await caches.open(STATIC_CACHE);
         let cachedResponse = await staticCache.match(event.request);
         
         if (cachedResponse) {
-          console.log('SW: Serving from static cache (offline mode):', url.pathname);
+          console.log('SW: Serving from static cache:', url.pathname);
           return cachedResponse;
         }
         
@@ -254,11 +209,34 @@ self.addEventListener('fetch', (event) => {
         cachedResponse = await dynamicCache.match(event.request);
         
         if (cachedResponse) {
-          console.log('SW: Serving from dynamic cache (offline mode):', url.pathname);
+          console.log('SW: Serving from dynamic cache:', url.pathname);
           return cachedResponse;
         }
         
-        // No cached version available, return appropriate fallback
+        // Try to fetch from network
+        const networkResponse = await fetch(event.request);
+        
+        if (networkResponse.ok) {
+          // Cache the response if it's a static asset
+          if (url.pathname.includes('/assets/') || 
+              url.pathname.includes('/flags/') || 
+              url.pathname.includes('/manifest.json') ||
+              url.pathname.endsWith('.png') ||
+              url.pathname.endsWith('.jpg') ||
+              url.pathname.endsWith('.svg')) {
+            await staticCache.put(event.request, networkResponse.clone());
+            console.log('SW: Cached static asset:', url.pathname);
+          } else {
+            await dynamicCache.put(event.request, networkResponse.clone());
+            console.log('SW: Cached dynamic content:', url.pathname);
+          }
+        }
+        
+        return networkResponse;
+      } catch (error) {
+        console.log('SW: Network failed for:', url.pathname);
+        
+        // Return appropriate fallback
         if (event.request.destination === 'image' || url.pathname.includes('/flags/')) {
           // Create a simple fallback flag SVG
           const fallbackSvg = `
@@ -272,67 +250,7 @@ self.addEventListener('fetch', (event) => {
           });
         }
         
-        return new Response('Offline - Resource not cached', { status: 503 });
-      } else {
-        // We're online, fetch from network
-        try {
-          const networkResponse = await fetch(event.request);
-          
-          if (networkResponse.ok) {
-            // Cache the response for future offline use
-            if (url.pathname.includes('/assets/') || 
-                url.pathname.includes('/flags/') || 
-                url.pathname.includes('/manifest.json') ||
-                url.pathname.endsWith('.png') ||
-                url.pathname.endsWith('.jpg') ||
-                url.pathname.endsWith('.svg')) {
-              const staticCache = await caches.open(STATIC_CACHE);
-              await staticCache.put(event.request, networkResponse.clone());
-              console.log('SW: Cached static asset from network (online mode):', url.pathname);
-            } else {
-              const dynamicCache = await caches.open(DYNAMIC_CACHE);
-              await dynamicCache.put(event.request, networkResponse.clone());
-              console.log('SW: Cached dynamic content from network (online mode):', url.pathname);
-            }
-          }
-          
-          return networkResponse;
-        } catch (error) {
-          // Network failed, fall back to cache
-          console.log('SW: Network failed, falling back to cache for:', url.pathname);
-          
-          const staticCache = await caches.open(STATIC_CACHE);
-          let cachedResponse = await staticCache.match(event.request);
-          
-          if (cachedResponse) {
-            console.log('SW: Serving from static cache (network failed):', url.pathname);
-            return cachedResponse;
-          }
-          
-          // Check dynamic cache
-          const dynamicCache = await caches.open(DYNAMIC_CACHE);
-          cachedResponse = await dynamicCache.match(event.request);
-          
-          if (cachedResponse) {
-            console.log('SW: Serving from dynamic cache (network failed):', url.pathname);
-            return cachedResponse;
-          }
-          
-          // No cache available, return appropriate fallback
-          if (event.request.destination === 'image' || url.pathname.includes('/flags/')) {
-            const fallbackSvg = `
-              <svg width="32" height="24" viewBox="0 0 32 24" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="24" fill="#ccc"/>
-                <text x="16" y="14" text-anchor="middle" font-size="8" fill="#666">Flag</text>
-              </svg>
-            `;
-            return new Response(fallbackSvg, {
-              headers: { 'Content-Type': 'image/svg+xml' }
-            });
-          }
-          
-          return new Response('Network Error', { status: 503 });
-        }
+        return new Response('Offline', { status: 503 });
       }
     })()
   );
