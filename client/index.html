@@ -8,6 +8,51 @@
     <meta name="theme-color" content="#1DB954" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMURCOTU0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTkgMThoLTNhMiAyIDAgMCAxLTItMlY4YTIgMiAwIDAgMSAyLTJoM20zIDBoNmEyIDIgMCAwIDEgMiAydjhhMiAyIDAgMCAxLTIgMmgtNiIvPjxwYXRoIGQ9Ik0xMiAxNGw0LTRtLTQgMGw0LTQiLz48L3N2Zz4=" />
+    
+    <!-- Emergency Service Worker Clearing -->
+    <script>
+      (async function() {
+        // Check if we're in development or have SW issues
+        const isDev = location.hostname === 'localhost' || location.hostname.includes('replit');
+        const forceClearing = location.search.includes('clear-sw') || localStorage.getItem('force-clear-sw');
+        
+        if (isDev || forceClearing) {
+          console.log('🚨 Clearing service workers and caches...');
+          
+          try {
+            // Unregister all service workers
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (const registration of registrations) {
+                await registration.unregister();
+                console.log('Unregistered SW:', registration.scope);
+              }
+            }
+            
+            // Clear all caches
+            if ('caches' in window) {
+              const cacheNames = await caches.keys();
+              for (const cacheName of cacheNames) {
+                await caches.delete(cacheName);
+                console.log('Cleared cache:', cacheName);
+              }
+            }
+            
+            // Clear SW-related localStorage
+            Object.keys(localStorage).forEach(key => {
+              if (key.includes('sw-') || key.includes('pwa-')) {
+                localStorage.removeItem(key);
+              }
+            });
+            
+            console.log('✅ Service worker cleanup complete');
+          } catch (error) {
+            console.error('SW cleanup error:', error);
+          }
+        }
+      })();
+    </script>
+    
     <script src="https://www.youtube.com/iframe_api"></script>
   </head>
   <body>

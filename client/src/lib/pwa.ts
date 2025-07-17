@@ -55,13 +55,26 @@ export function initializePWA() {
 
   } else if (import.meta.env.DEV) {
     console.log('Service Worker disabled in development mode');
-    // Unregister any existing service workers in development
+    // Aggressively clear any existing service workers and caches in development
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      navigator.serviceWorker.getRegistrations().then(async function(registrations) {
         for(let registration of registrations) {
-          registration.unregister();
-          console.log('Unregistered existing service worker');
+          await registration.unregister();
+          console.log('Unregistered existing service worker:', registration.scope);
         }
+        
+        // Also clear all caches to prevent 503 errors
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          for (const cacheName of cacheNames) {
+            await caches.delete(cacheName);
+            console.log('Cleared cache in dev mode:', cacheName);
+          }
+        }
+        
+        console.log('✅ Development mode: All SW and caches cleared');
+      }).catch(error => {
+        console.error('Error clearing SW in dev mode:', error);
       });
     }
   }
