@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
 import { getBuildVersion, getBuildInfo } from '@/lib/build-info'
-import { authenticatedApiRequest } from '@/lib/authenticated-fetch'
+import { api } from '@/lib/api-client'
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth()
@@ -28,7 +28,7 @@ export default function Profile() {
     queryKey: userData?.id ? ["/api/users", userData.id, "vocabulary"] : [],
     queryFn: async () => {
       if (!userData?.id) return [];
-      return authenticatedApiRequest<Vocabulary[]>(`/api/users/${userData.id}/vocabulary`);
+      return api.users.getVocabulary(userData.id);
     },
     retry: false,
     enabled: !!userData?.id && !!user
@@ -38,7 +38,7 @@ export default function Profile() {
     queryKey: userData?.id ? ["/api/users", userData.id, "progress"] : [],
     queryFn: async () => {
       if (!userData?.id) return [];
-      return authenticatedApiRequest<UserProgress[]>(`/api/users/${userData.id}/progress`);
+      return api.users.getProgress(userData.id);
     },
     retry: false,
     enabled: !!userData?.id && !!user

@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, Plus, Trash2, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { authenticatedApiRequest } from '@/lib/authenticated-fetch';
-import { apiRequest } from '@/lib/queryClient';
+import { api } from '@/lib/api-client';
 
 interface InviteCode {
   id: number;
@@ -34,7 +33,7 @@ export default function InviteAdmin() {
     queryKey: databaseUser?.id ? ['/api/users', databaseUser.id, 'invite-codes'] : [],
     queryFn: async () => {
       if (!databaseUser?.id) return [];
-      return authenticatedApiRequest<InviteCode[]>(`/api/users/${databaseUser.id}/invite-codes`);
+      return api.users.getInviteCodes(databaseUser.id);
     },
     retry: false,
     enabled: !!databaseUser?.id && !!user
@@ -46,12 +45,9 @@ export default function InviteAdmin() {
       
       const expiresAt = expiresIn > 0 
         ? new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000).toISOString()
-        : null;
+        : undefined;
       
-      return apiRequest('/api/invite-codes/generate', {
-        method: 'POST',
-        body: { userId: databaseUser.id, maxUses, expiresAt }
-      });
+      return api.auth.generateInvite(databaseUser.id, maxUses, expiresAt);
     },
     onSuccess: () => {
       if (databaseUser?.id) {

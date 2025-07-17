@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useFeatureFlag } from '@/hooks/use-feature-flags'
-import { getCurrentUser, type DatabaseUser } from '@/lib/auth'
+import { api } from '@/lib/api-client'
+import { type DatabaseUser } from '@/lib/auth'
 
 interface AuthContextType {
   session: Session | null
@@ -65,9 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (session?.user && !databaseUser) {
       // Only load if we don't already have database user data
-      getCurrentUser().then(dbUser => {
-        if (dbUser) {
-          setDatabaseUser(dbUser);
+      api.auth.getUser().then(response => {
+        if (response?.user) {
+          setDatabaseUser(response.user);
         }
       }).catch(error => {
         console.error('Failed to load database user:', error);

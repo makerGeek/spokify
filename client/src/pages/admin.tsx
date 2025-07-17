@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Save, Play, Pause, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
 export default function Admin() {
@@ -23,20 +24,15 @@ export default function Admin() {
   // Fetch all songs
   const { data: songs, isLoading: songsLoading } = useQuery<Song[]>({
     queryKey: ["/api/songs"],
-    queryFn: async () => {
-      const response = await fetch("/api/songs");
-      if (!response.ok) throw new Error("Failed to fetch songs");
-      return response.json();
-    }
+    queryFn: () => api.songs.getAll()
   });
 
   // Fetch selected song details
   const { data: selectedSong, isLoading: songLoading } = useQuery<Song>({
     queryKey: ["/api/songs", selectedSongId],
     queryFn: async () => {
-      const response = await fetch(`/api/songs/${selectedSongId}`);
-      if (!response.ok) throw new Error("Failed to fetch song");
-      return response.json();
+      if (!selectedSongId) throw new Error("No song ID provided");
+      return api.songs.getById(parseInt(selectedSongId));
     },
     enabled: !!selectedSongId
   });

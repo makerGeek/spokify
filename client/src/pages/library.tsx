@@ -7,7 +7,7 @@ import { type Song, type Vocabulary, type UserProgress } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
 import { useMarquee } from '@/hooks/use-marquee'
 import { useAuth } from '@/contexts/auth-context'
-import { authenticatedApiRequest } from '@/lib/authenticated-fetch'
+import { api } from '@/lib/api-client'
 import SongCard from '@/components/song-card'
 
 export default function Library() {
@@ -19,6 +19,7 @@ export default function Library() {
   // Fetch data for each tab
   const { data: songs = [] } = useQuery<Song[]>({
     queryKey: ["/api/songs"],
+    queryFn: () => api.songs.getAll(),
     retry: false
   })
 
@@ -26,7 +27,7 @@ export default function Library() {
     queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary"] : [],
     queryFn: async () => {
       if (!databaseUser?.id) return [];
-      return authenticatedApiRequest<Vocabulary[]>(`/api/users/${databaseUser.id}/vocabulary`);
+      return api.users.getVocabulary(databaseUser.id);
     },
     retry: false,
     enabled: !!databaseUser?.id && !!user
@@ -36,7 +37,7 @@ export default function Library() {
     queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "progress"] : [],
     queryFn: async () => {
       if (!databaseUser?.id) return [];
-      return authenticatedApiRequest<UserProgress[]>(`/api/users/${databaseUser.id}/progress`);
+      return api.users.getProgress(databaseUser.id);
     },
     retry: false,
     enabled: !!databaseUser?.id && !!user

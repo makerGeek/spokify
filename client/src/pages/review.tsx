@@ -4,7 +4,7 @@ import { RefreshCw, CheckCircle, XCircle, Music } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import { useAuth } from "@/contexts/auth-context";
-import { authenticatedApiRequest } from "@/lib/authenticated-fetch";
+import { api } from "@/lib/api-client";
 import { type Vocabulary } from "@shared/schema";
 
 interface ReviewQuestion {
@@ -31,7 +31,7 @@ export default function Review() {
     queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary"] : [],
     queryFn: async () => {
       if (!databaseUser?.id) return [];
-      return authenticatedApiRequest<Vocabulary[]>(`/api/users/${databaseUser.id}/vocabulary`);
+      return api.users.getVocabulary(databaseUser.id);
     },
     retry: false,
     enabled: !!databaseUser?.id && !!user

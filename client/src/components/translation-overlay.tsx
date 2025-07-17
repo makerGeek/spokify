@@ -4,7 +4,8 @@ import { X, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/auth-context";
+import { api } from "@/lib/api-client";
 
 interface TranslationOverlayProps {
   line: {
@@ -23,15 +24,11 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
   }>>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { databaseUser } = useAuth();
 
   const translateMutation = useMutation({
     mutationFn: async (text: string) => {
-      const response = await apiRequest("POST", "/api/translate", {
-        text,
-        fromLanguage: "es", // This should come from user preferences
-        toLanguage: "en"
-      });
-      return response.json();
+      return api.translate(text, "en");
     },
     onSuccess: (data) => {
       setVocabulary(data.vocabulary || []);
@@ -47,8 +44,10 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
 
   const addVocabularyMutation = useMutation({
     mutationFn: async (word: { word: string; translation: string }) => {
-      const response = await apiRequest("POST", "/api/vocabulary", {
-        userId: 1, // Mock user ID
+      if (!databaseUser?.id) throw new Error('User not authenticated');
+      
+      return api.vocabulary.save({
+        userId: databaseUser.id,
         word: word.word,
         translation: word.translation,
         language: "es",
@@ -57,10 +56,11 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
         songName,
         context: line.text
       });
-      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/users", 1, "vocabulary"] });
+      if (databaseUser?.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary"] });
+      }
       toast({
         title: "Added to vocabulary!",
         description: "Word saved for review",

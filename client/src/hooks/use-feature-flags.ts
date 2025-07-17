@@ -1,17 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import type { FeatureFlag } from '@shared/schema'
 import { REAL_TIME_CONFIG } from '@/lib/query-config'
+import { api } from '@/lib/api-client'
 
 export function useFeatureFlag(flagName: string) {
   const { data: flag, isLoading, error } = useQuery({
     queryKey: ['feature-flags', flagName],
-    queryFn: async (): Promise<FeatureFlag> => {
-      const response = await fetch(`/api/feature-flags/${flagName}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch feature flag')
-      }
-      return response.json()
-    },
+    queryFn: (): Promise<FeatureFlag> => api.featureFlags.get(flagName),
     ...REAL_TIME_CONFIG
   })
 
@@ -28,13 +23,7 @@ export function useFeatureFlag(flagName: string) {
 export function useFeatureFlags() {
   const { data: flags, isLoading, error } = useQuery({
     queryKey: ['feature-flags'],
-    queryFn: async (): Promise<FeatureFlag[]> => {
-      const response = await fetch('/api/feature-flags')
-      if (!response.ok) {
-        throw new Error('Failed to fetch feature flags')
-      }
-      return response.json()
-    },
+    queryFn: (): Promise<FeatureFlag[]> => api.featureFlags.getAll(),
     ...REAL_TIME_CONFIG
   })
 
