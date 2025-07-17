@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { FeatureFlag } from '@shared/schema'
+import { REAL_TIME_CONFIG } from '@/lib/query-config'
 
 export function useFeatureFlag(flagName: string) {
   const { data: flag, isLoading, error } = useQuery({
@@ -11,21 +12,10 @@ export function useFeatureFlag(flagName: string) {
       }
       return response.json()
     },
-    staleTime: 0,  // Always fetch fresh data
-    refetchOnMount: true
+    ...REAL_TIME_CONFIG
   })
 
   const isEnabled = !isLoading && (flag?.enabled ?? false)
-  
-  // Debug logging for ENABLE_SOCIAL_LOGIN flag
-  if (flagName === 'ENABLE_SOCIAL_LOGIN') {
-    console.log('useFeatureFlag ENABLE_SOCIAL_LOGIN:', { 
-      flag, 
-      isLoading, 
-      isEnabled, 
-      flagEnabled: flag?.enabled 
-    })
-  }
 
   return {
     isEnabled,
@@ -45,6 +35,7 @@ export function useFeatureFlags() {
       }
       return response.json()
     },
+    ...REAL_TIME_CONFIG
   })
 
   return {

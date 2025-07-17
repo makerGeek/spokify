@@ -1,27 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCurrentUser, generateInviteCode, getUserInviteCodes, updateProfile } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { REAL_TIME_CONFIG, USER_DATA_CONFIG } from '@/lib/query-config';
 
 /**
  * Hook to get current authenticated user
+ * Uses REAL_TIME_CONFIG for fresh auth status
  */
 export function useCurrentUser() {
   return useQuery({
     queryKey: ['/api/auth/user'],
     queryFn: getCurrentUser,
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    ...REAL_TIME_CONFIG
   });
 }
 
 /**
  * Hook to get user's invite codes
+ * Uses USER_DATA_CONFIG for short-term caching
  */
 export function useUserInviteCodes() {
   return useQuery({
     queryKey: ['/api/auth/invite-codes'],
     queryFn: getUserInviteCodes,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    ...USER_DATA_CONFIG
   });
 }
 

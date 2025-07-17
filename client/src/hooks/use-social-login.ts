@@ -10,9 +10,7 @@ export function useSocialLogin() {
   
   // Use useMemo to ensure proper reactivity
   const showSocialLoginButtons = useMemo(() => {
-    const result = !isLoading && isEnabled
-    console.log('useSocialLogin computed:', { isEnabled, isLoading, result })
-    return result
+    return !isLoading && isEnabled
   }, [isLoading, isEnabled])
   
   return {

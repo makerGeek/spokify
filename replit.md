@@ -98,6 +98,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 16, 2025 - Query Caching Strategy & Social Login Bug Fix
+- **Intelligent Query Caching Strategy**: Implemented data-specific caching configurations
+  - `REAL_TIME_CONFIG`: No caching for feature flags, auth status, real-time data
+  - `USER_DATA_CONFIG`: Short-term caching (30s) for user-specific data  
+  - `STATIC_CONTENT_CONFIG`: Long-term caching (10min) for song catalog, lyrics
+- **Fixed Social Login Button Visibility**: Resolved caching issue preventing feature flags from working
+  - Social login buttons now properly hidden when ENABLE_SOCIAL_LOGIN flag is disabled
+  - Created useSocialLogin hook with proper React reactivity using useMemo
+  - Added comprehensive query invalidation and fresh data fetching for time-sensitive data
+- **Query Configuration Documentation**: Created comprehensive guide for data categorization
+  - Feature flags, auth status: Always fetch fresh (never cache)
+  - User profiles, vocabulary: Short cache with frequent refresh
+  - Song catalog, static content: Long cache with offline support
+
 ### July 16, 2025 - Critical Security Fix: RapidAPI Credentials Hardcoded in Source Code
 - **Security Vulnerability Resolved**: Removed hard-coded RapidAPI credentials from script files
   - Fixed 5 instances of exposed API key `1a244cda35msh6d20ec374075a91p13ae79jsn425c85a9d692` in:
