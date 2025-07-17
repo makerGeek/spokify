@@ -40,6 +40,7 @@ export const songs = pgTable("songs", {
   spotifyId: text("spotify_id"),
   youtubeId: text("youtube_id"),
   keyWords: jsonb("key_words"), // Object with key vocabulary translations
+  isFree: boolean("is_free").notNull().default(false),
 });
 
 export const userProgress = pgTable("user_progress", {
@@ -142,6 +143,7 @@ export const insertSongSchema = createInsertSchema(songs).pick({
   spotifyId: true,
   youtubeId: true,
   keyWords: true,
+  isFree: true,
 });
 
 export const insertUserProgressSchema = createInsertSchema(userProgress).pick({
