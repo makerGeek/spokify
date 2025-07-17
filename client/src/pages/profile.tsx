@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 
 import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
 import { getBuildVersion, getBuildInfo } from '@/lib/build-info'
+import { authenticatedApiRequest } from '@/lib/authenticated-fetch'
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth()
@@ -27,21 +28,7 @@ export default function Profile() {
     queryKey: userData?.id ? ["/api/users", userData.id, "vocabulary"] : [],
     queryFn: async () => {
       if (!userData?.id) return [];
-      
-      // Get auth token from Supabase session
-      const { data: { session } } = await (await import('@supabase/supabase-js')).createClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY
-      ).auth.getSession();
-      
-      const response = await fetch(`/api/users/${userData.id}/vocabulary`, {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch vocabulary');
-      return response.json();
+      return authenticatedApiRequest<Vocabulary[]>(`/api/users/${userData.id}/vocabulary`);
     },
     retry: false,
     enabled: !!userData?.id && !!user
@@ -51,21 +38,7 @@ export default function Profile() {
     queryKey: userData?.id ? ["/api/users", userData.id, "progress"] : [],
     queryFn: async () => {
       if (!userData?.id) return [];
-      
-      // Get auth token from Supabase session
-      const { data: { session } } = await (await import('@supabase/supabase-js')).createClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY
-      ).auth.getSession();
-      
-      const response = await fetch(`/api/users/${userData.id}/progress`, {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch progress');
-      return response.json();
+      return authenticatedApiRequest<UserProgress[]>(`/api/users/${userData.id}/progress`);
     },
     retry: false,
     enabled: !!userData?.id && !!user

@@ -63,7 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Load database user when session changes
   // User sync happens automatically via middleware on first API call
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user && !databaseUser) {
+      // Only load if we don't already have database user data
       getCurrentUser().then(dbUser => {
         if (dbUser) {
           setDatabaseUser(dbUser);
@@ -71,10 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }).catch(error => {
         console.error('Failed to load database user:', error);
       });
-    } else {
+    } else if (!session?.user) {
       setDatabaseUser(null);
     }
-  }, [session?.user]);
+  }, [session?.user, databaseUser]);
 
   const signOut = async () => {
     await supabase.auth.signOut()
