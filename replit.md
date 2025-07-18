@@ -99,6 +99,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 18, 2025 - Enhanced Bulk Import Script with Execution Mode Control
+- **Import Script Improvements**: Added boolean configuration to control parallel vs sequential execution in import_bulk.ts
+  - **SEQUENTIAL_EXECUTION Constant**: Boolean flag at top of file controls execution mode
+  - **Sequential Mode**: Shows full output from each import_song script for detailed debugging
+  - **Parallel Mode**: Minimal output with faster processing for bulk imports
+  - **Visual Formatting**: Clear section headers and separators for sequential mode
+  - **Configuration Documentation**: Enhanced usage instructions and inline comments
+  - **Backward Compatibility**: Maintains existing API while adding new debugging capabilities
+
 ### July 18, 2025 - APK Build Configuration & Mobile App Support
 - **Mobile App Compilation**: Integrated Capacitor for native Android APK generation
   - **Capacitor Setup**: Added @capacitor/core, @capacitor/cli, and @capacitor/android packages
