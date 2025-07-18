@@ -577,6 +577,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
       } else {
+        // Update user status to indicate no active subscription
+        await storage.updateSubscriptionStatus(user.id, 'free');
+        
         res.json({ 
           subscriptionActive: false,
           message: 'No active subscription found'
@@ -587,6 +590,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: { 
           message: error.message || 'Failed to verify subscription'
+        } 
+      });
+    }
+  });
+
+  // Check if user is premium
+  app.get('/api/user/is-premium', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const isPremium = await storage.isPremiumUser(req.user.id);
+      res.json({ isPremium });
+    } catch (error: any) {
+      console.error('Check premium status error:', error);
+      res.status(500).json({ 
+        error: { 
+          message: error.message || 'Failed to check premium status'
+        } 
+      });
+    }
+  });
+
+  // Get premium users (admin only)
+  app.get('/api/admin/premium-users', authenticateToken, requireAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const premiumUsers = await storage.getUsersBySubscriptionStatus('active');
+      res.json(premiumUsers.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionEndsAt: user.subscriptionEndsAt,
+        stripeCustomerId: user.stripeCustomerId,
+        stripeSubscriptionId: user.stripeSubscriptionId
+      })));
+    } catch (error: any) {
+      console.error('Get premium users error:', error);
+      res.status(500).json({ 
+        error: { 
+          message: error.message || 'Failed to fetch premium users'
         } 
       });
     }

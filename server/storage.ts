@@ -55,6 +55,10 @@ export interface IStorage {
   updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;
   updateUserStripeInfo(userId: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
   updateSubscriptionStatus(userId: number, status: string, endsAt?: Date): Promise<User>;
+  
+  // Premium user identification
+  getUsersBySubscriptionStatus(status: string): Promise<User[]>;
+  isPremiumUser(userId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -385,6 +389,36 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async getUsersBySubscriptionStatus(status: string): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.subscriptionStatus, status));
+  }
+
+  async isPremiumUser(userId: number): Promise<boolean> {
+    const [user] = await db
+      .select({
+        subscriptionStatus: users.subscriptionStatus,
+        subscriptionEndsAt: users.subscriptionEndsAt
+      })
+      .from(users)
+      .where(eq(users.id, userId));
+    
+    if (!user) return false;
+    
+    // Check if user has active subscription
+    if (user.subscriptionStatus === 'active') {
+      // If subscription has an end date, check if it's still valid
+      if (user.subscriptionEndsAt) {
+        return new Date() < new Date(user.subscriptionEndsAt);
+      }
+      return true;
+    }
+    
+    return false;
   }
 }
 
