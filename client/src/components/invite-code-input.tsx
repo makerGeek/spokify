@@ -129,7 +129,7 @@ export function InviteCodeInput({
                 onClick={onSkip}
                 disabled={isValidating || isLoading}
               >
-                Skip for now
+                Sign out
               </Button>
             )}
           </div>

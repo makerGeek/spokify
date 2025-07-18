@@ -95,6 +95,22 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
   }
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut()
+      toast({
+        title: 'Signed out',
+        description: 'You have been signed out successfully.',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Sign out error',
+        description: error.message,
+        variant: 'destructive',
+      })
+    }
+  }
+
   // Show loading state while checking authentication or activation status
   if (loading || checkingActive) {
     return (
@@ -123,7 +139,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           </div>
           <InviteCodeInput
             onCodeValidated={handleInviteCodeValidated}
-            onSkip={() => setNeedsInviteCode(false)}
+            onSkip={handleSignOut}
             isLoading={false}
           />
         </div>
