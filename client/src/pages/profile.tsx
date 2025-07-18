@@ -454,11 +454,11 @@ export default function Profile() {
 
         {/* Logo */}
         <div className="text-center pb-8">
-          <img 
-            src="/logo.png" 
-            alt="Spokify Logo" 
+          <img
+            src="/logo.png"
+            alt="Spokify Logo"
             className="mx-auto"
-            style={{ width: '50vw' }}
+            style={{ width: "40vw" }}
           />
         </div>
       </div>
