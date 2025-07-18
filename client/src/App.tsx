@@ -21,6 +21,7 @@ import Admin from "@/pages/admin";
 import InviteAdmin from "@/pages/invite-admin";
 import ServiceWorkerAdmin from "@/pages/service-worker-admin";
 import Subscribe from "@/pages/subscribe";
+import Checkout from "@/pages/checkout";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -74,6 +75,11 @@ function Router() {
         <Route path="/subscribe">
           <AuthenticatedOnly contextMessage="Login to upgrade to premium">
             <Subscribe />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/checkout">
+          <AuthenticatedOnly contextMessage="Login to make a payment">
+            <Checkout />
           </AuthenticatedOnly>
         </Route>
         <Route path="/song-offset" component={AdminRoute} />
