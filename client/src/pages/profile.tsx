@@ -445,8 +445,13 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Build Version */}
-        <div className="text-center pb-4">
+        {/* Logo Section */}
+        <div className="text-center pb-6">
+          <img 
+            src="/logo.png" 
+            alt="Spokify Logo" 
+            className="h-12 w-auto mx-auto mb-3 opacity-60"
+          />
           <p className="text-xs text-spotify-muted opacity-60">
             Build: {getBuildVersion()}
           </p>

@@ -99,6 +99,23 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 18, 2025 - Logo Integration & PWA Splash Screen Enhancement
+- **Profile Page Logo**: Added Spokify logo at bottom of profile page with subtle opacity styling
+  - Logo displays below settings section for brand consistency
+  - Positioned above build version information with proper spacing
+  - Uses `/public/logo.png` with responsive sizing (h-12 w-auto)
+- **PWA Splash Screen Implementation**: Created comprehensive splash screen for installed PWA
+  - Added iOS PWA meta tags for proper standalone app behavior
+  - Implemented animated logo with pulse effect during app loading
+  - Branded splash screen with Spokify logo, title, and tagline
+  - Smart timing system: minimum 1.5s display + content ready detection
+  - Fallback timeout ensures splash never blocks app permanently
+  - Smooth fade-out transition when app is ready to use
+- **PWA Manifest Enhancement**: Updated manifest to use actual logo file
+  - Replaced placeholder SVG icons with `/logo.png` for authentic branding
+  - Improved iOS PWA support with apple-touch-icon and startup-image
+  - Enhanced favicon to use actual logo instead of placeholder icon
+
 ### July 18, 2025 - APK Build Configuration & Mobile App Support
 - **Mobile App Compilation**: Integrated Capacitor for native Android APK generation
   - **Capacitor Setup**: Added @capacitor/core, @capacitor/cli, and @capacitor/android packages
