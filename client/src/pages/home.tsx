@@ -11,6 +11,7 @@ import MiniPlayer from "@/components/mini-player";
 import LyricsOverlay from "@/components/lyrics-overlay";
 import { AuthModal } from "@/components/auth-modal";
 import ActivationModal from "@/components/activation-modal";
+import { PremiumModal } from "@/components/premium-modal";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
@@ -32,6 +33,7 @@ export default function Home() {
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLyrics, setShowLyrics] = useState(false);
   const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
@@ -231,7 +233,13 @@ export default function Home() {
                 onClick={() => handleSongClick(song)}
                 onPremiumRequested={(song) => {
                   setSelectedSong(song);
-                  setShowAuthModal(true);
+                  if (user) {
+                    // User is authenticated but needs premium
+                    setShowPremiumModal(true);
+                  } else {
+                    // User needs to authenticate first
+                    setShowAuthModal(true);
+                  }
                 }}
                 onActivationRequired={(song) => {
                   setSelectedSong(song);
@@ -272,6 +280,18 @@ export default function Home() {
             window.location.reload();
           }}
           contextMessage={`To play "${selectedSong.title}", you need to activate your account with an invite code.`}
+        />
+      )}
+
+      {/* Premium Modal for Premium Songs */}
+      {showPremiumModal && selectedSong && (
+        <PremiumModal
+          isOpen={showPremiumModal}
+          onClose={() => {
+            setShowPremiumModal(false);
+            setSelectedSong(null);
+          }}
+          song={selectedSong}
         />
       )}
 

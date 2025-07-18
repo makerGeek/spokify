@@ -1,15 +1,16 @@
-import { Play } from "lucide-react";
+import { Play, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
 import { useMarquee } from "@/hooks/use-marquee";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
+import { PremiumBadge } from "@/components/premium-gate";
 
 import { type Song } from "@shared/schema";
 
 interface SongCardProps {
-  song: Song;
+  song: Song & { canAccess?: boolean; requiresPremium?: boolean };
   onClick: () => void;
   onPremiumRequested?: (song: Song) => void;
   onActivationRequired?: (song: Song) => void;
@@ -23,6 +24,14 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Check if this is a premium song that user doesn't have access to
+    if (song.requiresPremium && !song.canAccess) {
+      if (onPremiumRequested) {
+        onPremiumRequested(song);
+      }
+      return;
+    }
     
     const accessResult = checkSongAccess(song);
     
@@ -64,6 +73,9 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
               <span className="free-badge text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white">
                 FREE
               </span>
+            )}
+            {song.requiresPremium && !song.canAccess && (
+              <PremiumBadge />
             )}
           </div>
           <p className="text-spotify-muted text-sm truncate">{song.artist}</p>

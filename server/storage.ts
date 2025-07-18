@@ -50,6 +50,11 @@ export interface IStorage {
   // Translation caching methods
   getTranslation(text: string, fromLanguage: string, toLanguage: string): Promise<Translation | undefined>;
   createTranslation(translation: InsertTranslation): Promise<Translation>;
+
+  // Stripe-related methods
+  updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;
+  updateUserStripeInfo(userId: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
+  updateSubscriptionStatus(userId: number, status: string, endsAt?: Date): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -330,6 +335,47 @@ export class DatabaseStorage implements IStorage {
       .values(insertTranslation)
       .returning();
     return translation;
+  }
+
+  async updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ stripeCustomerId })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserStripeInfo(userId: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        stripeCustomerId,
+        stripeSubscriptionId,
+        subscriptionStatus: "active",
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateSubscriptionStatus(userId: number, status: string, endsAt?: Date): Promise<User> {
+    const updates: any = { 
+      subscriptionStatus: status,
+      updatedAt: new Date()
+    };
+    
+    if (endsAt) {
+      updates.subscriptionEndsAt = endsAt;
+    }
+
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 }
 

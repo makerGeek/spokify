@@ -21,6 +21,10 @@ export const users = pgTable("users", {
   invitedBy: text("invited_by"),
   inviteCode: text("invite_code").unique(),
   activatedAt: timestamp("activated_at"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionStatus: text("subscription_status").default("free"), // free, active, canceled, past_due
+  subscriptionEndsAt: timestamp("subscription_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

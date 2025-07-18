@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { type User, type Vocabulary, type UserProgress } from "@shared/schema";
 import { getBuildVersion, getBuildInfo } from "@/lib/build-info";
 import { api } from "@/lib/api-client";
+import { Link } from "wouter";
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth();
@@ -222,12 +223,21 @@ export default function Profile() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
               <span>Current plan:</span>
-              <span className="font-medium">Free</span>
+              <span className="font-medium">
+                {userData?.subscriptionStatus === 'active' ? 'Premium' : 'Free'}
+              </span>
+              {userData?.subscriptionStatus === 'active' && (
+                <Crown className="h-4 w-4 text-[var(--spotify-green)]" />
+              )}
             </div>
-            <button className="spotify-btn-primary px-6 py-2 flex items-center space-x-2">
-              <Crown className="h-4 w-4" />
-              <span>Upgrade</span>
-            </button>
+            {userData?.subscriptionStatus !== 'active' && (
+              <Link href="/subscribe">
+                <button className="spotify-btn-primary px-6 py-2 flex items-center space-x-2">
+                  <Crown className="h-4 w-4" />
+                  <span>Upgrade</span>
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
