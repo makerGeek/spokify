@@ -62,7 +62,14 @@ export default function MiniPlayer() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-spotify-text text-sm truncate">{currentSong.title}</h3>
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-semibold text-spotify-text text-sm truncate">{currentSong.title}</h3>
+                {currentSong.isFree && (
+                  <span className="free-badge text-[8px] px-1 py-0.5 rounded-full font-bold text-white flex-shrink-0">
+                    FREE
+                  </span>
+                )}
+              </div>
               <p className="text-spotify-muted text-xs truncate">{currentSong.artist}</p>
             </div>
             <div className="flex items-center space-x-2 flex-shrink-0">

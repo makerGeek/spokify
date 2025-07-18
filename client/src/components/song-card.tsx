@@ -34,21 +34,21 @@ export default function SongCard({ song, onClick }: SongCardProps) {
         />
         
         <div className="flex-1 min-w-0">
-          <div ref={containerRef} className="overflow-hidden whitespace-nowrap relative">
+          <div ref={containerRef} className="overflow-hidden whitespace-nowrap relative flex items-center gap-2">
             <h3 ref={titleRef} className="font-semibold text-lg text-spotify-text inline-block marquee-text">
               {song.title}
             </h3>
+            {song.isFree && (
+              <span className="free-badge text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white">
+                FREE
+              </span>
+            )}
           </div>
           <p className="text-spotify-muted text-sm truncate">{song.artist}</p>
           <div className="flex items-center space-x-2 mt-1">
             <span className="difficulty-badge text-xs px-2 py-1 rounded-full font-medium text-white">
               {song.difficulty}
             </span>
-            {song.isFree && (
-              <span className="text-xs px-2 py-1 rounded-full font-medium bg-spotify-green text-white">
-                FREE
-              </span>
-            )}
             <span className="text-xs text-spotify-muted">{song.genre}</span>
           </div>
         </div>
