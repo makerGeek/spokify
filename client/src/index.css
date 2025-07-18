@@ -169,31 +169,22 @@
   animation: marquee ease-in-out infinite;
 }
 
-/* Animated FREE badge with cycling colors */
-@keyframes rainbow-pulse {
+/* Animated FREE badge with flowing gradient */
+@keyframes gradient-shift {
   0% {
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-    transform: scale(1);
-  }
-  25% {
-    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-    transform: scale(1.05);
+    background-position: 0% 50%;
   }
   50% {
-    background: linear-gradient(45deg, #45b7d1, #96ceb4);
-    transform: scale(1);
-  }
-  75% {
-    background: linear-gradient(45deg, #96ceb4, #feca57);
-    transform: scale(1.05);
+    background-position: 100% 50%;
   }
   100% {
-    background: linear-gradient(45deg, #feca57, #ff6b6b);
-    transform: scale(1);
+    background-position: 0% 50%;
   }
 }
 
 .free-badge {
-  animation: rainbow-pulse 3s ease-in-out infinite;
-  box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(-45deg, #ff6b6b, #4ecdc4, #45b7d1, #ff6b6b);
+  background-size: 400% 400%;
+  animation: gradient-shift 2s ease infinite;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
 }
