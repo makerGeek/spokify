@@ -99,6 +99,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 18, 2025 - Authentication Flow Order Fix & DRY Principle Implementation
+- **Fixed Critical Authentication Flow Bug**: Resolved issue where protected content was loading before user activation status check
+  - **Problem**: Profile page was making API calls (user data, vocabulary, progress) before checking if user was active
+  - **Solution**: Created AuthGuard component to check isActive status BEFORE loading any protected content
+  - **Flow Order**: Authentication → isActive check → invite code validation (if needed) → protected content loading
+  - **Performance**: Eliminates unnecessary API calls for inactive users
+- **DRY Principle Implementation**: Centralized authentication logic in reusable AuthGuard component
+  - **AuthGuard Component**: Handles isActive check, invite code validation, and activation flow
+  - **AuthenticatedOnly Integration**: Updated to use AuthGuard for all protected routes
+  - **AuthModal Integration**: Refactored to use AuthGuard for consistent authentication flow
+  - **Code Consolidation**: Eliminated duplicate authentication and invite code logic across components
+  - **Consistent UX**: Same authentication experience across modal and page-level protection
+
 ### July 18, 2025 - Enhanced Bulk Import Script with Execution Mode Control
 - **Import Script Improvements**: Added boolean configuration to control parallel vs sequential execution in import_bulk.ts
   - **SEQUENTIAL_EXECUTION Constant**: Boolean flag at top of file controls execution mode
