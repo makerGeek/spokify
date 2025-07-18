@@ -87,18 +87,7 @@ export const inviteCodes = pgTable("invite_codes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const vocabularyExplanations = pgTable("vocabulary_explanations", {
-  id: serial("id").primaryKey(),
-  word: text("word").notNull(),
-  context: text("context").notNull(),
-  language: text("language").notNull(),
-  targetLanguage: text("target_language").notNull(),
-  translation: text("translation").notNull(),
-  explanation: text("explanation").notNull(),
-  examples: jsonb("examples").notNull(), // Array of string examples
-  difficulty: text("difficulty").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+
 
 export const translations = pgTable("translations", {
   id: serial("id").primaryKey(),
@@ -177,16 +166,7 @@ export const insertInviteCodeSchema = createInsertSchema(inviteCodes).pick({
   expiresAt: true,
 });
 
-export const insertVocabularyExplanationSchema = createInsertSchema(vocabularyExplanations).pick({
-  word: true,
-  context: true,
-  language: true,
-  targetLanguage: true,
-  translation: true,
-  explanation: true,
-  examples: true,
-  difficulty: true,
-});
+
 
 export const insertTranslationSchema = createInsertSchema(translations).pick({
   text: true,
@@ -210,7 +190,6 @@ export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
 export type FeatureFlag = typeof featureFlags.$inferSelect;
 export type InsertInviteCode = z.infer<typeof insertInviteCodeSchema>;
 export type InviteCode = typeof inviteCodes.$inferSelect;
-export type InsertVocabularyExplanation = z.infer<typeof insertVocabularyExplanationSchema>;
-export type VocabularyExplanation = typeof vocabularyExplanations.$inferSelect;
+
 export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 export type Translation = typeof translations.$inferSelect;

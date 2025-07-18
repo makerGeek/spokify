@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { translateText, assessDifficulty, generateVocabularyExplanation } from "./services/openai";
+import { translateText, assessDifficulty } from "./services/openai";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
@@ -264,47 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/vocabulary/explain", async (req, res) => {
-    try {
-      const { word, context, language, targetLanguage } = req.body;
-      if (!word || !context || !language || !targetLanguage) {
-        return res.status(400).json({ message: "Missing required fields: word, context, language, targetLanguage" });
-      }
-      
-      // Check if explanation already exists in cache
-      const cached = await storage.getVocabularyExplanation(word, context, language, targetLanguage);
-      
-      if (cached) {
-        // Return cached result
-        res.json({
-          translation: cached.translation,
-          explanation: cached.explanation,
-          examples: cached.examples,
-          difficulty: cached.difficulty
-        });
-        return;
-      }
-      
-      // Generate new explanation if not cached
-      const result = await generateVocabularyExplanation(word, context, language, targetLanguage);
-      
-      // Cache the result in database
-      await storage.createVocabularyExplanation({
-        word,
-        context,
-        language,
-        targetLanguage,
-        translation: result.translation,
-        explanation: result.explanation,
-        examples: result.examples,
-        difficulty: result.difficulty
-      });
-      
-      res.json(result);
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : "Vocabulary explanation failed" });
-    }
-  });
+
 
   // Feature flag routes
   app.get("/api/feature-flags", async (req, res) => {

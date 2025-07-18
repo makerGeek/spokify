@@ -98,6 +98,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 18, 2025 - Code Cleanup and Translation Improvements
+- **Removed Unused Vocabulary Explanation Feature**: Cleaned up unused `/api/vocabulary/explain` endpoint
+  - **Database Cleanup**: Dropped `vocabulary_explanations` table that was never used in frontend
+  - **Schema Cleanup**: Removed vocabularyExplanations table, insert schema, and TypeScript types
+  - **Storage Cleanup**: Removed getVocabularyExplanation and createVocabularyExplanation methods
+  - **Service Cleanup**: Removed generateVocabularyExplanation function from OpenAI service
+  - **API Cleanup**: Removed unused API route and related imports
+- **Translation Language Fix**: Updated translate function to use song's actual language instead of hardcoded Spanish
+  - **Dynamic Language Detection**: TranslationOverlay now accepts songLanguage parameter from song database
+  - **Improved UX**: Language display shows actual song language (French, German, etc.) instead of "Spanish"
+  - **Data Consistency**: Vocabulary saving now uses correct song language for better learning analytics
+
 ### July 17, 2025 - Free Song System Implementation
 - **Database Schema Enhancement**: Added `is_free` column to songs table
   - **Column Configuration**: Boolean field with default value of `false` for premium songs
@@ -120,11 +132,7 @@ Preferred communication style: Simple, everyday language.
   - **Performance Improvement**: Cached responses are 35x faster (42ms vs 1.5+ seconds for new translations)
   - **Data Integrity**: Stores translation, confidence score, and vocabulary breakdown for complete response caching
   - **Cost Optimization**: Dramatically reduces OpenAI API calls by reusing previously generated translations
-- **Vocabulary Explanation Caching**: Enhanced vocabulary explanations API endpoint with caching
-  - **Database Cache Table**: Created `vocabulary_explanations` table to store AI-generated translations and explanations
-  - **Cache Key Strategy**: Uses combination of word, context, source language, and target language as unique identifier
-  - **Performance Improvement**: Cached responses are 90x faster (45ms vs 4+ seconds for new explanations)
-  - **Complete Response Caching**: Stores translation, explanation, examples, and difficulty assessment
+- **Vocabulary Explanation Caching**: ~~Enhanced vocabulary explanations API endpoint with caching~~ (Removed - unused feature)
 - **Universal Caching Benefits**:
   - **Instant Response Times**: Both endpoints deliver sub-50ms response times for cached content
   - **API Cost Reduction**: Eliminates redundant AI API calls for identical translation requests

@@ -1,4 +1,4 @@
-import { users, songs, userProgress, vocabulary, featureFlags, inviteCodes, vocabularyExplanations, translations, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type InviteCode, type InsertInviteCode, type VocabularyExplanation, type InsertVocabularyExplanation, type Translation, type InsertTranslation } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, inviteCodes, translations, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type InviteCode, type InsertInviteCode, type Translation, type InsertTranslation } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -43,9 +43,7 @@ export interface IStorage {
   getUserInviteCodes(userId: number): Promise<InviteCode[]>;
   generateUniqueInviteCode(): Promise<string>;
 
-  // Vocabulary explanation methods
-  getVocabularyExplanation(word: string, context: string, language: string, targetLanguage: string): Promise<VocabularyExplanation | undefined>;
-  createVocabularyExplanation(explanation: InsertVocabularyExplanation): Promise<VocabularyExplanation>;
+
 
   // Translation caching methods
   getTranslation(text: string, fromLanguage: string, toLanguage: string): Promise<Translation | undefined>;
@@ -294,28 +292,7 @@ export class DatabaseStorage implements IStorage {
     return code;
   }
 
-  async getVocabularyExplanation(word: string, context: string, language: string, targetLanguage: string): Promise<VocabularyExplanation | undefined> {
-    const [explanation] = await db
-      .select()
-      .from(vocabularyExplanations)
-      .where(
-        and(
-          eq(vocabularyExplanations.word, word),
-          eq(vocabularyExplanations.context, context),
-          eq(vocabularyExplanations.language, language),
-          eq(vocabularyExplanations.targetLanguage, targetLanguage)
-        )
-      );
-    return explanation || undefined;
-  }
 
-  async createVocabularyExplanation(insertExplanation: InsertVocabularyExplanation): Promise<VocabularyExplanation> {
-    const [explanation] = await db
-      .insert(vocabularyExplanations)
-      .values(insertExplanation)
-      .returning();
-    return explanation;
-  }
 
   async getTranslation(text: string, fromLanguage: string, toLanguage: string): Promise<Translation | undefined> {
     const [translation] = await db

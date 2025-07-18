@@ -96,45 +96,7 @@ export async function assessDifficulty(
   }
 }
 
-export async function generateVocabularyExplanation(
-  word: string,
-  context: string,
-  language: string,
-  targetLanguage: string
-): Promise<{
-  translation: string;
-  explanation: string;
-  examples: string[];
-  difficulty: string;
-}> {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are a language learning tutor. Explain the word "${word}" in ${language} to someone learning it. Provide translation to ${targetLanguage}, explanation, usage examples, and difficulty level. Respond with JSON in this format: { "translation": "word translation", "explanation": "detailed explanation", "examples": ["example 1", "example 2"], "difficulty": "A1|A2|B1|B2|C1|C2" }`
-        },
-        {
-          role: "user",
-          content: `Word: ${word}\nContext: ${context}`
-        }
-      ],
-      response_format: { type: "json_object" }
-    });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
-    return {
-      translation: result.translation || "",
-      explanation: result.explanation || "",
-      examples: result.examples || [],
-      difficulty: result.difficulty || "A1"
-    };
-  } catch (error) {
-    console.error("Vocabulary explanation error:", error);
-    throw new Error("Failed to generate vocabulary explanation: " + (error as Error).message);
-  }
-}
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return Promise.race([
