@@ -20,7 +20,6 @@ export default function LyricsPlayer() {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showTranslationMode, setShowTranslationMode] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
 
@@ -41,33 +40,8 @@ export default function LyricsPlayer() {
     }
   }, [song, currentSong, setCurrentSong]);
 
-  // Handle animation mounting
-  useEffect(() => {
-    // Small delay to ensure smooth animation from bottom
-    const timer = setTimeout(() => {
-      setIsAnimating(true);
-    }, 10);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Listen for mini-player close event
-  useEffect(() => {
-    const handleCloseEvent = () => {
-      handleCloseLyrics();
-    };
-
-    window.addEventListener('closeLyricsWithAnimation', handleCloseEvent);
-    return () => {
-      window.removeEventListener('closeLyricsWithAnimation', handleCloseEvent);
-    };
-  }, []);
-
   const handleCloseLyrics = () => {
-    setIsAnimating(false);
-    // Delay the navigation to allow animation to complete
-    setTimeout(() => {
-      setLocation("/home");
-    }, 300);
+    setLocation("/home");
   };
 
   const handleLineClick = (line: any) => {
@@ -170,9 +144,7 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className={`min-h-screen bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
-      isAnimating ? 'translate-y-0' : 'translate-y-full'
-    }`}>
+    <div className="min-h-screen bg-spotify-bg pb-32 overflow-x-hidden">
       {/* Main Content - Full Height Lyrics */}
       <div className="p-4 w-full max-w-full">
         <div className="flex items-center justify-between mb-6">
