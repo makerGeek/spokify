@@ -30,6 +30,7 @@ Preferred communication style: Simple, everyday language.
 - **Service Worker**: Offline caching and background sync
 - **Manifest**: Full PWA configuration with installation prompts
 - **Mobile-First**: Responsive design optimized for mobile devices
+- **Native App Compilation**: Capacitor integration for Android APK generation
 
 ## Key Components
 
@@ -97,6 +98,19 @@ Preferred communication style: Simple, everyday language.
 - **Mobile**: PWA installation for native-like experience
 
 ## Recent Changes
+
+### July 18, 2025 - APK Build Configuration & Mobile App Support
+- **Mobile App Compilation**: Integrated Capacitor for native Android APK generation
+  - **Capacitor Setup**: Added @capacitor/core, @capacitor/cli, and @capacitor/android packages
+  - **Project Configuration**: Created capacitor.config.ts with app ID "com.spokify.app"
+  - **Build Integration**: Configured webDir to use built assets from dist/public
+  - **Android Platform**: Added complete Android project structure with Gradle build system
+  - **Native Features**: Enabled offline support, file system access, and native UI components
+- **Build Automation**: Created comprehensive APK build process
+  - **Build Script**: Created build-apk.sh shell script for automated APK preparation
+  - **Documentation**: Comprehensive BUILD_APK.md guide with step-by-step instructions
+  - **Development Workflow**: Integrated sync process for web assets to Android project
+  - **Output Management**: APK files generated in android/app/build/outputs/apk/ directory
 
 ### July 18, 2025 - Gemini 2.5 Flash Translation Migration & Code Organization
 - **Performance Optimization**: Replaced slow OpenAI translation service with fast Gemini 2.5 Flash

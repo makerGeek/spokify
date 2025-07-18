@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Spokify</string>
+    <string name="title_activity_main">Spokify</string>
+    <string name="package_name">com.spokify.app</string>
+    <string name="custom_url_scheme">com.spokify.app</string>
+</resources>
