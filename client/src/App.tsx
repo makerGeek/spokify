@@ -8,7 +8,6 @@ import { initializePWA } from "@/lib/pwa";
 import { AudioProvider } from "@/hooks/use-audio";
 import { AuthProvider } from "@/contexts/auth-context";
 import { InviteProvider } from "@/contexts/invite-context";
-import { LyricsProvider } from "@/contexts/lyrics-context";
 import SmartRedirect from "@/components/smart-redirect";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
@@ -95,14 +94,12 @@ function App() {
       <TooltipProvider>
         <InviteProvider>
           <AuthProvider>
-            <LyricsProvider>
-              <AudioProvider>
-                <div className="min-h-screen bg-spotify-bg text-spotify-text">
-                  <Toaster />
-                  <Router />
-                </div>
-              </AudioProvider>
-            </LyricsProvider>
+            <AudioProvider>
+              <div className="min-h-screen bg-spotify-bg text-spotify-text">
+                <Toaster />
+                <Router />
+              </div>
+            </AudioProvider>
           </AuthProvider>
         </InviteProvider>
       </TooltipProvider>

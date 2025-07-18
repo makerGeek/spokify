@@ -7,7 +7,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import TranslationOverlay from "@/components/translation-overlay";
 
 import { useAudio } from "@/hooks/use-audio";
-import { useLyrics } from "@/contexts/lyrics-context";
 import { type Song } from "@shared/schema";
 
 interface LyricsOverlayProps {
@@ -25,7 +24,6 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
-  const { setLyricsVisible, setOnLyricsCloseRequest } = useLyrics();
 
   const { data: song, isLoading } = useQuery<Song>({
     queryKey: ["/api/songs", songId],
@@ -133,17 +131,6 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
       onClose();
     }, 300);
   };
-
-  // Register the close handler with the global context
-  useEffect(() => {
-    setOnLyricsCloseRequest(handleClose);
-    setLyricsVisible(isVisible);
-    
-    return () => {
-      setOnLyricsCloseRequest(null);
-      setLyricsVisible(false);
-    };
-  }, [isVisible, setOnLyricsCloseRequest, setLyricsVisible]);
 
   if (!isVisible && !isAnimating) {
     return null;

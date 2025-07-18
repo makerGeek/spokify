@@ -50,6 +50,18 @@ export default function LyricsPlayer() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Listen for mini-player close event
+  useEffect(() => {
+    const handleCloseEvent = () => {
+      handleCloseLyrics();
+    };
+
+    window.addEventListener('closeLyricsWithAnimation', handleCloseEvent);
+    return () => {
+      window.removeEventListener('closeLyricsWithAnimation', handleCloseEvent);
+    };
+  }, []);
+
   const handleCloseLyrics = () => {
     setIsAnimating(false);
     // Delay the navigation to allow animation to complete
