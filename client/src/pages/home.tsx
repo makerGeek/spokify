@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
 import MiniPlayer from "@/components/mini-player";
+import { AuthModal } from "@/components/auth-modal";
 import { useAudio } from "@/hooks/use-audio";
+import { useAuth } from "@/contexts/auth-context";
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
@@ -21,7 +23,10 @@ const languageFlags = {
 export default function Home() {
   const [, setLocation] = useLocation();
   const { currentSong } = useAudio();
+  const { user } = useAuth();
   const [selectedGenre, setSelectedGenre] = useState("all");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
 
   // Get user preferences from localStorage
   const userPreferences = JSON.parse(localStorage.getItem("userPreferences") || "{}");
@@ -53,8 +58,16 @@ export default function Home() {
     setLocation("/language-selection");
   };
 
-  const handleSongClick = (songId: number) => {
-    setLocation(`/lyrics/${songId}`);
+  const handleSongClick = (song: Song) => {
+    // Check if user is authenticated and song is not free
+    if (!user && !song.isFree) {
+      setSelectedSong(song);
+      setShowAuthModal(true);
+      return;
+    }
+    
+    // If authenticated or song is free, navigate to lyrics
+    setLocation(`/lyrics/${song.id}`);
   };
 
   if (isLoading) {
@@ -122,7 +135,11 @@ export default function Home() {
               <SongCard
                 key={song.id}
                 song={song}
-                onClick={() => handleSongClick(song.id)}
+                onClick={() => handleSongClick(song)}
+                onPremiumRequested={(song) => {
+                  setSelectedSong(song);
+                  setShowAuthModal(true);
+                }}
               />
             ))}
           </div>
@@ -131,6 +148,19 @@ export default function Home() {
 
       {/* Mini Player */}
       {currentSong && <MiniPlayer />}
+      
+      {/* Auth Modal for Premium Songs */}
+      {showAuthModal && selectedSong && (
+        <AuthModal 
+          onClose={() => {
+            setShowAuthModal(false);
+            setSelectedSong(null);
+          }}
+          customMessage={`Login and upgrade to play "${selectedSong.title}"`}
+        >
+          <div></div>
+        </AuthModal>
+      )}
     </div>
   );
 }

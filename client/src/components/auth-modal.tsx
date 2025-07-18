@@ -6,9 +6,10 @@ import LoginForm from '@/components/login-form'
 interface AuthModalProps {
   children: ReactNode
   onClose?: () => void
+  customMessage?: string
 }
 
-export function AuthModal({ children, onClose }: AuthModalProps) {
+export function AuthModal({ children, onClose, customMessage }: AuthModalProps) {
   const { user, loading } = useAuth()
   const [isVisible, setIsVisible] = useState(false)
 
@@ -84,16 +85,19 @@ export function AuthModal({ children, onClose }: AuthModalProps) {
           {/* Compact header */}
           <div className="text-center mb-6 pr-8">
             <h2 className="spotify-heading-sm text-white mb-2">
-              Sign in to save words
+              {customMessage ? "Login and Upgrade" : "Sign in to save words"}
             </h2>
             <p className="spotify-text-muted text-sm">
-              Create an account to build your vocabulary
+              {customMessage || "Create an account to build your vocabulary"}
             </p>
           </div>
           
           {/* Compact login form */}
           <div className="space-y-4">
-            <LoginForm />
+            <LoginForm 
+              redirectTo="/home"
+              contextMessage={customMessage}
+            />
           </div>
         </div>
       </div>

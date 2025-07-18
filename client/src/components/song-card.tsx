@@ -3,20 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
 import { useMarquee } from "@/hooks/use-marquee";
+import { useAuth } from "@/contexts/auth-context";
 
 import { type Song } from "@shared/schema";
 
 interface SongCardProps {
   song: Song;
   onClick: () => void;
+  onPremiumRequested?: (song: Song) => void;
 }
 
-export default function SongCard({ song, onClick }: SongCardProps) {
+export default function SongCard({ song, onClick, onPremiumRequested }: SongCardProps) {
   const { setCurrentSong, currentSong } = useAudio();
+  const { user } = useAuth();
   const { textRef: titleRef, containerRef } = useMarquee({ text: song.title });
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Check if user is authenticated and song is not free
+    if (!user && !song.isFree && onPremiumRequested) {
+      onPremiumRequested(song);
+      return;
+    }
     
     // Always set the song with auto-play flag
     setCurrentSong(song, true); // Second parameter indicates auto-play
