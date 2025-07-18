@@ -38,7 +38,10 @@ export default function Home() {
     if (isLyricsRoute && params.id) {
       const songId = parseInt(params.id);
       setCurrentLyricsId(songId);
-      setShowLyrics(true);
+      // Delay showing lyrics to ensure smooth animation from bottom
+      setTimeout(() => {
+        setShowLyrics(true);
+      }, 50);
     } else {
       setShowLyrics(false);
       setCurrentLyricsId(0);
