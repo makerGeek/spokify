@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Save, Play, Pause, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/lib/api-client";
+import { getAuthToken } from "@/lib/auth";
 import { type Song } from "@shared/schema";
 
 export default function Admin() {
@@ -20,41 +21,104 @@ export default function Admin() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
-  // Fetch all songs
-  const { data: songs, isLoading: songsLoading } = useQuery<Song[]>({
-    queryKey: ["/api/songs"],
-    queryFn: () => api.songs.getAll()
+  // Fetch all songs from admin management endpoint
+  const { data: songs, isLoading: songsLoading, error: songsError } = useQuery<Song[]>({
+    queryKey: ["/api/management/songs"],
+    queryFn: async () => {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('No authentication token');
+      }
+      
+      const response = await fetch('/api/management/songs', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.status === 401 || response.status === 403) {
+        setLocation('/home');
+        throw new Error('Unauthorized');
+      }
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch songs');
+      }
+      
+      return response.json();
+    },
+    retry: false
   });
 
   // Fetch selected song details
   const { data: selectedSong, isLoading: songLoading } = useQuery<Song>({
-    queryKey: ["/api/songs", selectedSongId],
+    queryKey: ["/api/management/songs", selectedSongId],
     queryFn: async () => {
       if (!selectedSongId) throw new Error("No song ID provided");
-      return api.songs.getById(parseInt(selectedSongId));
+      
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('No authentication token');
+      }
+      
+      const response = await fetch(`/api/songs/${selectedSongId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.status === 401 || response.status === 403) {
+        setLocation('/home');
+        throw new Error('Unauthorized');
+      }
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch song');
+      }
+      
+      return response.json();
     },
-    enabled: !!selectedSongId
+    enabled: !!selectedSongId,
+    retry: false
   });
 
   // Update song lyrics mutation
   const updateLyricsMutation = useMutation({
     mutationFn: async ({ songId, lyrics }: { songId: string, lyrics: any[] }) => {
-      const response = await fetch(`/api/admin/songs/${songId}/lyrics`, {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('No authentication token');
+      }
+      
+      const response = await fetch(`/api/management/songs/${songId}/lyrics`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ lyrics })
       });
+      
+      if (response.status === 401 || response.status === 403) {
+        setLocation('/home');
+        throw new Error('Unauthorized');
+      }
+      
       if (!response.ok) throw new Error("Failed to update lyrics");
       return response.json();
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Lyrics timestamps updated successfully!" });
-      queryClient.invalidateQueries({ queryKey: ["/api/songs", selectedSongId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/management/songs", selectedSongId] });
       setPreviewMode(false);
       setOffsetValue(0);
     },
-    onError: () => {
+    onError: (error: any) => {
+      if (error.message === 'Unauthorized') {
+        return; // Already redirected
+      }
       toast({ title: "Error", description: "Failed to update lyrics timestamps", variant: "destructive" });
     }
   });

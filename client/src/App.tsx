@@ -27,90 +27,8 @@ import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
 import { getAuthToken } from "@/lib/auth";
 
-function ProtectedAdminRoute() {
-  const [, setLocation] = useLocation();
-  const { databaseUser, loading } = useAuth();
-  const [adminLoading, setAdminLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  console.log('ProtectedAdminRoute render - loading:', loading, 'databaseUser:', !!databaseUser, 'adminLoading:', adminLoading);
-
-  useEffect(() => {
-    console.log('useEffect triggered - loading:', loading, 'databaseUser:', !!databaseUser);
-    
-    if (!loading) {
-      if (!databaseUser) {
-        console.log('No database user, redirecting to home');
-        setLocation("/");
-        return;
-      }
-
-      // Check admin status with server
-      const checkAdminStatus = async () => {
-        try {
-          console.log('Starting admin check...');
-          const token = await getAuthToken();
-          console.log('Got auth token:', !!token);
-          
-          if (!token) {
-            console.log('No token found, redirecting to home');
-            setLocation("/");
-            return;
-          }
-
-          console.log('Making admin check request...');
-          const response = await fetch('/api/auth/admin-check', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-
-          console.log('Admin check response status:', response.status);
-          
-          if (response.ok) {
-            console.log('Admin check passed');
-            setIsAdmin(true);
-          } else {
-            const errorData = await response.json();
-            console.log('Admin check failed:', errorData);
-            setLocation("/home");
-            return;
-          }
-        } catch (error) {
-          console.error('Admin check failed:', error);
-          setLocation("/home");
-          return;
-        } finally {
-          setAdminLoading(false);
-        }
-      };
-
-      checkAdminStatus();
-    }
-  }, [databaseUser, loading, setLocation]);
-
-  if (loading || adminLoading) {
-    return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
-          <p className="text-spotify-muted">Checking permissions...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!databaseUser || !isAdmin) {
-    return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-spotify-muted">Access denied. Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
-
+// Admin route component - authorization is handled by the APIs themselves
+function AdminRoute() {
   return <Admin />;
 }
 
@@ -152,7 +70,7 @@ function Router() {
             <Profile />
           </AuthenticatedOnly>
         </Route>
-        <Route path="/song-offset" component={ProtectedAdminRoute} />
+        <Route path="/song-offset" component={AdminRoute} />
         <Route path="/invite-admin" component={InviteAdmin} />
         <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
         <Route component={NotFound} />

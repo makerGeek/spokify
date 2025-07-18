@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { translateText } from "./services/gemini";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema } from "@shared/schema";
-import { authenticateToken, optionalAuth, rateLimit, AuthenticatedRequest } from "./middleware/auth";
+import { authenticateToken, optionalAuth, rateLimit, requireAdmin, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -350,8 +350,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes for lyrics management
-  app.patch("/api/admin/songs/:id/lyrics", async (req, res) => {
+  // Admin Management Routes - Require admin privileges
+  app.get("/api/management/songs", authenticateToken, requireAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { genre, difficulty, language } = req.query;
+      const songs = await storage.getSongs({
+        genre: genre as string,
+        difficulty: difficulty as string,
+        language: language as string
+      });
+      res.json(songs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch songs" });
+    }
+  });
+
+  app.patch("/api/management/songs/:id/lyrics", authenticateToken, requireAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       const songId = parseInt(req.params.id);
       const { lyrics } = req.body;
