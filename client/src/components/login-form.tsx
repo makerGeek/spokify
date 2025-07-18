@@ -27,26 +27,25 @@ export default function LoginForm({
   const { showSocialLoginButtons } = useSocialLogin()
   const { requiresInviteCode, setPendingInviteCode } = useAuth()
 
-  const checkUserInviteStatus = async () => {
+  const checkUserActiveStatus = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) return false
+      if (!session?.access_token) return true // Default to active if no session
 
-      const response = await fetch('/api/auth/user', {
+      const response = await fetch('/api/auth/isActive', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
         },
       })
 
       if (response.ok) {
-        const userData = await response.json()
-        // If user has no invitedBy field, they need to enter an invite code
-        return userData.user && userData.user.invitedBy === null
+        const data = await response.json()
+        return data.isActive
       }
-      return false
+      return true // Default to active if check fails
     } catch (error) {
-      console.error('Error checking user invite status:', error)
-      return false
+      console.error('Error checking user active status:', error)
+      return true // Default to active if error occurs
     }
   }
 
@@ -75,9 +74,12 @@ export default function LoginForm({
         })
       }
       
-      // After successful authentication, check if user needs invite code
-      const needsInvite = await checkUserInviteStatus()
-      if (needsInvite) {
+      // Wait a moment for the session to be established
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // After successful authentication, check if user is active
+      const isActive = await checkUserActiveStatus()
+      if (!isActive) {
         setNeedsInviteCode(true)
         setLoading(false)
         return

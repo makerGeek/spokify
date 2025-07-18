@@ -35,6 +35,31 @@ router.post('/validate-invite',
 );
 
 /**
+ * Check if user is active
+ * GET /api/auth/isActive
+ * Requires valid Supabase JWT token
+ * Returns user's activation status
+ */
+router.get('/isActive',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'No authenticated user' });
+      }
+
+      res.json({ 
+        isActive: req.user.isActive || false,
+        email: req.user.email 
+      });
+    } catch (error) {
+      console.error('Check active status error:', error);
+      res.status(500).json({ error: 'Failed to check activation status' });
+    }
+  }
+);
+
+/**
  * Get current authenticated user
  * GET /api/auth/user
  * Requires valid Supabase JWT token
@@ -56,7 +81,8 @@ router.get('/user',
         streak: req.user.streak,
         weeklyGoal: req.user.weeklyGoal,
         wordsLearned: req.user.wordsLearned,
-        invitedBy: req.user.invitedBy
+        invitedBy: req.user.invitedBy,
+        isActive: req.user.isActive
       };
 
       res.json({ user: safeUserData });

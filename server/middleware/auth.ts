@@ -48,19 +48,33 @@ async function getOrCreateUser(supabaseUser: any) {
   
   // If still not found, create new user
   if (!user) {
-    const newUser = {
-      email,
-      supabaseId,
-      name: user_metadata?.full_name || user_metadata?.name || email.split('@')[0],
-      inviteCode: nanoid(8),
-      targetLanguage: 'es', // Default target language
-      nativeLanguage: 'en', // Default native language
-      isAdmin: false,
-      isActive: false, // Users start inactive and need invite code
-      invitedBy: null // Will be set when they use invite code
-    };
-    
-    user = await storage.createUser(newUser);
+    try {
+      const newUser = {
+        email,
+        supabaseId,
+        name: user_metadata?.full_name || user_metadata?.name || email.split('@')[0],
+        inviteCode: nanoid(8),
+        targetLanguage: 'es', // Default target language
+        nativeLanguage: 'en', // Default native language
+        isAdmin: false,
+        isActive: false, // Users start inactive and need invite code
+        invitedBy: null // Will be set when they use invite code
+      };
+      
+      user = await storage.createUser(newUser);
+    } catch (error: any) {
+      // If user creation fails due to duplicate email, try to find existing user
+      if (error.code === '23505' && error.constraint === 'users_email_key') {
+        user = await storage.getUserByEmail(email);
+        if (user && !user.supabaseId) {
+          // Update existing user with supabaseId
+          await storage.updateUser(user.id, { supabaseId });
+          user.supabaseId = supabaseId;
+        }
+      } else {
+        throw error;
+      }
+    }
   }
   
   return user;

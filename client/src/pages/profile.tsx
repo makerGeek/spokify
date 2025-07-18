@@ -458,7 +458,7 @@ export default function Profile() {
             src="/logo.png"
             alt="Spokify Logo"
             className="mx-auto"
-            style={{ width: "40vw" }}
+            style={{ width: "40vw", maxWidth: "250px" }}
           />
         </div>
       </div>
