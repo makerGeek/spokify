@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, Users, Check } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Users, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface InviteCodeInputProps {
   onCodeValidated: (code: string) => void;
@@ -11,28 +11,32 @@ interface InviteCodeInputProps {
   isLoading?: boolean;
 }
 
-export function InviteCodeInput({ onCodeValidated, onSkip, isLoading = false }: InviteCodeInputProps) {
-  const [inviteCode, setInviteCode] = useState('');
+export function InviteCodeInput({
+  onCodeValidated,
+  onSkip,
+  isLoading = false,
+}: InviteCodeInputProps) {
+  const [inviteCode, setInviteCode] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
 
   const validateInviteCode = async () => {
     if (!inviteCode.trim()) {
       toast({
-        title: 'Invalid Code',
-        description: 'Please enter an invite code.',
-        variant: 'destructive',
+        title: "Invalid Code",
+        description: "Please enter an invite code.",
+        variant: "destructive",
       });
       return;
     }
 
     setIsValidating(true);
-    
+
     try {
-      const response = await fetch('/api/invite-codes/validate', {
-        method: 'POST',
+      const response = await fetch("/api/invite-codes/validate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ code: inviteCode.trim() }),
       });
@@ -43,16 +47,17 @@ export function InviteCodeInput({ onCodeValidated, onSkip, isLoading = false }: 
         onCodeValidated(inviteCode.trim());
       } else {
         toast({
-          title: 'Invalid Invite Code',
-          description: data.message || 'This invite code is not valid or has expired.',
-          variant: 'destructive',
+          title: "Invalid Invite Code",
+          description:
+            data.message || "This invite code is not valid or has expired.",
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to validate invite code. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to validate invite code. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsValidating(false);
@@ -68,10 +73,15 @@ export function InviteCodeInput({ onCodeValidated, onSkip, isLoading = false }: 
     <div className="spotify-bg min-h-screen flex items-center justify-center p-4">
       <div className="spotify-card max-w-md w-full p-8">
         <div className="text-center mb-8">
-          <Users className="mx-auto mb-4" style={{ color: 'var(--spotify-green)' }} size={48} />
+          <Users
+            className="mx-auto mb-4"
+            style={{ color: "var(--spotify-green)" }}
+            size={48}
+          />
           <h1 className="spotify-heading-lg mb-2">Invite Only</h1>
           <p className="spotify-text-secondary">
-            Spokify is currently in private beta. Please enter your invite code to continue.
+            Spokify is currently invite-only. Please enter your invite code to
+            continue.
           </p>
         </div>
 
@@ -127,7 +137,8 @@ export function InviteCodeInput({ onCodeValidated, onSkip, isLoading = false }: 
 
         <div className="mt-8 text-center">
           <p className="spotify-text-muted text-sm">
-            Don't have an invite code? Request access from a friend who's already using Spokify.
+            Don't have an invite code? Request access from a friend who's
+            already using Spokify.
           </p>
         </div>
       </div>

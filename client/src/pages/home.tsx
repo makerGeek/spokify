@@ -15,10 +15,10 @@ import { useAuth } from "@/contexts/auth-context";
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
-  "es": "/flags/es.png",
-  "fr": "/flags/fr.png", 
-  "de": "/flags/de.png",
-  "it": "/flags/it.png"
+  es: "/flags/es.png",
+  fr: "/flags/fr.png",
+  de: "/flags/de.png",
+  it: "/flags/it.png",
 };
 
 export default function Home() {
@@ -41,16 +41,16 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to fetch song");
       return response.json();
     },
-    enabled: !!params.id && location.startsWith('/lyrics/')
+    enabled: !!params.id && location.startsWith("/lyrics/"),
   });
 
   // Check if we're on a lyrics route
   useEffect(() => {
-    const isLyricsRoute = location.startsWith('/lyrics/');
+    const isLyricsRoute = location.startsWith("/lyrics/");
     if (isLyricsRoute && params.id) {
       const songId = parseInt(params.id);
       setCurrentLyricsId(songId);
-      
+
       // Check authentication for direct URL access
       if (urlSong) {
         if (!user && !urlSong.isFree) {
@@ -63,7 +63,7 @@ export default function Home() {
           }, 100);
           return;
         }
-        
+
         // Delay showing lyrics to ensure smooth animation from bottom
         setTimeout(() => {
           setShowLyrics(true);
@@ -76,8 +76,14 @@ export default function Home() {
   }, [location, params.id, urlSong, user, setLocation]);
 
   // Get user preferences from localStorage
-  const userPreferences = JSON.parse(localStorage.getItem("userPreferences") || "{}");
-  const { nativeLanguage = "en", targetLanguage = "es", level = "A1" } = userPreferences;
+  const userPreferences = JSON.parse(
+    localStorage.getItem("userPreferences") || "{}",
+  );
+  const {
+    nativeLanguage = "en",
+    targetLanguage = "es",
+    level = "A1",
+  } = userPreferences;
 
   const { data: songs = [], isLoading } = useQuery<Song[]>({
     queryKey: ["/api/songs", selectedGenre, targetLanguage],
@@ -93,7 +99,7 @@ export default function Home() {
       const response = await fetch(`/api/songs?${params}`);
       if (!response.ok) throw new Error("Failed to fetch songs");
       return response.json();
-    }
+    },
   });
 
   const handleProfileClick = () => {
@@ -112,7 +118,7 @@ export default function Home() {
       setShowAuthModal(true);
       return;
     }
-    
+
     // If authenticated or song is free, navigate to lyrics
     setLocation(`/lyrics/${song.id}`);
   };
@@ -130,7 +136,10 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
         <div className="text-center">
-          <Music className="text-spotify-green text-6xl mb-4 mx-auto animate-pulse" size={96} />
+          <Music
+            className="text-spotify-green text-6xl mb-4 mx-auto animate-pulse"
+            size={96}
+          />
           <p className="text-spotify-muted">Loading your music...</p>
         </div>
       </div>
@@ -138,7 +147,9 @@ export default function Home() {
   }
 
   return (
-    <div className={`min-h-screen bg-spotify-bg ${currentSong ? 'pb-32' : 'pb-16'}`}>
+    <div
+      className={`min-h-screen bg-spotify-bg ${currentSong ? "pb-32" : "pb-16"}`}
+    >
       {/* Header */}
       <header className="bg-spotify-bg border-b border-spotify-card p-4 sticky top-0 z-40">
         <div className="flex items-center justify-between max-w-md mx-auto">
@@ -147,19 +158,25 @@ export default function Home() {
             <h1 className="text-xl font-bold circular-font">Spokify</h1>
           </div>
           <div className="flex items-center space-x-2">
-            <div 
-              className="w-12 h-8 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform" 
+            <div
+              className="w-12 h-8 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("🚩 Flag div clicked", { targetLanguage, flagSrc: languageFlags[targetLanguage as keyof typeof languageFlags] });
+                console.log("🚩 Flag div clicked", {
+                  targetLanguage,
+                  flagSrc:
+                    languageFlags[targetLanguage as keyof typeof languageFlags],
+                });
                 handleLanguageLevelClick();
               }}
               onMouseDown={(e) => console.log("🚩 Flag mousedown")}
               onMouseUp={(e) => console.log("🚩 Flag mouseup")}
             >
-              <img 
-                src={languageFlags[targetLanguage as keyof typeof languageFlags]} 
+              <img
+                src={
+                  languageFlags[targetLanguage as keyof typeof languageFlags]
+                }
                 alt={`${targetLanguage} flag`}
                 className="w-full h-full object-cover pointer-events-none"
               />
@@ -177,7 +194,10 @@ export default function Home() {
       </header>
 
       {/* Genre Filters */}
-      <GenreFilters selectedGenre={selectedGenre} onGenreChange={setSelectedGenre} />
+      <GenreFilters
+        selectedGenre={selectedGenre}
+        onGenreChange={setSelectedGenre}
+      />
 
       {/* Songs List */}
       <div className="p-4">
@@ -185,7 +205,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-4 circular-font">
             {selectedGenre === "all" ? "All Songs" : `${selectedGenre} Songs`}
           </h2>
-          
+
           <div className="space-y-4">
             {songs.map((song) => (
               <SongCard
@@ -204,15 +224,15 @@ export default function Home() {
 
       {/* Mini Player */}
       {currentSong && <MiniPlayer />}
-      
+
       {/* Auth Modal for Premium Songs */}
       {showAuthModal && selectedSong && (
-        <AuthModal 
+        <AuthModal
           onClose={() => {
             setShowAuthModal(false);
             setSelectedSong(null);
           }}
-          customMessage={`Login and upgrade to play "${selectedSong.title}"`}
+          customMessage={`Login to play "${selectedSong.title}"`}
         >
           <div></div>
         </AuthModal>
@@ -220,7 +240,7 @@ export default function Home() {
 
       {/* Lyrics Overlay */}
       {showLyrics && currentLyricsId > 0 && (
-        <LyricsOverlay 
+        <LyricsOverlay
           songId={currentLyricsId}
           onClose={handleCloseLyrics}
           isVisible={showLyrics}
