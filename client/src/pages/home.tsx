@@ -49,7 +49,8 @@ export default function Home() {
   };
 
   const handleLanguageLevelClick = () => {
-    setLocation("/");
+    console.log("🚩 Language flag clicked - navigating to language selection");
+    setLocation("/language-selection");
   };
 
   const handleSongClick = (songId: number) => {
@@ -77,11 +78,21 @@ export default function Home() {
             <h1 className="text-xl font-bold circular-font">Spokify</h1>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-12 h-8 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform" onClick={handleLanguageLevelClick}>
+            <div 
+              className="w-12 h-8 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("🚩 Flag div clicked", { targetLanguage, flagSrc: languageFlags[targetLanguage as keyof typeof languageFlags] });
+                handleLanguageLevelClick();
+              }}
+              onMouseDown={(e) => console.log("🚩 Flag mousedown")}
+              onMouseUp={(e) => console.log("🚩 Flag mouseup")}
+            >
               <img 
                 src={languageFlags[targetLanguage as keyof typeof languageFlags]} 
                 alt={`${targetLanguage} flag`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
               />
             </div>
             <Button
