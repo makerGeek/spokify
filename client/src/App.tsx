@@ -22,12 +22,10 @@ import InviteAdmin from "@/pages/invite-admin";
 import ServiceWorkerAdmin from "@/pages/service-worker-admin";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
-import AuthGuard from "@/components/auth-guard";
 import BottomNavigation from "@/components/bottom-navigation";
 import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
 import { getAuthToken } from "@/lib/auth";
-import { useFeatureFlag } from "@/hooks/use-feature-flags";
 
 // Admin route component - authorization is handled by the APIs themselves
 function AdminRoute() {
@@ -36,7 +34,6 @@ function AdminRoute() {
 
 function Router() {
   const [location] = useLocation();
-  const { isEnabled: authGuardAllApp } = useFeatureFlag('AUTHGUARD_ALL_APP');
   
   // Determine current page for bottom navigation
   const getCurrentPage = () => {
@@ -48,40 +45,6 @@ function Router() {
     if (location.startsWith('/lyrics/')) return 'home'; // Lyrics player belongs to home flow
     return 'home';
   };
-
-  // If AUTHGUARD_ALL_APP is enabled, wrap content routes in AuthGuard (but not login/admin pages)
-  if (authGuardAllApp) {
-    return (
-      <div className="relative min-h-screen">
-        <Switch>
-          <Route path="/" component={SmartRedirect} />
-          <Route path="/language-selection" component={LanguageSelection} />
-          <Route path="/login" component={Login} />
-          <Route path="/song-offset" component={AdminRoute} />
-          <Route path="/invite-admin" component={InviteAdmin} />
-          <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
-          <Route>
-            <AuthGuard>
-              <Switch>
-                <Route path="/home" component={Home} />
-                <Route path="/search" component={SearchPage} />
-                <Route path="/lyrics/:id" component={Home} />
-                <Route path="/library" component={Library} />
-                <Route path="/review" component={Review} />
-                <Route path="/profile" component={Profile} />
-                <Route component={NotFound} />
-              </Switch>
-            </AuthGuard>
-          </Route>
-        </Switch>
-        
-        {/* Bottom navigation - only show on main app pages */}
-        {!['/language-selection', '/login', '/song-offset', '/invite-admin', '/service-worker-admin'].includes(location) && (
-          <BottomNavigation currentPage={getCurrentPage()} />
-        )}
-      </div>
-    );
-  }
 
   return (
     <div className="relative min-h-screen">
