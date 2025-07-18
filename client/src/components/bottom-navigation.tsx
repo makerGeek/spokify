@@ -18,7 +18,7 @@ export default function BottomNavigation({ currentPage }: BottomNavigationProps)
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-spotify-card border-t border-spotify-muted z-30">
+    <div className="fixed bottom-0 left-0 right-0 bg-spotify-card border-t border-spotify-muted z-60">
       <div className="flex justify-around items-center py-3 max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;

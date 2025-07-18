@@ -115,7 +115,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
 
   if (isLoading) {
     return (
-      <div className={`fixed inset-0 z-20 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
+      <div className={`fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
         isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div className="text-center">
@@ -128,7 +128,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
 
   if (!song) {
     return (
-      <div className={`fixed inset-0 z-20 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
+      <div className={`fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
         isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div className="text-center">
@@ -142,7 +142,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   }
 
   return (
-    <div className={`fixed inset-0 z-20 bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
+    <div className={`fixed inset-0 z-50 bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
       isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
     }`}>
       {/* Main Content - Full Height Lyrics */}
