@@ -18,7 +18,7 @@ interface LyricsLine {
   text: string;
 }
 
-async function checkSongExists(title: string, artist: string, spotifyId?: string): Promise<boolean> {
+async function checkSongExists(title: string, artist: string, spotifyId?: string, youtubeId?: string): Promise<boolean> {
   try {
     const conditions = [
       and(eq(songs.title, title), eq(songs.artist, artist))
@@ -27,6 +27,11 @@ async function checkSongExists(title: string, artist: string, spotifyId?: string
     // Also check by Spotify ID if provided
     if (spotifyId) {
       conditions.push(eq(songs.spotifyId, spotifyId));
+    }
+    
+    // Also check by YouTube ID if provided
+    if (youtubeId) {
+      conditions.push(eq(songs.youtubeId, youtubeId));
     }
     
     const existingSong = await db.select().from(songs).where(or(...conditions)).limit(1);
@@ -238,6 +243,20 @@ async function main() {
   console.log(`\nSearching YouTube for: "${youtubeSearchQuery}"`);
   
   const youtubeId = await findYouTubeVideoId(youtubeSearchQuery);
+
+  // Check again if song exists with YouTube ID
+  if (youtubeId) {
+    console.log(`\nChecking if song with YouTube ID already exists in database...`);
+    const songExistsWithYouTube = await checkSongExists(spotifyResult.title, spotifyResult.artist, spotifyResult.spotifyId, youtubeId);
+    
+    if (songExistsWithYouTube) {
+      console.log(`✓ Song "${spotifyResult.title}" by ${spotifyResult.artist} already exists in database with YouTube ID`);
+      console.log('Skipping import to avoid duplicates');
+      process.exit(0);
+    }
+    
+    console.log(`✓ Song with YouTube ID not found in database, proceeding with import...`);
+  }
   
   // Fetch lyrics using Spotify track ID
   console.log(`\nFetching lyrics for Spotify track: ${spotifyResult.spotifyId}`);
