@@ -143,6 +143,15 @@
   .roboto-font {
     font-family: 'Roboto', sans-serif;
   }
+
+  /* Custom z-index utilities */
+  .z-60 {
+    z-index: 60;
+  }
+
+  .z-70 {
+    z-index: 70;
+  }
 }
 
 /* Marquee animation for long song titles */
