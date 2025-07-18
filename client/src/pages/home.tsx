@@ -12,6 +12,7 @@ import LyricsOverlay from "@/components/lyrics-overlay";
 import { AuthModal } from "@/components/auth-modal";
 import ActivationModal from "@/components/activation-modal";
 import { PremiumModal } from "@/components/premium-modal";
+import FullscreenButton from "@/components/fullscreen-button";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
@@ -200,6 +201,7 @@ export default function Home() {
                 className="w-full h-full object-cover pointer-events-none"
               />
             </div>
+            <FullscreenButton />
             <Button
               variant="outline"
               size="sm"
