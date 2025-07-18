@@ -1,4 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
+import { 
+  TranslationResult, 
+  DifficultyAssessment, 
+  LyricsDifficultyAssessment, 
+  TranslatedLyric 
+} from "../types/ai-services";
 
 // DON'T DELETE THIS COMMENT
 // Follow these instructions when using this blueprint:
@@ -7,16 +13,6 @@ import { GoogleGenAI } from "@google/genai";
 
 // This API key is from Gemini Developer API Key, not vertex AI API Key
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
-export interface TranslationResult {
-  translation: string;
-  confidence: number;
-  vocabulary: Array<{
-    word: string;
-    translation: string;
-    difficulty: string;
-  }>;
-}
 
 export async function translateText(
   text: string,
@@ -89,18 +85,7 @@ Guidelines:
   }
 }
 
-export interface TranslatedLyric {
-  text: string;
-  timestamp: number;
-  translation: string;
-}
 
-export interface DifficultyAssessment {
-  difficulty: string;
-  key_words: Record<string, string>;
-  language?: string;
-  genre?: string;
-}
 
 async function withTimeout<T>(
   promise: Promise<T>,
@@ -200,13 +185,7 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
 export async function assessDifficulty(
   text: string,
   language: string
-): Promise<{
-  difficulty: string;
-  confidence: number;
-  reasoning: string;
-  vocabulary_complexity: number;
-  grammar_complexity: number;
-}> {
+): Promise<DifficultyAssessment> {
   try {
     const prompt = `You are a language learning expert. Assess the difficulty level of the given ${language} text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length.
 
@@ -267,7 +246,7 @@ export async function assessLyricsDifficulty(
   lyricsData: Array<{ startMs: number; durMs: number; text: string }>,
   title?: string,
   artist?: string,
-): Promise<DifficultyAssessment> {
+): Promise<LyricsDifficultyAssessment> {
   try {
     // Concatenate all text from the lyrics
     const concatenatedText = lyricsData.map((line) => line.text).join(" ");

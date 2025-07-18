@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { translateLyrics, assessDifficulty } from '../server/services/gemini.js';
+import { translateLyrics, assessLyricsDifficulty } from '../server/services/gemini.js';
 import { db } from '../server/db.js';
 import { songs } from '../shared/schema.js';
 
@@ -227,7 +227,7 @@ async function main() {
     }
 
     try {
-      difficultyResult = await assessDifficulty(lyrics, spotifyResult.title, spotifyResult.artist);
+      difficultyResult = await assessLyricsDifficulty(lyrics, spotifyResult.title, spotifyResult.artist);
       console.log(`\nDifficulty assessment: ${difficultyResult.difficulty} level`);
       console.log(`Language detected: ${difficultyResult.language || 'unknown'}`);
       console.log(`Genre detected: ${difficultyResult.genre || 'unknown'}`);

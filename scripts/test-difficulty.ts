@@ -1,4 +1,4 @@
-import { assessDifficulty } from '../server/services/gemini.js';
+import { assessLyricsDifficulty } from '../server/services/gemini.js';
 
 async function testDifficultyAssessment() {
   console.log("Testing Gemini difficulty assessment...");
@@ -27,7 +27,7 @@ async function testDifficultyAssessment() {
   ];
 
   try {
-    const result = await assessDifficulty(spanishLyrics);
+    const result = await assessLyricsDifficulty(spanishLyrics);
     console.log("Difficulty assessment successful:");
     console.log(JSON.stringify(result, null, 2));
   } catch (error) {
