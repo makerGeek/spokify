@@ -9,24 +9,11 @@ export interface AuthUser {
 export interface DatabaseUser {
   id: number;
   email: string;
-  supabaseId: string;
-  firstName?: string;
-  lastName?: string;
-  profileImageUrl?: string;
-  nativeLanguage?: string;
-  targetLanguage?: string;
-  level?: string;
+  inviteCode?: string;
+  streak: number;
   weeklyGoal?: number;
   wordsLearned: number;
-  streak: number;
-  lastActiveDate?: Date;
   isAdmin: boolean;
-  isActive: boolean;
-  invitedBy?: string;
-  inviteCode?: string;
-  activatedAt?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export interface UserSyncResult {

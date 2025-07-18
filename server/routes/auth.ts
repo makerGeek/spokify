@@ -48,11 +48,18 @@ router.get('/user',
         return res.status(401).json({ error: 'No authenticated user' });
       }
 
-      // Debug logging to see what user data looks like
-      console.log('User data from database:', JSON.stringify(req.user, null, 2));
-      console.log('isAdmin field value:', req.user.isAdmin, 'type:', typeof req.user.isAdmin);
+      // Only return necessary user fields to prevent data leaks
+      const safeUserData = {
+        id: req.user.id,
+        email: req.user.email,
+        inviteCode: req.user.inviteCode,
+        streak: req.user.streak,
+        weeklyGoal: req.user.weeklyGoal,
+        wordsLearned: req.user.wordsLearned,
+        isAdmin: req.user.isAdmin // Keep this for admin route protection
+      };
 
-      res.json({ user: req.user });
+      res.json({ user: safeUserData });
     } catch (error) {
       console.error('Get user error:', error);
       res.status(500).json({ error: 'Failed to get user' });
