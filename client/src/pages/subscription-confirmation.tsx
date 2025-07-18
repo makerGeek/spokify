@@ -12,6 +12,7 @@ export default function SubscriptionConfirmation() {
   const { refreshUserData } = useAuth();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [subscriptionData, setSubscriptionData] = useState<any>(null);
+  const [hasVerified, setHasVerified] = useState(false);
 
   // Get session_id from URL parameters
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
@@ -19,6 +20,9 @@ export default function SubscriptionConfirmation() {
 
   useEffect(() => {
     const verifySubscription = async () => {
+      if (hasVerified) return;
+      setHasVerified(true);
+      
       try {
         // Wait 2 seconds to ensure Stripe has processed the subscription
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -61,7 +65,7 @@ export default function SubscriptionConfirmation() {
     };
 
     verifySubscription();
-  }, [toast, refreshUserData]);
+  }, []); // Empty dependency array to run only once
 
   return (
     <div className="min-h-screen spotify-bg flex items-center justify-center p-4">
