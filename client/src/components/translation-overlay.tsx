@@ -8,6 +8,19 @@ import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api-client";
 import { AuthModal } from "@/components/auth-modal";
 
+// Helper function to get language display name
+const getLanguageName = (languageCode: string) => {
+  const languages: Record<string, string> = {
+    'es': 'Spanish',
+    'en': 'English', 
+    'fr': 'French',
+    'de': 'German',
+    'it': 'Italian',
+    'pt': 'Portuguese'
+  };
+  return languages[languageCode] || languageCode.toUpperCase();
+};
+
 interface TranslationOverlayProps {
   line: {
     text: string;
@@ -16,9 +29,10 @@ interface TranslationOverlayProps {
   onClose: () => void;
   songId: number;
   songName?: string;
+  songLanguage?: string;
 }
 
-export default function TranslationOverlay({ line, onClose, songId, songName }: TranslationOverlayProps) {
+export default function TranslationOverlay({ line, onClose, songId, songName, songLanguage = "es" }: TranslationOverlayProps) {
   const [vocabulary, setVocabulary] = useState<Array<{
     word: string;
     translation: string;
@@ -31,7 +45,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
 
   const translateMutation = useMutation({
     mutationFn: async (text: string) => {
-      return api.translate(text, "en");
+      return api.translate(text, "en", songLanguage);
     },
     onSuccess: (data) => {
       setVocabulary(data.vocabulary || []);
@@ -53,7 +67,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
         userId: databaseUser.id,
         word: word.word,
         translation: word.translation,
-        language: "es",
+        language: songLanguage,
         difficulty: "A2",
         songId,
         songName,
@@ -102,7 +116,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName }: 
         
         <CardContent className="space-y-4">
           <div className="bg-spotify-bg rounded-lg p-4">
-            <p className="text-spotify-muted text-sm mb-2">Spanish</p>
+            <p className="text-spotify-muted text-sm mb-2">{getLanguageName(songLanguage)}</p>
             <p className="text-spotify-text font-medium">{line.text}</p>
           </div>
           

@@ -230,6 +230,7 @@ export default function LyricsPlayer() {
           onClose={() => setShowTranslation(false)}
           songId={songId}
           songName={song.title}
+          songLanguage={song.language}
         />
       )}
     </div>
