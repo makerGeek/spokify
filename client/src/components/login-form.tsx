@@ -21,33 +21,8 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [needsInviteCode, setNeedsInviteCode] = useState(false)
-  const [validatedInviteCode, setValidatedInviteCode] = useState<string | null>(null)
   const { toast } = useToast()
   const { showSocialLoginButtons } = useSocialLogin()
-  const { requiresInviteCode, setPendingInviteCode } = useAuth()
-
-  const checkUserActiveStatus = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) return true // Default to active if no session
-
-      const response = await fetch('/api/auth/isActive', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        return data.isActive
-      }
-      return true // Default to active if check fails
-    } catch (error) {
-      console.error('Error checking user active status:', error)
-      return true // Default to active if error occurs
-    }
-  }
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,14 +52,6 @@ export default function LoginForm({
       // Wait a moment for the session to be established
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // After successful authentication, check if user is active
-      const isActive = await checkUserActiveStatus()
-      if (!isActive) {
-        setNeedsInviteCode(true)
-        setLoading(false)
-        return
-      }
-      
       onSuccess?.()
     } catch (error: any) {
       toast({
@@ -96,46 +63,7 @@ export default function LoginForm({
     setLoading(false)
   }
 
-  const handleInviteCodeValidated = async (code: string) => {
-    setValidatedInviteCode(code)
-    setPendingInviteCode(code) // Set in auth context for social login
-    
-    // Activate the user with the invite code
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) {
-        throw new Error('No authentication session')
-      }
-
-      const response = await fetch('/api/auth/activate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ inviteCode: code }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to activate account')
-      }
-
-      toast({
-        title: 'Account activated!',
-        description: 'Welcome to Spokify. Your account is now active.',
-      })
-
-      setNeedsInviteCode(false)
-      onSuccess?.()
-    } catch (error: any) {
-      toast({
-        title: 'Activation Error',
-        description: error.message,
-        variant: 'destructive',
-      })
-    }
-  }
+  // Invite code validation is now handled by AuthGuard component
 
   const handleSocialAuth = async (provider: 'google' | 'facebook') => {
     setLoading(true)
@@ -160,27 +88,7 @@ export default function LoginForm({
     }
   }
 
-  // Show invite code input if user needs to enter an invite code
-  if (needsInviteCode) {
-    return (
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold mb-1 text-white">Welcome to Spokify</h1>
-          <p className="spotify-text-muted text-xs mb-2">Spokify is currently invite-only</p>
-          <div className="mt-3 p-3 bg-spotify-gray rounded-lg border border-spotify-border">
-            <p className="spotify-text-secondary text-sm">
-              Please enter your invite code to activate your account
-            </p>
-          </div>
-        </div>
-        <InviteCodeInput
-          onCodeValidated={handleInviteCodeValidated}
-          onSkip={() => setNeedsInviteCode(false)}
-          isLoading={loading}
-        />
-      </div>
-    )
-  }
+  // Invite code flow is now handled by AuthGuard component
 
   return (
     <div className="w-full max-w-sm">
