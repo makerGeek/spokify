@@ -32,21 +32,48 @@ export default function Home() {
   const [showLyrics, setShowLyrics] = useState(false);
   const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
 
+  // Query for specific song when accessing via URL
+  const { data: urlSong } = useQuery<Song>({
+    queryKey: ["/api/songs", params.id],
+    queryFn: async () => {
+      if (!params.id) throw new Error("No song ID provided");
+      const response = await fetch(`/api/songs/${params.id}`);
+      if (!response.ok) throw new Error("Failed to fetch song");
+      return response.json();
+    },
+    enabled: !!params.id && location.startsWith('/lyrics/')
+  });
+
   // Check if we're on a lyrics route
   useEffect(() => {
     const isLyricsRoute = location.startsWith('/lyrics/');
     if (isLyricsRoute && params.id) {
       const songId = parseInt(params.id);
       setCurrentLyricsId(songId);
-      // Delay showing lyrics to ensure smooth animation from bottom
-      setTimeout(() => {
-        setShowLyrics(true);
-      }, 50);
+      
+      // Check authentication for direct URL access
+      if (urlSong) {
+        if (!user && !urlSong.isFree) {
+          // User not authenticated and song is not free - show auth modal
+          setSelectedSong(urlSong);
+          setShowAuthModal(true);
+          // Redirect to home after a short delay
+          setTimeout(() => {
+            setLocation("/home");
+          }, 100);
+          return;
+        }
+        
+        // Delay showing lyrics to ensure smooth animation from bottom
+        setTimeout(() => {
+          setShowLyrics(true);
+        }, 50);
+      }
     } else {
       setShowLyrics(false);
       setCurrentLyricsId(0);
     }
-  }, [location, params.id]);
+  }, [location, params.id, urlSong, user, setLocation]);
 
   // Get user preferences from localStorage
   const userPreferences = JSON.parse(localStorage.getItem("userPreferences") || "{}");
