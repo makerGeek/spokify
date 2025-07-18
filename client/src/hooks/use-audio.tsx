@@ -244,8 +244,22 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const seekTo = (time: number) => {
     if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+      // Remember the current playing state
+      const wasPlaying = isPlaying;
+      
+      // Seek to the time
       playerRef.current.seekTo(time, true);
       setCurrentTime(time);
+      
+      // If the video wasn't playing before, pause it after seeking
+      if (!wasPlaying) {
+        // Use a small timeout to ensure the seek operation completes first
+        setTimeout(() => {
+          if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+            playerRef.current.pauseVideo();
+          }
+        }, 100);
+      }
     }
   };
 
