@@ -2,6 +2,7 @@ import axios from 'axios';
 import { translateLyrics, assessLyricsDifficulty } from '../server/services/gemini.js';
 import { db } from '../server/db.js';
 import { songs } from '../shared/schema.js';
+import { eq, and, or } from 'drizzle-orm';
 
 interface TrackInfo {
   spotifyId: string | null;
@@ -15,6 +16,25 @@ interface LyricsLine {
   startMs: number;
   durMs: number;
   text: string;
+}
+
+async function checkSongExists(title: string, artist: string, spotifyId?: string): Promise<boolean> {
+  try {
+    const conditions = [
+      and(eq(songs.title, title), eq(songs.artist, artist))
+    ];
+    
+    // Also check by Spotify ID if provided
+    if (spotifyId) {
+      conditions.push(eq(songs.spotifyId, spotifyId));
+    }
+    
+    const existingSong = await db.select().from(songs).where(or(...conditions)).limit(1);
+    return existingSong.length > 0;
+  } catch (error) {
+    console.error('Error checking if song exists:', error);
+    return false;
+  }
 }
 
 async function findSpotifyTrackId(songName: string): Promise<{ spotifyId: string; title: string; artist: string } | null> {
