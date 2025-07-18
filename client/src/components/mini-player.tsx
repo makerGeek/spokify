@@ -20,8 +20,9 @@ export default function MiniPlayer() {
 
   const handleToggleLyrics = () => {
     if (isLyricsShown) {
-      // Hide lyrics - go back to home
-      setLocation('/home');
+      // Hide lyrics - trigger a custom event for animated close
+      const closeEvent = new CustomEvent('closeLyricsWithAnimation');
+      window.dispatchEvent(closeEvent);
     } else {
       // Show lyrics - go to lyrics page
       setLocation(`/lyrics/${currentSong.id}`);
