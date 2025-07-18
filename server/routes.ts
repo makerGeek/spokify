@@ -505,12 +505,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           user = await storage.updateStripeCustomerId(user.id, customer.id);
         }
 
-        // Create subscription - for now using a fixed price, you'll need to create a product in Stripe dashboard
+        // Create subscription with actual Stripe price
+        if (!process.env.STRIPE_PRICE_ID) {
+          throw new Error('STRIPE_PRICE_ID environment variable is required. Please create a product in your Stripe dashboard and set the price ID.');
+        }
+
         const subscription = await stripe.subscriptions.create({
           customer: customer.id,
           items: [{
-            // You'll need to replace this with your actual Stripe price ID from dashboard
-            price: process.env.STRIPE_PRICE_ID || 'price_1234567890abcdef', // Placeholder
+            price: process.env.STRIPE_PRICE_ID,
           }],
           payment_behavior: 'default_incomplete',
           expand: ['latest_invoice.payment_intent'],
