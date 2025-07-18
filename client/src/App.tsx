@@ -33,10 +33,14 @@ function ProtectedAdminRoute() {
   const [adminLoading, setAdminLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  console.log('ProtectedAdminRoute render - loading:', loading, 'databaseUser:', !!databaseUser, 'adminLoading:', adminLoading);
+
   useEffect(() => {
+    console.log('useEffect triggered - loading:', loading, 'databaseUser:', !!databaseUser);
+    
     if (!loading) {
       if (!databaseUser) {
-        // User not authenticated, redirect to home
+        console.log('No database user, redirecting to home');
         setLocation("/");
         return;
       }
@@ -68,8 +72,8 @@ function ProtectedAdminRoute() {
             console.log('Admin check passed');
             setIsAdmin(true);
           } else {
-            console.log('Admin check failed, redirecting to home');
-            // Not admin or not authorized, redirect to home
+            const errorData = await response.json();
+            console.log('Admin check failed:', errorData);
             setLocation("/home");
             return;
           }
