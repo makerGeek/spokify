@@ -10,14 +10,6 @@ export interface TranslationResult {
   }>;
 }
 
-export interface DifficultyAssessment {
-  difficulty: string;
-  confidence: number;
-  reasoning: string;
-  vocabulary_complexity: number;
-  grammar_complexity: number;
-}
-
 export interface LyricsDifficultyAssessment {
   difficulty: string;
   language?: string;

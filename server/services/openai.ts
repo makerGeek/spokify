@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 import { 
   TranslationResult, 
-  DifficultyAssessment, 
   TranslatedLyric 
 } from "../types/ai-services";
 
@@ -42,41 +41,6 @@ export async function translateText(
     throw new Error("Failed to translate text: " + (error as Error).message);
   }
 }
-
-export async function assessDifficulty(
-  text: string,
-  language: string
-): Promise<DifficultyAssessment> {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are a language learning expert. Assess the difficulty level of the given ${language} text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length. Respond with JSON in this format: { "difficulty": "A1|A2|B1|B2|C1|C2", "confidence": 0.85, "reasoning": "explanation", "vocabulary_complexity": 3, "grammar_complexity": 2 }`
-        },
-        {
-          role: "user",
-          content: text
-        }
-      ],
-      response_format: { type: "json_object" }
-    });
-
-    const result = JSON.parse(response.choices[0].message.content || "{}");
-    return {
-      difficulty: result.difficulty || "A1",
-      confidence: Math.max(0, Math.min(1, result.confidence || 0.8)),
-      reasoning: result.reasoning || "",
-      vocabulary_complexity: Math.max(1, Math.min(5, result.vocabulary_complexity || 3)),
-      grammar_complexity: Math.max(1, Math.min(5, result.grammar_complexity || 3))
-    };
-  } catch (error) {
-    console.error("Difficulty assessment error:", error);
-    throw new Error("Failed to assess difficulty: " + (error as Error).message);
-  }
-}
-
 
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {

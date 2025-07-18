@@ -110,6 +110,11 @@ Preferred communication style: Simple, everyday language.
   - **Consistent Imports**: Both OpenAI and Gemini services now import from shared types file
   - **Function Naming**: Clarified function purposes with `assessDifficulty` (text) vs `assessLyricsDifficulty` (songs)
   - **Updated Scripts**: Import and test scripts now use correct function names for lyrics processing
+- **Dead Code Cleanup**: Removed unused difficulty assessment functionality
+  - **Removed API Endpoint**: Deleted `/api/difficulty` endpoint from routes.ts (never used by frontend)
+  - **Removed Functions**: Deleted `assessDifficulty(text, language)` functions from both OpenAI and Gemini services
+  - **Removed Interface**: Deleted `DifficultyAssessment` interface (only kept `LyricsDifficultyAssessment` for song imports)
+  - **Code Simplification**: Cleaned imports and maintained only actively used AI functionality
 
 ### July 18, 2025 - Code Cleanup and Translation Improvements
 - **Removed Unused Vocabulary Explanation Feature**: Cleaned up unused `/api/vocabulary/explain` endpoint

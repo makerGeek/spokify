@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { translateText, assessDifficulty } from "./services/gemini";
+import { translateText } from "./services/gemini";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
@@ -249,22 +249,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error instanceof Error ? error.message : "Translation failed" });
     }
   });
-
-  app.post("/api/difficulty", async (req, res) => {
-    try {
-      const { text, language } = req.body;
-      if (!text || !language) {
-        return res.status(400).json({ message: "Missing required fields: text, language" });
-      }
-      
-      const result = await assessDifficulty(text, language);
-      res.json(result);
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : "Difficulty assessment failed" });
-    }
-  });
-
-
 
   // Feature flag routes
   app.get("/api/feature-flags", async (req, res) => {
