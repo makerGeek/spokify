@@ -1,18 +1,31 @@
-import { Play, Pause, Maximize2 } from "lucide-react";
+import { Play, Pause, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { useLocation } from "wouter";
 import { useAudio } from "@/hooks/use-audio";
+import { useState, useEffect } from "react";
 
 export default function MiniPlayer() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { currentSong, isPlaying, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
+  const [isLyricsShown, setIsLyricsShown] = useState(false);
+
+  // Check if we're currently on a lyrics page
+  useEffect(() => {
+    setIsLyricsShown(location.startsWith('/lyrics/'));
+  }, [location]);
 
   if (!currentSong) return null;
 
-  const handleOpenFullPlayer = () => {
-    setLocation(`/lyrics/${currentSong.id}`);
+  const handleToggleLyrics = () => {
+    if (isLyricsShown) {
+      // Hide lyrics - go back to home
+      setLocation('/home');
+    } else {
+      // Show lyrics - go to lyrics page
+      setLocation(`/lyrics/${currentSong.id}`);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -90,9 +103,13 @@ export default function MiniPlayer() {
                 variant="ghost"
                 size="sm"
                 className="w-10 h-10 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50"
-                onClick={handleOpenFullPlayer}
+                onClick={handleToggleLyrics}
               >
-                <Maximize2 size={16} />
+                {isLyricsShown ? (
+                  <ChevronDown size={16} className="transition-transform duration-200" />
+                ) : (
+                  <ChevronUp size={16} className="transition-transform duration-200" />
+                )}
               </Button>
             </div>
           </div>
