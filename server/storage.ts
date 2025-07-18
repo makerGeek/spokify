@@ -346,15 +346,24 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUserStripeInfo(userId: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User> {
+  async updateUserStripeInfo(userId: number, updates: {
+    customerId?: string;
+    subscriptionId?: string;
+    subscriptionStatus?: string;
+    subscriptionEndsAt?: Date;
+  }): Promise<User> {
+    const updateData: any = {};
+    
+    if (updates.customerId) updateData.stripeCustomerId = updates.customerId;
+    if (updates.subscriptionId) updateData.stripeSubscriptionId = updates.subscriptionId;
+    if (updates.subscriptionStatus) updateData.subscriptionStatus = updates.subscriptionStatus;
+    if (updates.subscriptionEndsAt) updateData.subscriptionEndsAt = updates.subscriptionEndsAt;
+    
+    updateData.updatedAt = new Date();
+    
     const [user] = await db
       .update(users)
-      .set({ 
-        stripeCustomerId,
-        stripeSubscriptionId,
-        subscriptionStatus: "active",
-        updatedAt: new Date()
-      })
+      .set(updateData)
       .where(eq(users.id, userId))
       .returning();
     return user;
