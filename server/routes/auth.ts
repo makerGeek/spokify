@@ -48,6 +48,10 @@ router.get('/user',
         return res.status(401).json({ error: 'No authenticated user' });
       }
 
+      // Debug logging to see what user data looks like
+      console.log('User data from database:', JSON.stringify(req.user, null, 2));
+      console.log('isAdmin field value:', req.user.isAdmin, 'type:', typeof req.user.isAdmin);
+
       res.json({ user: req.user });
     } catch (error) {
       console.error('Get user error:', error);
