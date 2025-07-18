@@ -22,6 +22,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showTranslationMode, setShowTranslationMode] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
 
@@ -62,6 +63,16 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
     return currentTime >= lineTime && currentTime < nextLineTime;
   };
 
+  // Handle animation state changes
+  useEffect(() => {
+    if (isVisible) {
+      setIsAnimating(true);
+    } else {
+      // Start closing animation
+      setIsAnimating(false);
+    }
+  }, [isVisible]);
+
   // Auto-scroll to keep active lyric line centered
   useEffect(() => {
     if (!autoScroll || !song?.lyrics || !Array.isArray(song.lyrics)) return;
@@ -90,13 +101,23 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
     }
   }, [currentTime, song?.lyrics, autoScroll]);
 
-  if (!isVisible) {
+  const handleClose = () => {
+    setIsAnimating(false);
+    // Delay the actual close to allow animation to complete
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  };
+
+  if (!isVisible && !isAnimating) {
     return null;
   }
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center">
+      <div className={`fixed inset-0 z-20 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
+        isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
+      }`}>
         <div className="text-center">
           <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
           <p className="text-spotify-muted">Loading song...</p>
@@ -107,10 +128,12 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
 
   if (!song) {
     return (
-      <div className="fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center">
+      <div className={`fixed inset-0 z-20 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
+        isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
+      }`}>
         <div className="text-center">
           <p className="text-spotify-muted">Song not found</p>
-          <Button onClick={onClose} className="mt-4">
+          <Button onClick={handleClose} className="mt-4">
             Go Back
           </Button>
         </div>
@@ -119,7 +142,9 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-spotify-bg pb-32 overflow-x-hidden">
+    <div className={`fixed inset-0 z-20 bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
+      isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
+    }`}>
       {/* Main Content - Full Height Lyrics */}
       <div className="p-4 w-full max-w-full">
         <div className="flex items-center justify-between mb-6">
@@ -127,7 +152,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
             variant="ghost"
             size="sm"
             className="w-10 h-10 bg-spotify-card rounded-full p-0"
-            onClick={onClose}
+            onClick={handleClose}
           >
             <ArrowDown className="text-spotify-muted" size={20} />
           </Button>

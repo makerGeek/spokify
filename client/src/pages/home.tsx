@@ -89,8 +89,11 @@ export default function Home() {
 
   const handleCloseLyrics = () => {
     setShowLyrics(false);
-    setCurrentLyricsId(0);
-    setLocation("/home");
+    // Delay clearing the lyrics ID to allow animation to complete
+    setTimeout(() => {
+      setCurrentLyricsId(0);
+      setLocation("/home");
+    }, 300);
   };
 
   if (isLoading) {
