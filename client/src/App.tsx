@@ -44,12 +44,17 @@ function ProtectedAdminRoute() {
       // Check admin status with server
       const checkAdminStatus = async () => {
         try {
+          console.log('Starting admin check...');
           const token = await getAuthToken();
+          console.log('Got auth token:', !!token);
+          
           if (!token) {
+            console.log('No token found, redirecting to home');
             setLocation("/");
             return;
           }
 
+          console.log('Making admin check request...');
           const response = await fetch('/api/auth/admin-check', {
             method: 'GET',
             headers: {
@@ -57,9 +62,13 @@ function ProtectedAdminRoute() {
             },
           });
 
+          console.log('Admin check response status:', response.status);
+          
           if (response.ok) {
+            console.log('Admin check passed');
             setIsAdmin(true);
           } else {
+            console.log('Admin check failed, redirecting to home');
             // Not admin or not authorized, redirect to home
             setLocation("/home");
             return;
