@@ -10,8 +10,10 @@ import SongCard from "@/components/song-card";
 import MiniPlayer from "@/components/mini-player";
 import LyricsOverlay from "@/components/lyrics-overlay";
 import { AuthModal } from "@/components/auth-modal";
+import ActivationModal from "@/components/activation-modal";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
+import { useSongAccess } from "@/hooks/use-song-access";
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
@@ -25,9 +27,11 @@ export default function Home() {
   const [location, setLocation] = useLocation();
   const params = useParams();
   const { currentSong } = useAudio();
-  const { user } = useAuth();
+  const { user, databaseUser } = useAuth();
+  const { checkSongAccess } = useSongAccess();
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showActivationModal, setShowActivationModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLyrics, setShowLyrics] = useState(false);
   const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
@@ -53,10 +57,17 @@ export default function Home() {
 
       // Check authentication for direct URL access
       if (urlSong) {
-        if (!user && !urlSong.isFree) {
-          // User not authenticated and song is not free - show auth modal
+        const accessResult = checkSongAccess(urlSong);
+        
+        if (!accessResult.canAccess) {
           setSelectedSong(urlSong);
-          setShowAuthModal(true);
+          
+          if (accessResult.requiresAuth) {
+            setShowAuthModal(true);
+          } else if (accessResult.requiresActivation) {
+            setShowActivationModal(true);
+          }
+          
           // Redirect to home after a short delay
           setTimeout(() => {
             setLocation("/home");
@@ -112,14 +123,20 @@ export default function Home() {
   };
 
   const handleSongClick = (song: Song) => {
-    // Check if user is authenticated and song is not free
-    if (!user && !song.isFree) {
+    const accessResult = checkSongAccess(song);
+    
+    if (!accessResult.canAccess) {
       setSelectedSong(song);
-      setShowAuthModal(true);
+      
+      if (accessResult.requiresAuth) {
+        setShowAuthModal(true);
+      } else if (accessResult.requiresActivation) {
+        setShowActivationModal(true);
+      }
       return;
     }
 
-    // If authenticated or song is free, navigate to lyrics
+    // User has access - navigate to lyrics
     setLocation(`/lyrics/${song.id}`);
   };
 
@@ -216,6 +233,10 @@ export default function Home() {
                   setSelectedSong(song);
                   setShowAuthModal(true);
                 }}
+                onActivationRequired={(song) => {
+                  setSelectedSong(song);
+                  setShowActivationModal(true);
+                }}
               />
             ))}
           </div>
@@ -236,6 +257,22 @@ export default function Home() {
         >
           <div></div>
         </AuthModal>
+      )}
+
+      {/* Activation Modal for Inactive Users */}
+      {showActivationModal && selectedSong && (
+        <ActivationModal
+          isOpen={showActivationModal}
+          onClose={() => {
+            setShowActivationModal(false);
+            setSelectedSong(null);
+          }}
+          onActivated={() => {
+            // Refresh the page to reload user data
+            window.location.reload();
+          }}
+          contextMessage={`To play "${selectedSong.title}", you need to activate your account with an invite code.`}
+        />
       )}
 
       {/* Lyrics Overlay */}

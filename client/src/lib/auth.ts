@@ -13,6 +13,7 @@ export interface DatabaseUser {
   streak: number;
   weeklyGoal?: number;
   wordsLearned: number;
+  isActive: boolean;
 }
 
 export interface UserSyncResult {
