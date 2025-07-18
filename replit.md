@@ -115,6 +115,12 @@ Preferred communication style: Simple, everyday language.
   - **Modal System**: Premium modal for subscription prompts, distinct from authentication modals
   - **Payment Flow**: Complete Stripe Elements integration with proper error handling and success states
   - **User Experience**: Seamless premium content discovery with clear upgrade paths
+- **Simplified Stripe Portal Integration**: Streamlined payment system using intelligent routing
+  - **Smart Routing**: New customers redirected to Stripe Checkout, existing subscribers to billing portal
+  - **Automatic Customer Creation**: Stripe customers created automatically with user email pre-filled
+  - **Subscription Checkout**: Uses configured Stripe product (price_1RmA4cGbz9pjaytse6XY1Vtf) for $9.99/month
+  - **Portal Management**: Existing subscribers can manage billing, view invoices, and cancel through Stripe portal
+  - **Unified Interface**: Single /api/stripe-portal endpoint handles both new subscriptions and existing billing management
 
 ### July 18, 2025 - Authentication Flow Order Fix & DRY Principle Implementation
 - **Fixed Critical Authentication Flow Bug**: Resolved issue where protected content was loading before user activation status check

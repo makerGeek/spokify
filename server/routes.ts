@@ -464,7 +464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stripe portal redirect
+  // Stripe checkout for new subscriptions
   app.post('/api/stripe-portal', authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
@@ -491,13 +491,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateStripeCustomerId(user.id, customerId);
       }
 
-      // Create portal session
-      const portalSession = await stripe.billingPortal.sessions.create({
+      // Check if user has active subscription
+      const subscriptions = await stripe.subscriptions.list({
         customer: customerId,
-        return_url: `${req.headers.origin || 'http://localhost:5000'}/profile`,
+        status: 'active',
+        limit: 1
       });
 
-      res.json({ url: portalSession.url });
+      if (subscriptions.data.length > 0) {
+        // User has active subscription - show billing portal
+        const portalSession = await stripe.billingPortal.sessions.create({
+          customer: customerId,
+          return_url: `${req.headers.origin || 'http://localhost:5000'}/profile`,
+        });
+        res.json({ url: portalSession.url });
+      } else {
+        // User doesn't have subscription - create checkout session
+        const checkoutSession = await stripe.checkout.sessions.create({
+          customer: customerId,
+          payment_method_types: ['card'],
+          line_items: [
+            {
+              price: 'price_1RmA4cGbz9pjaytse6XY1Vtf', // Your actual price ID
+              quantity: 1,
+            },
+          ],
+          mode: 'subscription',
+          success_url: `${req.headers.origin || 'http://localhost:5000'}/profile?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${req.headers.origin || 'http://localhost:5000'}/profile`,
+          allow_promotion_codes: true,
+        });
+        res.json({ url: checkoutSession.url });
+      }
     } catch (error: any) {
       console.error('Stripe portal error:', error);
       res.status(400).json({ 
