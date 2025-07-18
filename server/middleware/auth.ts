@@ -17,8 +17,12 @@ export interface AuthenticatedRequest extends Request {
     targetLanguage?: string;
     nativeLanguage?: string;
     inviteCode?: string;
-    invitedBy?: number;
+    invitedBy?: number | null;
     isAdmin?: boolean;
+    isActive?: boolean;
+    streak?: number;
+    weeklyGoal?: number;
+    wordsLearned?: number;
   };
 }
 
@@ -51,7 +55,9 @@ async function getOrCreateUser(supabaseUser: any) {
       inviteCode: nanoid(8),
       targetLanguage: 'es', // Default target language
       nativeLanguage: 'en', // Default native language
-      isAdmin: false
+      isAdmin: false,
+      isActive: false, // Users start inactive and need invite code
+      invitedBy: null // Will be set when they use invite code
     };
     
     user = await storage.createUser(newUser);

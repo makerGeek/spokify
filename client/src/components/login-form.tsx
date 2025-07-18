@@ -21,11 +21,34 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isNewUser, setIsNewUser] = useState(false)
+  const [needsInviteCode, setNeedsInviteCode] = useState(false)
   const [validatedInviteCode, setValidatedInviteCode] = useState<string | null>(null)
   const { toast } = useToast()
   const { showSocialLoginButtons } = useSocialLogin()
   const { requiresInviteCode, setPendingInviteCode } = useAuth()
+
+  const checkUserInviteStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return false
+
+      const response = await fetch('/api/auth/user', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (response.ok) {
+        const userData = await response.json()
+        // If user has no invitedBy field, they need to enter an invite code
+        return userData.user && userData.user.invitedBy === null
+      }
+      return false
+    } catch (error) {
+      console.error('Error checking user invite status:', error)
+      return false
+    }
+  }
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,13 +62,6 @@ export default function LoginForm({
       })
       
       if (signInError) {
-        // If sign in fails, this might be a new user
-        if (requiresInviteCode && !validatedInviteCode) {
-          setIsNewUser(true)
-          setLoading(false)
-          return
-        }
-
         // Try to sign up
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
@@ -53,13 +69,18 @@ export default function LoginForm({
         })
         if (signUpError) throw signUpError
         
-        // User sync will be handled by auth context state change listener
-        // which now has access to the pending invite code
-        
         toast({
           title: 'Account created!',
           description: 'Welcome to Spokify. Please check your email to verify your account.',
         })
+      }
+      
+      // After successful authentication, check if user needs invite code
+      const needsInvite = await checkUserInviteStatus()
+      if (needsInvite) {
+        setNeedsInviteCode(true)
+        setLoading(false)
+        return
       }
       
       onSuccess?.()
@@ -73,10 +94,45 @@ export default function LoginForm({
     setLoading(false)
   }
 
-  const handleInviteCodeValidated = (code: string) => {
+  const handleInviteCodeValidated = async (code: string) => {
     setValidatedInviteCode(code)
     setPendingInviteCode(code) // Set in auth context for social login
-    setIsNewUser(false)
+    
+    // Activate the user with the invite code
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('No authentication session')
+      }
+
+      const response = await fetch('/api/auth/activate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ inviteCode: code }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to activate account')
+      }
+
+      toast({
+        title: 'Account activated!',
+        description: 'Welcome to Spokify. Your account is now active.',
+      })
+
+      setNeedsInviteCode(false)
+      onSuccess?.()
+    } catch (error: any) {
+      toast({
+        title: 'Activation Error',
+        description: error.message,
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleSocialAuth = async (provider: 'google' | 'facebook') => {
@@ -102,14 +158,25 @@ export default function LoginForm({
     }
   }
 
-  // Show invite code input if user is new and invite code is required
-  if (isNewUser && requiresInviteCode) {
+  // Show invite code input if user needs to enter an invite code
+  if (needsInviteCode) {
     return (
-      <InviteCodeInput
-        onCodeValidated={handleInviteCodeValidated}
-        onSkip={() => setIsNewUser(false)}
-        isLoading={loading}
-      />
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-4">
+          <h1 className="text-2xl font-bold mb-1 text-white">Welcome to Spokify</h1>
+          <p className="spotify-text-muted text-xs mb-2">Spokify is currently invite-only</p>
+          <div className="mt-3 p-3 bg-spotify-gray rounded-lg border border-spotify-border">
+            <p className="spotify-text-secondary text-sm">
+              Please enter your invite code to activate your account
+            </p>
+          </div>
+        </div>
+        <InviteCodeInput
+          onCodeValidated={handleInviteCodeValidated}
+          onSkip={() => setNeedsInviteCode(false)}
+          isLoading={loading}
+        />
+      </div>
     )
   }
 

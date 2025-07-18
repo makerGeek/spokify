@@ -42,6 +42,8 @@ export interface IStorage {
   createInviteCode(inviteCode: InsertInviteCode): Promise<InviteCode>;
   getUserInviteCodes(userId: number): Promise<InviteCode[]>;
   generateUniqueInviteCode(): Promise<string>;
+  getInviteCodeByCode(code: string): Promise<InviteCode | undefined>;
+  updateInviteCode(id: number, updates: Partial<InviteCode>): Promise<InviteCode>;
 
 
 
@@ -290,6 +292,20 @@ export class DatabaseStorage implements IStorage {
     } while (!isUnique);
 
     return code;
+  }
+
+  async getInviteCodeByCode(code: string): Promise<InviteCode | undefined> {
+    const [inviteCode] = await db.select().from(inviteCodes).where(eq(inviteCodes.code, code));
+    return inviteCode || undefined;
+  }
+
+  async updateInviteCode(id: number, updates: Partial<InviteCode>): Promise<InviteCode> {
+    const [inviteCode] = await db
+      .update(inviteCodes)
+      .set(updates)
+      .where(eq(inviteCodes.id, id))
+      .returning();
+    return inviteCode;
   }
 
 

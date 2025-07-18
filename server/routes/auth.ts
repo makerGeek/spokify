@@ -55,7 +55,8 @@ router.get('/user',
         inviteCode: req.user.inviteCode,
         streak: req.user.streak,
         weeklyGoal: req.user.weeklyGoal,
-        wordsLearned: req.user.wordsLearned
+        wordsLearned: req.user.wordsLearned,
+        invitedBy: req.user.invitedBy
       };
 
       res.json({ user: safeUserData });
@@ -170,6 +171,65 @@ router.put('/profile',
     } catch (error) {
       console.error('Update profile error:', error);
       res.status(500).json({ error: 'Failed to update profile' });
+    }
+  }
+);
+
+/**
+ * Activate user account with invite code
+ * POST /api/auth/activate
+ */
+router.post('/activate',
+  authenticateToken,
+  rateLimit(3, 60000), // 3 attempts per minute
+  validateInput(z.object({
+    inviteCode: z.string().min(1).max(20),
+  })),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'No authenticated user' });
+      }
+
+      const { inviteCode } = req.body;
+      
+      // Find and validate the invite code
+      const inviteCodeData = await storage.getInviteCodeByCode(inviteCode);
+      if (!inviteCodeData) {
+        return res.status(400).json({ error: 'Invalid invite code' });
+      }
+
+      // Check if code is expired
+      if (inviteCodeData.expiresAt && new Date() > inviteCodeData.expiresAt) {
+        return res.status(400).json({ error: 'Invite code has expired' });
+      }
+
+      // Check if code has reached max uses
+      if (inviteCodeData.currentUses >= inviteCodeData.maxUses) {
+        return res.status(400).json({ error: 'Invite code has reached maximum uses' });
+      }
+
+      // Update user with invite information
+      await storage.updateUser(req.user.id, {
+        invitedBy: inviteCodeData.createdBy,
+        isActive: true,
+        activatedAt: new Date(),
+      });
+
+      // Update invite code usage
+      await storage.updateInviteCode(inviteCodeData.id, {
+        usedBy: req.user.id,
+        usedAt: new Date(),
+        currentUses: inviteCodeData.currentUses + 1,
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Account activated successfully' 
+      });
+    } catch (error) {
+      console.error('Account activation error:', error);
+      res.status(500).json({ error: 'Failed to activate account' });
     }
   }
 );
