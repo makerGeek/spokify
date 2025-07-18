@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { ArrowDown, Bookmark, Languages, RotateCcw } from "lucide-react";
+import { ArrowDown, Bookmark, Languages, RotateCcw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -51,6 +51,26 @@ export default function LyricsPlayer() {
     }
     setSelectedLine(line);
     setShowTranslation(true);
+  };
+
+  const handleShare = () => {
+    if (!song) return;
+    
+    const shareData = {
+      title: `${song.title} - ${song.artist}`,
+      text: `Learn ${song.language} with this song on LyricLingo!`,
+      url: `${window.location.origin}/lyrics/${song.id}`
+    };
+
+    if (navigator.share) {
+      navigator.share(shareData).catch(console.error);
+    } else {
+      // Fallback for browsers without native share
+      navigator.clipboard.writeText(shareData.url).then(() => {
+        // You could add a toast notification here
+        console.log('Link copied to clipboard!');
+      }).catch(console.error);
+    }
   };
 
   // Function to determine if a lyric line is currently active
@@ -175,6 +195,14 @@ export default function LyricsPlayer() {
               onClick={() => setIsBookmarked(!isBookmarked)}
             >
               <Bookmark className={isBookmarked ? "text-spotify-green" : "text-spotify-muted"} size={20} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-10 h-10 bg-spotify-card rounded-full p-0"
+              onClick={handleShare}
+            >
+              <Share2 className="text-spotify-muted hover:text-spotify-text" size={20} />
             </Button>
           </div>
         </div>
