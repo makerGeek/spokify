@@ -464,75 +464,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Subscription route for premium features
-  app.post('/api/get-or-create-subscription', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  // Stripe portal redirect
+  app.post('/api/stripe-portal', authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      let user = req.user;
+      const user = req.user;
 
-      // Check if user already has a subscription
-      if (user.stripeSubscriptionId) {
-        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-
-        res.json({
-          subscriptionId: subscription.id,
-          clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
-        });
-        return;
-      }
-      
       if (!user.email) {
-        throw new Error('No user email on file');
+        throw new Error('User email is required');
       }
 
-      try {
-        let customer;
-        
-        // Check if user already has a Stripe customer ID
-        if (user.stripeCustomerId) {
-          customer = await stripe.customers.retrieve(user.stripeCustomerId);
-        } else {
-          // Create new customer
-          customer = await stripe.customers.create({
-            email: user.email,
-            name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email.split('@')[0],
-          });
+      let customerId = user.stripeCustomerId;
 
-          // Update user with customer ID
-          user = await storage.updateStripeCustomerId(user.id, customer.id);
-        }
-
-        // Create subscription with actual Stripe price
-        if (!process.env.STRIPE_PRICE_ID) {
-          throw new Error('STRIPE_PRICE_ID environment variable is required. Please create a product in your Stripe dashboard and set the price ID.');
-        }
-
-        const subscription = await stripe.subscriptions.create({
-          customer: customer.id,
-          items: [{
-            price: process.env.STRIPE_PRICE_ID,
-          }],
-          payment_behavior: 'default_incomplete',
-          expand: ['latest_invoice.payment_intent'],
+      // Create Stripe customer if doesn't exist
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email.split('@')[0],
         });
+        customerId = customer.id;
 
-        // Update user with subscription info
-        await storage.updateUserStripeInfo(user.id, customer.id, subscription.id);
-    
-        res.json({
-          subscriptionId: subscription.id,
-          clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
-        });
-      } catch (error: any) {
-        console.error('Stripe error:', error);
-        return res.status(400).json({ error: { message: error.message } });
+        // Update user with customer ID
+        await storage.updateStripeCustomerId(user.id, customerId);
       }
+
+      // Create portal session
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${req.headers.origin || 'http://localhost:5000'}/profile`,
+      });
+
+      res.json({ url: portalSession.url });
     } catch (error: any) {
-      console.error('Subscription error:', error);
-      return res.status(500).json({ error: { message: error.message } });
+      console.error('Stripe portal error:', error);
+      res.status(400).json({ 
+        error: { 
+          message: error.message || 'Failed to create portal session'
+        } 
+      });
     }
   });
 

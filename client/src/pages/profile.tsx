@@ -23,12 +23,14 @@ import { type User, type Vocabulary, type UserProgress } from "@shared/schema";
 import { getBuildVersion, getBuildInfo } from "@/lib/build-info";
 import { api } from "@/lib/api-client";
 import { Link } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth();
   const { toast } = useToast();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [canInstall, setCanInstall] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [autoNextReview, setAutoNextReview] = useState(() => {
     const saved = localStorage.getItem("reviewAutoNext");
     return saved ? JSON.parse(saved) : false;
@@ -173,6 +175,31 @@ export default function Profile() {
     }
   };
 
+  const handleUpgradeClick = async () => {
+    if (!user) return;
+    
+    setUpgradeLoading(true);
+    try {
+      const response = await apiRequest("POST", "/api/stripe-portal");
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error.message || 'Failed to create portal session');
+      }
+      
+      // Redirect to Stripe portal
+      window.location.href = data.url;
+    } catch (err: any) {
+      console.error('Portal error:', err);
+      setUpgradeLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to open billing portal. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getInitials = (email: string) => {
     return email.charAt(0).toUpperCase();
   };
@@ -231,12 +258,18 @@ export default function Profile() {
               )}
             </div>
             {userData?.subscriptionStatus !== 'active' && (
-              <Link href="/subscribe">
-                <button className="spotify-btn-primary px-6 py-2 flex items-center space-x-2">
+              <button 
+                className="spotify-btn-primary px-6 py-2 flex items-center space-x-2 disabled:opacity-50"
+                onClick={handleUpgradeClick}
+                disabled={upgradeLoading}
+              >
+                {upgradeLoading ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
                   <Crown className="h-4 w-4" />
-                  <span>Upgrade</span>
-                </button>
-              </Link>
+                )}
+                <span>Upgrade</span>
+              </button>
             )}
           </div>
         </div>
