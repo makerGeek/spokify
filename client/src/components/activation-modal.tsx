@@ -1,7 +1,4 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import { InviteCodeInput } from "@/components/invite-code-input";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
@@ -81,34 +78,24 @@ export default function ActivationModal({
     onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-spotify-card border-spotify-border">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-spotify-text">Activate Your Account</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-spotify-muted hover:text-spotify-text"
-            >
-              <X size={16} />
-            </Button>
-          </div>
-          <DialogDescription className="text-spotify-muted">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="spotify-card max-w-md w-full p-8">
+        <div className="text-center mb-8">
+          <h1 className="spotify-heading-lg mb-2">Activate Your Account</h1>
+          <p className="spotify-text-secondary">
             {contextMessage}
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="mt-4">
-          <InviteCodeInput
-            onCodeValidated={handleInviteCodeValidated}
-            onSkip={handleSkip}
-            isLoading={isValidating}
-          />
+          </p>
         </div>
-      </DialogContent>
-    </Dialog>
+        
+        <InviteCodeInput
+          onCodeValidated={handleInviteCodeValidated}
+          onSkip={handleSkip}
+          isLoading={isValidating}
+        />
+      </div>
+    </div>
   );
 }
