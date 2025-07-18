@@ -70,7 +70,7 @@ export function InviteCodeInput({
   };
 
   return (
-    <div className="spotify-bg min-h-screen flex items-center justify-center p-4">
+    <div className="spotify-bg flex items-center justify-center p-4">
       <div className="spotify-card max-w-md w-full p-8">
         <div className="text-center mb-8">
           <Users
@@ -129,7 +129,7 @@ export function InviteCodeInput({
                 onClick={onSkip}
                 disabled={isValidating || isLoading}
               >
-                Sign out
+                Skip for now
               </Button>
             )}
           </div>
