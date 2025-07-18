@@ -451,6 +451,16 @@ export default function Profile() {
             Build: {getBuildVersion()}
           </p>
         </div>
+
+        {/* Logo */}
+        <div className="text-center pb-8">
+          <img 
+            src="/logo.png" 
+            alt="Spokify Logo" 
+            className="mx-auto"
+            style={{ width: '50vw' }}
+          />
+        </div>
       </div>
     </div>
   );
