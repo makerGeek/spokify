@@ -23,7 +23,7 @@
   --destructive-foreground: hsl(60, 9.1%, 97.8%);
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
-  
+
   /* Spotify-inspired colors */
   --spotify-green: hsl(142, 76%, 36%);
   --spotify-accent: hsl(142, 82%, 42%);
@@ -73,63 +73,63 @@
   .spotify-green {
     color: var(--spotify-green);
   }
-  
+
   .bg-spotify-green {
     background-color: var(--spotify-green);
   }
-  
+
   .bg-spotify-accent {
     background-color: var(--spotify-accent);
   }
-  
+
   .bg-spotify-black {
     background-color: var(--spotify-black);
   }
-  
+
   .bg-spotify-bg {
     background-color: var(--spotify-bg);
   }
-  
+
   .bg-spotify-card {
     background-color: var(--spotify-card);
   }
-  
+
   .text-spotify-text {
     color: var(--spotify-text);
   }
-  
+
   .text-spotify-muted {
     color: var(--spotify-muted);
   }
-  
+
   .border-spotify-card {
     border-color: var(--spotify-card);
   }
-  
+
   .song-card {
     @apply transition-transform duration-200 hover:-translate-y-0.5;
   }
-  
+
   .genre-chip {
     background: rgba(29, 185, 84, 0.1);
     border: 1px solid rgba(29, 185, 84, 0.3);
   }
-  
+
   .difficulty-badge {
     background: linear-gradient(45deg, var(--spotify-green), var(--spotify-accent));
   }
-  
+
   .lyrics-highlight {
     background: linear-gradient(90deg, var(--spotify-green), var(--spotify-accent));
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  
+
   .gradient-overlay {
     background: linear-gradient(180deg, transparent 0%, rgba(18, 18, 18, 0.8) 100%);
   }
-  
+
   .blur-backdrop {
     backdrop-filter: blur(10px);
   }
@@ -139,7 +139,7 @@
   .circular-font {
     font-family: 'Circular', system-ui, sans-serif;
   }
-  
+
   .roboto-font {
     font-family: 'Roboto', sans-serif;
   }
@@ -150,12 +150,15 @@
   0% {
     transform: translateX(0%);
   }
+
   20% {
     transform: translateX(0%);
   }
+
   80% {
     transform: translateX(calc(-100% + 200px));
   }
+
   100% {
     transform: translateX(calc(-100% + 200px));
   }
@@ -169,22 +172,34 @@
   animation: marquee ease-in-out infinite;
 }
 
-/* Animated FREE badge with flowing gradient */
 @keyframes gradient-shift {
   0% {
-    background-position: 0% 50%;
+    background-position: 0% 0%;
   }
+
   50% {
-    background-position: 100% 50%;
+    background-position: 100% 100%;
   }
+
   100% {
-    background-position: 0% 50%;
+    background-position: 0% 0%;
   }
 }
 
 .free-badge {
-  background: linear-gradient(-45deg, #ff6b6b, #4ecdc4, #45b7d1, #ff6b6b);
-  background-size: 400% 400%;
-  animation: gradient-shift 2s ease infinite;
-  box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 0.05em;
+
+  background: linear-gradient(45deg, #b91c1c, #065f46, #0f766e, #7e22ce, #b91c1c);
+  background-size: 600% 600%;
+  animation: gradient-shift 3s ease infinite;
+
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
 }
