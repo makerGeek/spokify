@@ -65,7 +65,11 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   // Handle animation state changes
   useEffect(() => {
     if (isVisible) {
-      setIsAnimating(true);
+      // Small delay to ensure the component is rendered in hidden state first
+      const timer = setTimeout(() => {
+        setIsAnimating(true);
+      }, 10);
+      return () => clearTimeout(timer);
     } else {
       // Start closing animation
       setIsAnimating(false);
