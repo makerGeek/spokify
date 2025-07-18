@@ -517,7 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
           ],
           mode: 'subscription',
-          success_url: `${req.headers.origin || 'http://localhost:5000'}/profile?session_id={CHECKOUT_SESSION_ID}`,
+          success_url: `${req.headers.origin || 'http://localhost:5000'}/subscription-confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${req.headers.origin || 'http://localhost:5000'}/profile`,
           allow_promotion_codes: true,
         });
@@ -528,6 +528,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ 
         error: { 
           message: error.message || 'Failed to create portal session'
+        } 
+      });
+    }
+  });
+
+  // Verify subscription endpoint
+  app.post('/api/verify-subscription', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const user = req.user;
+      let customerId = user.stripeCustomerId;
+
+      if (!customerId) {
+        return res.json({ 
+          subscriptionActive: false, 
+          message: 'No Stripe customer found' 
+        });
+      }
+
+      // Get all subscriptions for this customer
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: 'active',
+        limit: 10
+      });
+
+      const activeSubscription = subscriptions.data[0];
+
+      if (activeSubscription) {
+        // Update user subscription status in database
+        await storage.updateUserStripeInfo(user.id, {
+          subscriptionId: activeSubscription.id,
+          subscriptionStatus: activeSubscription.status,
+          subscriptionEndsAt: new Date(activeSubscription.current_period_end * 1000)
+        });
+
+        res.json({ 
+          subscriptionActive: true,
+          subscription: {
+            id: activeSubscription.id,
+            status: activeSubscription.status,
+            currentPeriodEnd: activeSubscription.current_period_end,
+            priceId: activeSubscription.items.data[0]?.price.id
+          }
+        });
+      } else {
+        res.json({ 
+          subscriptionActive: false,
+          message: 'No active subscription found'
+        });
+      }
+    } catch (error: any) {
+      console.error('Verify subscription error:', error);
+      res.status(500).json({ 
+        error: { 
+          message: error.message || 'Failed to verify subscription'
         } 
       });
     }

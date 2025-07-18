@@ -11,6 +11,7 @@ interface AuthContextType {
   databaseUser: DatabaseUser | null
   loading: boolean
   signOut: () => Promise<void>
+  refreshUserData: () => Promise<void>
   requiresInviteCode: boolean
   setRequiresInviteCode: (required: boolean) => void
   setPendingInviteCode: (code: string | null) => void
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   databaseUser: null,
   loading: true,
   signOut: async () => {},
+  refreshUserData: async () => {},
   requiresInviteCode: false,
   setRequiresInviteCode: () => {},
   setPendingInviteCode: () => {}
@@ -83,6 +85,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setDatabaseUser(null)
   }
 
+  const refreshUserData = async () => {
+    if (session?.user) {
+      try {
+        const response = await api.auth.getUser();
+        if (response?.user) {
+          setDatabaseUser(response.user);
+        }
+      } catch (error) {
+        console.error('Failed to refresh user data:', error);
+      }
+    }
+  }
+
   return (
     <AuthContext.Provider value={{ 
       session, 
@@ -90,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       databaseUser,
       loading, 
       signOut, 
+      refreshUserData,
       requiresInviteCode, 
       setRequiresInviteCode, 
       setPendingInviteCode

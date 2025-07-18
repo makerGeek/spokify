@@ -21,6 +21,7 @@ import Admin from "@/pages/admin";
 import InviteAdmin from "@/pages/invite-admin";
 import ServiceWorkerAdmin from "@/pages/service-worker-admin";
 import Subscribe from "@/pages/subscribe";
+import SubscriptionConfirmation from "@/pages/subscription-confirmation";
 import Checkout from "@/pages/checkout";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
@@ -75,6 +76,11 @@ function Router() {
         <Route path="/subscribe">
           <AuthenticatedOnly contextMessage="Login to upgrade to premium">
             <Subscribe />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/subscription-confirmation">
+          <AuthenticatedOnly contextMessage="Login to confirm your subscription">
+            <SubscriptionConfirmation />
           </AuthenticatedOnly>
         </Route>
         <Route path="/checkout">
