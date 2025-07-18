@@ -27,6 +27,51 @@ export default function Review() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user, databaseUser } = useAuth();
 
+  // Audio refs for sound effects
+  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
+  const wrongSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio elements
+  useEffect(() => {
+    correctSoundRef.current = new Audio('/sounds/correct.wav');
+    wrongSoundRef.current = new Audio('/sounds/wrong.wav');
+    
+    // Preload the audio files
+    correctSoundRef.current.preload = 'auto';
+    wrongSoundRef.current.preload = 'auto';
+    
+    // Set volume to a reasonable level
+    correctSoundRef.current.volume = 0.5;
+    wrongSoundRef.current.volume = 0.5;
+
+    return () => {
+      // Cleanup audio elements
+      if (correctSoundRef.current) {
+        correctSoundRef.current.pause();
+        correctSoundRef.current = null;
+      }
+      if (wrongSoundRef.current) {
+        wrongSoundRef.current.pause();
+        wrongSoundRef.current = null;
+      }
+    };
+  }, []);
+
+  // Function to play sound effects
+  const playSound = (isCorrect: boolean) => {
+    try {
+      const audio = isCorrect ? correctSoundRef.current : wrongSoundRef.current;
+      if (audio) {
+        audio.currentTime = 0; // Reset to beginning
+        audio.play().catch(error => {
+          console.log('Audio play failed:', error);
+        });
+      }
+    } catch (error) {
+      console.log('Sound effect error:', error);
+    }
+  };
+
   const { data: vocabulary, isLoading, refetch } = useQuery<Vocabulary[]>({
     queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary"] : [],
     queryFn: async () => {
@@ -95,6 +140,9 @@ export default function Review() {
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1
     }));
+
+    // Play sound effect
+    playSound(isCorrect);
 
     // Auto next functionality
     if (autoNext) {

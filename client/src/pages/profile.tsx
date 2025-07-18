@@ -1,28 +1,40 @@
-import { useQuery } from '@tanstack/react-query'
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuth } from '@/contexts/auth-context'
-import { LogOut, Trophy, Target, Clock, BookOpen, Flame, Download, Smartphone, Crown, Users, Copy } from 'lucide-react'
-import { Switch } from '@/components/ui/switch'
-import { useToast } from '@/hooks/use-toast'
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/auth-context";
+import {
+  LogOut,
+  Trophy,
+  Target,
+  Clock,
+  BookOpen,
+  Flame,
+  Download,
+  Smartphone,
+  Crown,
+  Users,
+  Copy,
+} from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
 
-import { type User, type Vocabulary, type UserProgress } from '@shared/schema'
-import { getBuildVersion, getBuildInfo } from '@/lib/build-info'
-import { api } from '@/lib/api-client'
+import { type User, type Vocabulary, type UserProgress } from "@shared/schema";
+import { getBuildVersion, getBuildInfo } from "@/lib/build-info";
+import { api } from "@/lib/api-client";
 
 export default function Profile() {
-  const { user, databaseUser, signOut } = useAuth()
-  const { toast } = useToast()
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
-  const [canInstall, setCanInstall] = useState(false)
+  const { user, databaseUser, signOut } = useAuth();
+  const { toast } = useToast();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstall, setCanInstall] = useState(false);
   const [autoNextReview, setAutoNextReview] = useState(() => {
-    const saved = localStorage.getItem('reviewAutoNext');
+    const saved = localStorage.getItem("reviewAutoNext");
     return saved ? JSON.parse(saved) : false;
-  })
+  });
 
   // Use the user data from auth context instead of making another API call
-  const userData = databaseUser
+  const userData = databaseUser;
 
   const { data: vocabulary = [] } = useQuery<Vocabulary[]>({
     queryKey: userData?.id ? ["/api/users", userData.id, "vocabulary"] : [],
@@ -31,8 +43,8 @@ export default function Profile() {
       return api.users.getVocabulary(userData.id);
     },
     retry: false,
-    enabled: !!userData?.id && !!user
-  })
+    enabled: !!userData?.id && !!user,
+  });
 
   const { data: userProgress = [] } = useQuery<UserProgress[]>({
     queryKey: userData?.id ? ["/api/users", userData.id, "progress"] : [],
@@ -41,128 +53,136 @@ export default function Profile() {
       return api.users.getProgress(userData.id);
     },
     retry: false,
-    enabled: !!userData?.id && !!user
-  })
+    enabled: !!userData?.id && !!user,
+  });
 
   // PWA Install functionality
   useEffect(() => {
-    console.log('Setting up install prompt listeners')
-    
+    console.log("Setting up install prompt listeners");
+
     const handleBeforeInstallPrompt = (e: any) => {
-      console.log('beforeinstallprompt event received')
-      e.preventDefault()
-      setDeferredPrompt(e)
-      setCanInstall(true)
-    }
+      console.log("beforeinstallprompt event received");
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
 
     const handleAppInstalled = () => {
-      console.log('App installed event received')
-      setDeferredPrompt(null)
-      setCanInstall(false)
+      console.log("App installed event received");
+      setDeferredPrompt(null);
+      setCanInstall(false);
       toast({
-        title: 'App Installed!',
-        description: 'Spokify has been installed successfully.',
-      })
-    }
+        title: "App Installed!",
+        description: "Spokify has been installed successfully.",
+      });
+    };
 
     // Check if we're in a compatible browser
-    const isCompatible = 'serviceWorker' in navigator && 'PushManager' in window
-    console.log('PWA compatible browser:', isCompatible)
-    
+    const isCompatible =
+      "serviceWorker" in navigator && "PushManager" in window;
+    console.log("PWA compatible browser:", isCompatible);
+
     // For development/testing, show install option even without prompt
-    if (process.env.NODE_ENV === 'development') {
-      setCanInstall(true)
+    if (process.env.NODE_ENV === "development") {
+      setCanInstall(true);
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    window.addEventListener('appinstalled', handleAppInstalled)
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', handleAppInstalled)
-    }
-  }, [toast])
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, [toast]);
 
   const handleInstallApp = async () => {
-    console.log('Install button clicked:', { deferredPrompt, canInstall })
-    
+    console.log("Install button clicked:", { deferredPrompt, canInstall });
+
     if (!deferredPrompt) {
       // Check if app is already installed
-      if ('navigator' in window && 'serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations()
+      if ("navigator" in window && "serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
         if (registrations.length > 0) {
           toast({
-            title: 'App Installation',
-            description: 'The app may already be installed, or installation is not available in this browser.',
-          })
+            title: "App Installation",
+            description:
+              "The app may already be installed, or installation is not available in this browser.",
+          });
         } else {
           toast({
-            title: 'Installation Not Available',
-            description: 'App installation is not available in this browser. Try using Chrome, Edge, or another supported browser.',
-          })
+            title: "Installation Not Available",
+            description:
+              "App installation is not available in this browser. Try using Chrome, Edge, or another supported browser.",
+          });
         }
       }
-      return
+      return;
     }
 
     try {
-      console.log('Prompting install...')
-      const result = await deferredPrompt.prompt()
-      console.log('Install result:', result)
-      
-      if (result.outcome === 'accepted') {
+      console.log("Prompting install...");
+      const result = await deferredPrompt.prompt();
+      console.log("Install result:", result);
+
+      if (result.outcome === "accepted") {
         toast({
-          title: 'Installing App...',
-          description: 'Spokify is being installed.',
-        })
+          title: "Installing App...",
+          description: "Spokify is being installed.",
+        });
       } else {
         toast({
-          title: 'Installation Cancelled',
-          description: 'App installation was cancelled.',
-        })
+          title: "Installation Cancelled",
+          description: "App installation was cancelled.",
+        });
       }
-      setDeferredPrompt(null)
-      setCanInstall(false)
+      setDeferredPrompt(null);
+      setCanInstall(false);
     } catch (error) {
-      console.error('Install error:', error)
+      console.error("Install error:", error);
       toast({
-        title: 'Installation Failed',
-        description: 'Unable to install the app. Please try again.',
-        variant: 'destructive',
-      })
+        title: "Installation Failed",
+        description: "Unable to install the app. Please try again.",
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const handleAutoNextToggle = (checked: boolean) => {
-    setAutoNextReview(checked)
-    localStorage.setItem('reviewAutoNext', JSON.stringify(checked))
+    setAutoNextReview(checked);
+    localStorage.setItem("reviewAutoNext", JSON.stringify(checked));
     toast({
-      title: 'Setting Updated',
-      description: `Auto next in vocabulary review is now ${checked ? 'enabled' : 'disabled'}.`,
-    })
-  }
+      title: "Setting Updated",
+      description: `Auto next in vocabulary review is now ${checked ? "enabled" : "disabled"}.`,
+    });
+  };
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      await signOut();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: 'Failed to sign out. Please try again.',
-        variant: 'destructive',
-      })
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const getInitials = (email: string) => {
-    return email.charAt(0).toUpperCase()
-  }
+    return email.charAt(0).toUpperCase();
+  };
 
-  const wordsLearned = vocabulary.length
-  const songsCompleted = userProgress.filter(p => p.progressPercentage === 100).length
-  const weeklyGoal = userData?.weeklyGoal || 50
-  const streak = userData?.streak || 0
-  const weeklyProgress = Math.min((wordsLearned / weeklyGoal) * 100, 100)
+  const wordsLearned = vocabulary.length;
+  const songsCompleted = userProgress.filter(
+    (p) => p.progressPercentage === 100,
+  ).length;
+  const weeklyGoal = userData?.weeklyGoal || 50;
+  const streak = userData?.streak || 0;
+  const weeklyProgress = Math.min((wordsLearned / weeklyGoal) * 100, 100);
 
   return (
     <div className="min-h-screen spotify-bg spotify-text-primary">
@@ -174,16 +194,23 @@ export default function Profile() {
           <div className="flex items-end space-x-6 mb-8">
             <div className="relative">
               <Avatar className="h-32 w-32 border-0 shadow-2xl">
-                <AvatarImage src={user?.user_metadata?.avatar_url} className="object-cover" />
+                <AvatarImage
+                  src={user?.user_metadata?.avatar_url}
+                  className="object-cover"
+                />
                 <AvatarFallback className="text-4xl bg-[var(--spotify-light-gray)] spotify-text-primary font-bold border-0">
-                  {user?.email ? getInitials(user.email) : 'U'}
+                  {user?.email ? getInitials(user.email) : "U"}
                 </AvatarFallback>
               </Avatar>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium spotify-text-secondary uppercase tracking-wide mb-2">Profile</p>
+              <p className="text-sm font-medium spotify-text-secondary uppercase tracking-wide mb-2">
+                Profile
+              </p>
               <h1 className="spotify-heading-xl mb-4">
-                {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                {user?.user_metadata?.full_name ||
+                  user?.email?.split("@")[0] ||
+                  "User"}
               </h1>
               <div className="flex items-center space-x-1 text-sm spotify-text-secondary">
                 <span>{wordsLearned} words learned</span>
@@ -214,33 +241,49 @@ export default function Profile() {
             <div className="spotify-card spotify-hover-lift p-6">
               <div className="flex items-center justify-between mb-3">
                 <Trophy className="h-6 w-6 text-[var(--spotify-green)]" />
-                <span className="text-3xl font-bold spotify-text-primary">{wordsLearned}</span>
+                <span className="text-3xl font-bold spotify-text-primary">
+                  {wordsLearned}
+                </span>
               </div>
-              <p className="spotify-text-secondary text-sm font-medium">Words Learned</p>
+              <p className="spotify-text-secondary text-sm font-medium">
+                Words Learned
+              </p>
             </div>
-            
+
             <div className="spotify-card spotify-hover-lift p-6">
               <div className="flex items-center justify-between mb-3">
                 <Flame className="h-6 w-6 text-[#ff6b35]" />
-                <span className="text-3xl font-bold spotify-text-primary">{streak}</span>
+                <span className="text-3xl font-bold spotify-text-primary">
+                  {streak}
+                </span>
               </div>
-              <p className="spotify-text-secondary text-sm font-medium">Day Streak</p>
+              <p className="spotify-text-secondary text-sm font-medium">
+                Day Streak
+              </p>
             </div>
-            
+
             <div className="spotify-card spotify-hover-lift p-6">
               <div className="flex items-center justify-between mb-3">
                 <BookOpen className="h-6 w-6 text-[var(--spotify-green)]" />
-                <span className="text-3xl font-bold spotify-text-primary">{songsCompleted}</span>
+                <span className="text-3xl font-bold spotify-text-primary">
+                  {songsCompleted}
+                </span>
               </div>
-              <p className="spotify-text-secondary text-sm font-medium">Songs Completed</p>
+              <p className="spotify-text-secondary text-sm font-medium">
+                Songs Completed
+              </p>
             </div>
-            
+
             <div className="spotify-card spotify-hover-lift p-6">
               <div className="flex items-center justify-between mb-3">
                 <Clock className="h-6 w-6 text-[#8b5cf6]" />
-                <span className="text-3xl font-bold spotify-text-primary">15m</span>
+                <span className="text-3xl font-bold spotify-text-primary">
+                  15m
+                </span>
               </div>
-              <p className="spotify-text-secondary text-sm font-medium">Time Today</p>
+              <p className="spotify-text-secondary text-sm font-medium">
+                Time Today
+              </p>
             </div>
           </div>
         </div>
@@ -253,27 +296,26 @@ export default function Profile() {
               <h3 className="spotify-heading-md">Weekly Goal</h3>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold spotify-text-primary">{wordsLearned}/{weeklyGoal}</p>
+              <p className="text-2xl font-bold spotify-text-primary">
+                {wordsLearned}/{weeklyGoal}
+              </p>
               <p className="spotify-text-secondary text-sm">words</p>
             </div>
           </div>
           <div className="mb-3">
             <div className="spotify-progress">
-              <div 
+              <div
                 className="spotify-progress-fill transition-all duration-500 ease-out"
                 style={{ width: `${weeklyProgress}%` }}
               ></div>
             </div>
           </div>
           <p className="spotify-text-secondary text-sm">
-            {weeklyGoal - wordsLearned > 0 
+            {weeklyGoal - wordsLearned > 0
               ? `${weeklyGoal - wordsLearned} more words to reach your goal`
-              : 'Goal achieved this week!'
-            }
+              : "Goal achieved this week!"}
           </p>
         </div>
-
-
 
         {/* Install App Section */}
         <div className="spotify-card p-6 mb-8">
@@ -282,23 +324,10 @@ export default function Profile() {
               <Smartphone className="h-6 w-6 text-[var(--spotify-green)]" />
               <div>
                 <h3 className="spotify-heading-md">Install App</h3>
-                <p className="spotify-text-secondary text-sm">Get the native app experience</p>
+                <p className="spotify-text-secondary text-sm">
+                  Get the native app experience
+                </p>
               </div>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
-              <div className="w-2 h-2 bg-[var(--spotify-green)] rounded-full"></div>
-              <span>Offline learning capability</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
-              <div className="w-2 h-2 bg-[var(--spotify-green)] rounded-full"></div>
-              <span>Faster performance</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
-              <div className="w-2 h-2 bg-[var(--spotify-green)] rounded-full"></div>
-              <span>Native notifications</span>
             </div>
           </div>
 
@@ -330,15 +359,19 @@ export default function Profile() {
                 <Users className="h-6 w-6 text-[var(--spotify-green)]" />
                 <div>
                   <h3 className="spotify-heading-md">Invite Friends</h3>
-                  <p className="spotify-text-secondary text-sm">Share your invite code to let friends join Spokify</p>
+                  <p className="spotify-text-secondary text-sm">
+                    Share your invite code to let friends join Spokify
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-[var(--spotify-light-gray)] rounded-lg">
                 <div>
-                  <p className="spotify-text-secondary text-sm mb-1">Your invite code:</p>
+                  <p className="spotify-text-secondary text-sm mb-1">
+                    Your invite code:
+                  </p>
                   <code className="text-lg font-mono font-bold text-[var(--spotify-green)]">
                     {userData.inviteCode}
                   </code>
@@ -348,8 +381,8 @@ export default function Profile() {
                   onClick={() => {
                     navigator.clipboard.writeText(userData.inviteCode);
                     toast({
-                      title: 'Copied!',
-                      description: 'Invite code copied to clipboard.',
+                      title: "Copied!",
+                      description: "Invite code copied to clipboard.",
                     });
                   }}
                   className="spotify-btn-secondary"
@@ -358,10 +391,11 @@ export default function Profile() {
                   Copy
                 </Button>
               </div>
-              
+
               <div className="text-center">
                 <p className="spotify-text-muted text-sm">
-                  Share this code with friends so they can join Spokify and start learning languages through music!
+                  Share this code with friends so they can join Spokify and
+                  start learning languages through music!
                 </p>
               </div>
             </div>
@@ -375,16 +409,22 @@ export default function Profile() {
               <Target className="h-6 w-6 text-[var(--spotify-green)]" />
               <div>
                 <h3 className="spotify-heading-md">Settings</h3>
-                <p className="spotify-text-secondary text-sm">Customize your learning experience</p>
+                <p className="spotify-text-secondary text-sm">
+                  Customize your learning experience
+                </p>
               </div>
             </div>
           </div>
-          
+
           {/* Auto Next Review Setting */}
           <div className="flex items-center justify-between py-3">
             <div>
-              <h4 className="spotify-text-primary font-medium">Auto Next in Review</h4>
-              <p className="spotify-text-muted text-sm">Automatically move to next question after answering</p>
+              <h4 className="spotify-text-primary font-medium">
+                Auto Next in Review
+              </h4>
+              <p className="spotify-text-muted text-sm">
+                Automatically move to next question after answering
+              </p>
             </div>
             <Switch
               checked={autoNextReview}
@@ -413,5 +453,5 @@ export default function Profile() {
         </div>
       </div>
     </div>
-  )
+  );
 }
