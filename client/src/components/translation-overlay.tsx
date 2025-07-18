@@ -148,7 +148,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName, so
                           isAdded 
                             ? 'bg-spotify-accent text-white' 
                             : 'bg-spotify-green text-white hover:bg-spotify-accent'
-                        } px-2 py-1 rounded-full text-xs flex items-center gap-1 transition-all duration-300`}
+                        } px-2 py-1 rounded-full text-xs flex items-center gap-1 transition-all duration-300 disabled:opacity-100`}
                         onClick={() => {
                           if (isAdded) return; // Don't allow clicking already added words
                           if (!databaseUser?.id) {
