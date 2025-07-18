@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { authenticateToken, rateLimit, validateInput, type AuthenticatedRequest } from '../middleware/auth';
+import { authenticateToken, rateLimit, validateInput, requireAdmin, type AuthenticatedRequest } from '../middleware/auth';
 import { 
   validateInviteCode, 
   generateSecureInviteCode
@@ -55,14 +55,31 @@ router.get('/user',
         inviteCode: req.user.inviteCode,
         streak: req.user.streak,
         weeklyGoal: req.user.weeklyGoal,
-        wordsLearned: req.user.wordsLearned,
-        isAdmin: req.user.isAdmin // Keep this for admin route protection
+        wordsLearned: req.user.wordsLearned
       };
 
       res.json({ user: safeUserData });
     } catch (error) {
       console.error('Get user error:', error);
       res.status(500).json({ error: 'Failed to get user' });
+    }
+  }
+);
+
+/**
+ * Check if current user has admin privileges
+ * GET /api/auth/admin-check
+ * Returns 200 if admin, 403 if not admin, 401 if not authenticated
+ */
+router.get('/admin-check',
+  authenticateToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      res.json({ isAdmin: true });
+    } catch (error) {
+      console.error('Admin check error:', error);
+      res.status(500).json({ error: 'Failed to check admin status' });
     }
   }
 );

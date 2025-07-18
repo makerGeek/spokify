@@ -3,7 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { initializePWA } from "@/lib/pwa";
 import { AudioProvider } from "@/hooks/use-audio";
 import { AuthProvider } from "@/contexts/auth-context";
@@ -25,10 +25,13 @@ import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
 import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
+import { getAuthToken } from "@/lib/auth";
 
 function ProtectedAdminRoute() {
   const [, setLocation] = useLocation();
   const { databaseUser, loading } = useAuth();
+  const [adminLoading, setAdminLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -38,15 +41,43 @@ function ProtectedAdminRoute() {
         return;
       }
 
-      if (!databaseUser.isAdmin) {
-        // User authenticated but not admin, redirect to home
-        setLocation("/home");
-        return;
-      }
+      // Check admin status with server
+      const checkAdminStatus = async () => {
+        try {
+          const token = await getAuthToken();
+          if (!token) {
+            setLocation("/");
+            return;
+          }
+
+          const response = await fetch('/api/auth/admin-check', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            setIsAdmin(true);
+          } else {
+            // Not admin or not authorized, redirect to home
+            setLocation("/home");
+            return;
+          }
+        } catch (error) {
+          console.error('Admin check failed:', error);
+          setLocation("/home");
+          return;
+        } finally {
+          setAdminLoading(false);
+        }
+      };
+
+      checkAdminStatus();
     }
   }, [databaseUser, loading, setLocation]);
 
-  if (loading) {
+  if (loading || adminLoading) {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
         <div className="text-center">
@@ -57,7 +88,7 @@ function ProtectedAdminRoute() {
     );
   }
 
-  if (!databaseUser || !databaseUser.isAdmin) {
+  if (!databaseUser || !isAdmin) {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
         <div className="text-center">
