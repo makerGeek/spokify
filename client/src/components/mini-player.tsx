@@ -4,24 +4,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { useLocation } from "wouter";
 import { useAudio } from "@/hooks/use-audio";
+import { useLyrics } from "@/contexts/lyrics-context";
 import { useState, useEffect } from "react";
 
 export default function MiniPlayer() {
   const [location, setLocation] = useLocation();
   const { currentSong, isPlaying, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
+  const { isLyricsVisible, requestLyricsClose } = useLyrics();
   const [isLyricsShown, setIsLyricsShown] = useState(false);
 
-  // Check if we're currently on a lyrics page
+  // Check if we're currently on a lyrics page or if lyrics overlay is visible
   useEffect(() => {
-    setIsLyricsShown(location.startsWith('/lyrics/'));
-  }, [location]);
+    setIsLyricsShown(location.startsWith('/lyrics/') || isLyricsVisible);
+  }, [location, isLyricsVisible]);
 
   if (!currentSong) return null;
 
   const handleToggleLyrics = () => {
     if (isLyricsShown) {
-      // Hide lyrics - go back to home
-      setLocation('/home');
+      // If we're on home page with lyrics overlay, request proper close animation
+      if (location === '/home' && isLyricsVisible) {
+        requestLyricsClose();
+      } else {
+        // Otherwise, navigate back to home (for lyrics pages)
+        setLocation('/home');
+      }
     } else {
       // Show lyrics - go to lyrics page
       setLocation(`/lyrics/${currentSong.id}`);
