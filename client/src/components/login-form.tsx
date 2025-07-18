@@ -42,11 +42,6 @@ export default function LoginForm({
           password,
         })
         if (signUpError) throw signUpError
-        
-        toast({
-          title: 'Account created!',
-          description: 'Welcome to Spokify. Please check your email to verify your account.',
-        })
       }
       
       // Wait a moment for the session to be established
