@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { translateText, assessDifficulty } from "./services/openai";
+import { translateText, assessDifficulty } from "./services/gemini";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";

@@ -8,6 +8,87 @@ import { GoogleGenAI } from "@google/genai";
 // This API key is from Gemini Developer API Key, not vertex AI API Key
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
+export interface TranslationResult {
+  translation: string;
+  confidence: number;
+  vocabulary: Array<{
+    word: string;
+    translation: string;
+    difficulty: string;
+  }>;
+}
+
+export async function translateText(
+  text: string,
+  fromLanguage: string,
+  toLanguage: string
+): Promise<TranslationResult> {
+  try {
+    const prompt = `You are a language learning expert translator. Translate the text from ${fromLanguage} to ${toLanguage} and provide vocabulary analysis.
+
+Text to translate: "${text}"
+
+Respond with JSON in this exact format:
+{
+  "translation": "translated text",
+  "confidence": 0.95,
+  "vocabulary": [
+    {
+      "word": "original word",
+      "translation": "translated word", 
+      "difficulty": "A1"
+    }
+  ]
+}
+
+Guidelines:
+- Provide accurate translation from ${fromLanguage} to ${toLanguage}
+- Confidence should be between 0.1 and 1.0 based on translation quality
+- Include 3-6 key vocabulary words from the original text
+- Difficulty levels: A1 (beginner), A2, B1, B2, C1, C2 (advanced)
+- Return only valid JSON, no additional text`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            translation: { type: "string" },
+            confidence: { type: "number" },
+            vocabulary: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  word: { type: "string" },
+                  translation: { type: "string" },
+                  difficulty: { type: "string" }
+                },
+                required: ["word", "translation", "difficulty"]
+              }
+            }
+          },
+          required: ["translation", "confidence", "vocabulary"]
+        }
+      },
+      contents: prompt,
+    });
+
+    const result = JSON.parse(response.text || "{}");
+    
+    return {
+      translation: result.translation || "",
+      confidence: Math.max(0, Math.min(1, result.confidence || 0.8)),
+      vocabulary: result.vocabulary || []
+    };
+  } catch (error) {
+    console.error("Gemini translation error:", error);
+    throw new Error("Failed to translate text: " + (error as Error).message);
+  }
+}
+
 export interface TranslatedLyric {
   text: string;
   timestamp: number;
@@ -115,7 +196,74 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
   }
 }
 
+// Simple text difficulty assessment (compatible with OpenAI interface)
 export async function assessDifficulty(
+  text: string,
+  language: string
+): Promise<{
+  difficulty: string;
+  confidence: number;
+  reasoning: string;
+  vocabulary_complexity: number;
+  grammar_complexity: number;
+}> {
+  try {
+    const prompt = `You are a language learning expert. Assess the difficulty level of the given ${language} text according to CEFR levels (A1, A2, B1, B2, C1, C2). Consider vocabulary complexity, grammar structures, and sentence length.
+
+Text to analyze: "${text}"
+
+Respond with JSON in this exact format:
+{
+  "difficulty": "A1",
+  "confidence": 0.85,
+  "reasoning": "explanation of difficulty assessment",
+  "vocabulary_complexity": 3,
+  "grammar_complexity": 2
+}
+
+Guidelines:
+- difficulty: A1 (beginner) to C2 (advanced)
+- confidence: 0.1 to 1.0 based on assessment certainty
+- vocabulary_complexity: 1 (simple) to 5 (complex)
+- grammar_complexity: 1 (simple) to 5 (complex)
+- Return only valid JSON, no additional text`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            difficulty: { type: "string" },
+            confidence: { type: "number" },
+            reasoning: { type: "string" },
+            vocabulary_complexity: { type: "number" },
+            grammar_complexity: { type: "number" }
+          },
+          required: ["difficulty", "confidence", "reasoning", "vocabulary_complexity", "grammar_complexity"]
+        }
+      },
+      contents: prompt,
+    });
+
+    const result = JSON.parse(response.text || "{}");
+    
+    return {
+      difficulty: result.difficulty || "A1",
+      confidence: Math.max(0, Math.min(1, result.confidence || 0.8)),
+      reasoning: result.reasoning || "",
+      vocabulary_complexity: Math.max(1, Math.min(5, result.vocabulary_complexity || 3)),
+      grammar_complexity: Math.max(1, Math.min(5, result.grammar_complexity || 3))
+    };
+  } catch (error) {
+    console.error("Gemini difficulty assessment error:", error);
+    throw new Error("Failed to assess difficulty: " + (error as Error).message);
+  }
+}
+
+// Lyrics-based difficulty assessment (for song import scripts)
+export async function assessLyricsDifficulty(
   lyricsData: Array<{ startMs: number; durMs: number; text: string }>,
   title?: string,
   artist?: string,
