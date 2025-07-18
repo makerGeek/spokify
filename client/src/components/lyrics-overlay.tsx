@@ -6,7 +6,6 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import TranslationOverlay from "@/components/translation-overlay";
 
-import MiniPlayer from "@/components/mini-player";
 import { useAudio } from "@/hooks/use-audio";
 import { type Song } from "@shared/schema";
 
@@ -239,9 +238,6 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
           )}
         </div>
       </div>
-
-      {/* Mini Player Component */}
-      <MiniPlayer />
 
       {/* Translation Overlay */}
       {showTranslation && selectedLine && (
