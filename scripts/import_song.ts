@@ -220,6 +220,18 @@ async function main() {
     console.log('No Spotify track found, skipping YouTube search');
     process.exit(1);
   }
+
+  // Check if song already exists in database
+  console.log(`\nChecking if song already exists in database...`);
+  const songExists = await checkSongExists(spotifyResult.title, spotifyResult.artist, spotifyResult.spotifyId);
+  
+  if (songExists) {
+    console.log(`✓ Song "${spotifyResult.title}" by ${spotifyResult.artist} already exists in database`);
+    console.log('Skipping import to avoid duplicates');
+    process.exit(0);
+  }
+  
+  console.log(`✓ Song not found in database, proceeding with import...`);
   
   // Use Spotify track info for YouTube search to get better results
   const youtubeSearchQuery = `${spotifyResult.title} ${spotifyResult.artist}`;
