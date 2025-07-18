@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { Music, User } from "lucide-react";
-import { useLocation } from "wouter";
-import { useState } from "react";
+import { useLocation, useParams } from "wouter";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
 import MiniPlayer from "@/components/mini-player";
+import LyricsOverlay from "@/components/lyrics-overlay";
 import { AuthModal } from "@/components/auth-modal";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
@@ -21,12 +22,28 @@ const languageFlags = {
 };
 
 export default function Home() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  const params = useParams();
   const { currentSong } = useAudio();
   const { user } = useAuth();
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [showLyrics, setShowLyrics] = useState(false);
+  const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
+
+  // Check if we're on a lyrics route
+  useEffect(() => {
+    const isLyricsRoute = location.startsWith('/lyrics/');
+    if (isLyricsRoute && params.id) {
+      const songId = parseInt(params.id);
+      setCurrentLyricsId(songId);
+      setShowLyrics(true);
+    } else {
+      setShowLyrics(false);
+      setCurrentLyricsId(0);
+    }
+  }, [location, params.id]);
 
   // Get user preferences from localStorage
   const userPreferences = JSON.parse(localStorage.getItem("userPreferences") || "{}");
@@ -68,6 +85,12 @@ export default function Home() {
     
     // If authenticated or song is free, navigate to lyrics
     setLocation(`/lyrics/${song.id}`);
+  };
+
+  const handleCloseLyrics = () => {
+    setShowLyrics(false);
+    setCurrentLyricsId(0);
+    setLocation("/home");
   };
 
   if (isLoading) {
@@ -160,6 +183,15 @@ export default function Home() {
         >
           <div></div>
         </AuthModal>
+      )}
+
+      {/* Lyrics Overlay */}
+      {showLyrics && currentLyricsId > 0 && (
+        <LyricsOverlay 
+          songId={currentLyricsId}
+          onClose={handleCloseLyrics}
+          isVisible={showLyrics}
+        />
       )}
     </div>
   );
