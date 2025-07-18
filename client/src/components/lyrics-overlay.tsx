@@ -19,7 +19,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   const [showTranslation, setShowTranslation] = useState(false);
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [showTranslationMode, setShowTranslationMode] = useState(false);
+  const [showTranslationMode, setShowTranslationMode] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
 

@@ -18,7 +18,7 @@ export default function LyricsPlayer() {
   const [showTranslation, setShowTranslation] = useState(false);
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [showTranslationMode, setShowTranslationMode] = useState(false);
+  const [showTranslationMode, setShowTranslationMode] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
