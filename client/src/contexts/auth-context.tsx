@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useFeatureFlag } from '@/hooks/use-feature-flags'
 import { api } from '@/lib/api-client'
 import { type DatabaseUser } from '@/lib/auth'
+import useAppStore from '@/stores/app-store'
 
 interface AuthContextType {
   session: Session | null
@@ -37,6 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [requiresInviteCode, setRequiresInviteCode] = useState(false)
   const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(null)
   const { isEnabled: inviteCodeEnabled } = useFeatureFlag('ENABLE_INVITE_CODES')
+  
+  // Zustand store actions
+  const { setUser: setStoreUser, setLoading: setStoreLoading, setAuthenticated } = useAppStore()
 
   useEffect(() => {
     // Set invite code requirement based on feature flag
@@ -63,26 +67,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Load database user when session changes
-  // User sync happens automatically via middleware on first API call
+  // Load database user when session changes and sync with Zustand store
   useEffect(() => {
     if (session?.user && !databaseUser) {
       // Only load if we don't already have database user data
       api.auth.getUser().then(response => {
         if (response?.user) {
           setDatabaseUser(response.user);
+          setStoreUser(response.user); // Sync with Zustand store
         }
       }).catch(error => {
         console.error('Failed to load database user:', error);
       });
     } else if (!session?.user) {
       setDatabaseUser(null);
+      setStoreUser(null); // Sync with Zustand store
     }
-  }, [session?.user, databaseUser]);
+  }, [session?.user, databaseUser, setStoreUser]);
+
+  // Sync loading state with Zustand store
+  useEffect(() => {
+    setStoreLoading(loading);
+    setAuthenticated(!!session?.user);
+  }, [loading, session?.user, setStoreLoading, setAuthenticated]);
 
   const signOut = async () => {
     await supabase.auth.signOut()
     setDatabaseUser(null)
+    setStoreUser(null) // Sync with Zustand store
   }
 
   const refreshUserData = async () => {
@@ -91,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await api.auth.getUser();
         if (response?.user) {
           setDatabaseUser(response.user);
+          setStoreUser(response.user); // Sync with Zustand store
         }
       } catch (error) {
         console.error('Failed to refresh user data:', error);

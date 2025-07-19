@@ -34,7 +34,6 @@ export default function Home() {
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLyrics, setShowLyrics] = useState(false);
   const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
@@ -233,16 +232,6 @@ export default function Home() {
                 key={song.id}
                 song={song}
                 onClick={() => handleSongClick(song)}
-                onPremiumRequested={(song) => {
-                  setSelectedSong(song);
-                  if (user) {
-                    // User is authenticated but needs premium
-                    setShowPremiumModal(true);
-                  } else {
-                    // User needs to authenticate first
-                    setShowAuthModal(true);
-                  }
-                }}
                 onActivationRequired={(song) => {
                   setSelectedSong(song);
                   setShowActivationModal(true);
@@ -285,17 +274,8 @@ export default function Home() {
         />
       )}
 
-      {/* Premium Modal for Premium Songs */}
-      {showPremiumModal && selectedSong && (
-        <PremiumModal
-          isOpen={showPremiumModal}
-          onClose={() => {
-            setShowPremiumModal(false);
-            setSelectedSong(null);
-          }}
-          song={selectedSong}
-        />
-      )}
+      {/* Premium Modal for Premium Songs - managed by Zustand */}
+      <PremiumModal />
 
       {/* Lyrics Overlay */}
       {showLyrics && currentLyricsId > 0 && (
