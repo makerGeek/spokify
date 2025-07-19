@@ -48,6 +48,8 @@ export default function Profile() {
     },
     retry: false,
     enabled: !!userData?.id && !!user,
+    staleTime: 60 * 1000, // Cache for 1 minute to prevent rapid refetches
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
   const { data: userProgress = [] } = useQuery<UserProgress[]>({
@@ -58,6 +60,8 @@ export default function Profile() {
     },
     retry: false,
     enabled: !!userData?.id && !!user,
+    staleTime: 60 * 1000, // Cache for 1 minute to prevent rapid refetches  
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
   // PWA Install functionality

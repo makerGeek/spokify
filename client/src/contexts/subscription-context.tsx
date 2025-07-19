@@ -64,18 +64,26 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Update subscription info when database user changes
+  // Update subscription info when database user changes - optimize to prevent unnecessary updates
   useEffect(() => {
     if (databaseUser) {
       const newSubscription = calculateSubscriptionInfo(databaseUser)
-      setSubscription(newSubscription)
+      // Only update if subscription data actually changed
+      setSubscription(prevSub => {
+        if (prevSub.status !== newSubscription.status || 
+            prevSub.stripeCustomerId !== newSubscription.stripeCustomerId ||
+            prevSub.stripeSubscriptionId !== newSubscription.stripeSubscriptionId) {
+          return newSubscription
+        }
+        return prevSub
+      })
       setLoading(false)
     } else if (!session) {
       // User logged out
       setSubscription(defaultSubscription)
       setLoading(false)
     }
-  }, [databaseUser, session])
+  }, [databaseUser?.subscriptionStatus, databaseUser?.stripeCustomerId, databaseUser?.stripeSubscriptionId, session?.user?.id])
 
   const refreshSubscription = async () => {
     if (!session?.user) return

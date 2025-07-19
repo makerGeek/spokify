@@ -30,7 +30,9 @@ export default function Library() {
       return api.users.getVocabulary(databaseUser.id);
     },
     retry: false,
-    enabled: !!databaseUser?.id && !!user
+    enabled: !!databaseUser?.id && !!user,
+    staleTime: 60 * 1000, // Cache for 1 minute
+    refetchOnWindowFocus: false,
   })
 
   const { data: userProgress = [] } = useQuery<UserProgress[]>({
@@ -40,7 +42,9 @@ export default function Library() {
       return api.users.getProgress(databaseUser.id);
     },
     retry: false,
-    enabled: !!databaseUser?.id && !!user
+    enabled: !!databaseUser?.id && !!user,
+    staleTime: 60 * 1000, // Cache for 1 minute
+    refetchOnWindowFocus: false,
   })
 
   // Mock saved songs (in real app, would come from user's saved songs)

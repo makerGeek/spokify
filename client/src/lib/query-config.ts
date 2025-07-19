@@ -5,12 +5,12 @@ import type { UseQueryOptions } from '@tanstack/react-query'
  * Based on data sensitivity and update frequency
  */
 
-// Real-time data that must always be fresh (never cached)
+// Real-time data that must always be fresh (but with minimal caching to prevent excessive requests)
 export const REAL_TIME_CONFIG: Partial<UseQueryOptions> = {
-  staleTime: 0,
-  cacheTime: 0,
-  refetchOnMount: true,
-  refetchOnWindowFocus: true,
+  staleTime: 5 * 1000, // 5 seconds - prevents rapid successive calls
+  cacheTime: 30 * 1000, // 30 seconds cache
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: false, // Disable focus refetch to prevent unnecessary reloads
   networkMode: 'online',
 }
 

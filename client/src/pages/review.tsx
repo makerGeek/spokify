@@ -79,7 +79,9 @@ export default function Review() {
       return api.users.getVocabulary(databaseUser.id);
     },
     retry: false,
-    enabled: !!databaseUser?.id && !!user
+    enabled: !!databaseUser?.id && !!user,
+    staleTime: 60 * 1000, // Cache for 1 minute to prevent rapid refetches
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
   // Generate random incorrect answers for multiple choice
