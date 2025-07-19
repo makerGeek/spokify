@@ -89,7 +89,7 @@ export default function Home() {
       setShowLyrics(false);
       setCurrentLyricsId(0);
     }
-  }, [location, params.id, urlSong, user, setLocation]);
+  }, [location, params.id, urlSong, checkSongAccess, setLocation]);
 
   // Get user preferences from localStorage
   const userPreferences = JSON.parse(

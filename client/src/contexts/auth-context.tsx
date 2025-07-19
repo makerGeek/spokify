@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else if (!session?.user) {
       setDatabaseUser(null);
     }
-  }, [session?.user, databaseUser]);
+  }, [session?.user]); // Removed databaseUser from dependencies to prevent infinite loop
 
   const signOut = async () => {
     await supabase.auth.signOut()

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
 import { type Song } from '@shared/schema';
@@ -60,7 +60,7 @@ export function useSongAccess() {
     checkActiveStatus();
   }, [user, databaseUser]);
 
-  const checkSongAccess = (song: Song): SongAccessResult => {
+  const checkSongAccess = useCallback((song: Song): SongAccessResult => {
     // Free songs are always accessible
     if (song.isFree) {
       return {
@@ -108,7 +108,7 @@ export function useSongAccess() {
       requiresAuth: false,
       requiresActivation: true,
     };
-  };
+  }, [user, isActive]); // Memoize based on user and isActive state
 
   return {
     checkSongAccess,
