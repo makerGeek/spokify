@@ -1,10 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Crown, Check, ExternalLink, X } from "lucide-react";
 import { type Song } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface PremiumModalProps {
   isOpen: boolean;
@@ -14,7 +13,14 @@ interface PremiumModalProps {
 
 export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
   const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    }
+  }, [isOpen]);
 
   const handleUpgradeClick = async () => {
     setLoading(true);
@@ -39,99 +45,115 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
     }
   };
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md spotify-card-glass border-0 text-white overflow-hidden">
-        {/* Close Button - Spotify Style */}
-        <button 
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-300 ${
+        isVisible ? "bg-black/60 backdrop-blur-sm opacity-100" : "opacity-0"
+      }`}
+      style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
+      onClick={handleOverlayClick}
+    >
+      <div
+        className={`spotify-card-glass border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 transition-all duration-500 transform relative ${
+          isVisible
+            ? "translate-y-0 opacity-100 scale-100"
+            : "translate-y-8 opacity-0 scale-95"
+        }`}
+        style={{
+          background: "rgba(24, 24, 24, 0.95)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
+        }}
+      >
+        {/* Close button */}
+        <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+          className="absolute top-4 right-4 text-spotify-muted hover:text-white transition-colors"
+          aria-label="Close modal"
         >
-          <X className="h-4 w-4 text-white" />
+          <X size={20} />
         </button>
 
-        {/* Header with Gradient */}
-        <div className="spotify-gradient-header -m-6 mb-0 p-6 pb-8">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-center space-x-3 spotify-text-primary text-xl font-bold">
-              <div className="p-2 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600">
-                <Crown className="h-6 w-6 text-black" />
-              </div>
-              <span>Upgrade to Premium</span>
-            </DialogTitle>
-          </DialogHeader>
-        </div>
-        
-        <div className="space-y-6 p-6 -mt-6">
-          {song && (
-            <div className="text-center p-4 rounded-xl bg-black/20 border border-white/10">
-              <p className="spotify-text-secondary text-sm">
-                <span className="font-semibold spotify-text-primary text-base">"{song.title}"</span>
-                <br />
-                <span className="text-sm">by {song.artist}</span>
-                <br />
-                <span className="text-xs opacity-75 mt-1 block">Premium song - upgrade to unlock</span>
-              </p>
+        {/* Compact header */}
+        <div className="text-center mb-6 pr-8">
+          <div className="flex items-center justify-center mb-3">
+            <div className="p-2 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600">
+              <Crown className="h-5 w-5 text-black" />
             </div>
+          </div>
+          <h2 className="spotify-heading-sm text-white mb-2">
+            Premium Required
+          </h2>
+          {song ? (
+            <p className="spotify-text-muted text-sm">
+              "{song.title}" by {song.artist} is available for Premium subscribers only
+            </p>
+          ) : (
+            <p className="spotify-text-muted text-sm">
+              Upgrade to unlock all premium features
+            </p>
           )}
-          
-          {/* Premium Features */}
-          <div className="space-y-4">
-            <h3 className="font-semibold spotify-text-primary text-center">What you get:</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {[
-                "🎵 Unlimited access to all songs",
-                "📚 Advanced vocabulary tracking",
-                "💾 Offline learning mode", 
-                "🚫 No ads or interruptions",
-                "💬 Priority customer support"
-              ].map((feature, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                  <Check className="h-4 w-4 text-[var(--spotify-green)] flex-shrink-0" />
-                  <span className="spotify-text-secondary text-sm font-medium">{feature}</span>
-                </div>
-              ))}
+        </div>
+
+        {/* Compact features list */}
+        <div className="space-y-3 mb-6">
+          {[
+            "All songs unlocked",
+            "Vocabulary tracking",
+            "Offline mode",
+            "No ads"
+          ].map((feature, index) => (
+            <div key={index} className="flex items-center space-x-3">
+              <Check className="h-4 w-4 text-[var(--spotify-green)] flex-shrink-0" />
+              <span className="spotify-text-secondary text-sm">{feature}</span>
             </div>
-          </div>
-          
-          {/* Pricing */}
-          <div className="text-center space-y-4">
-            <div className="spotify-gradient-green p-6 rounded-2xl shadow-xl">
-              <div className="text-3xl font-black text-black">$9.99</div>
-              <div className="text-sm font-semibold text-black/80">per month</div>
-              <div className="text-xs text-black/60 mt-1">Cancel anytime</div>
-            </div>
-            
-            <div className="space-y-3">
-              <Button 
-                className="w-full spotify-btn-primary text-base font-bold py-3 h-12" 
-                onClick={handleUpgradeClick}
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="animate-spin w-5 h-5 border-2 border-black border-t-transparent rounded-full mr-2" />
-                ) : (
-                  <Crown className="h-5 w-5 mr-2" />
-                )}
-                Start Premium
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Button>
-              
-              <button 
-                className="w-full p-3 text-sm spotify-text-secondary hover:spotify-text-primary transition-colors font-medium underline decoration-dotted underline-offset-4" 
-                onClick={onClose}
-              >
-                Not now
-              </button>
-            </div>
-            
-            <div className="text-xs spotify-text-muted flex items-center justify-center space-x-1">
-              <span>🔒</span>
-              <span>Secure billing through Stripe</span>
-            </div>
+          ))}
+        </div>
+
+        {/* Pricing */}
+        <div className="text-center mb-6">
+          <div className="spotify-gradient-green p-4 rounded-lg mb-4">
+            <div className="text-2xl font-black text-black">$9.99</div>
+            <div className="text-xs font-semibold text-black/80">per month</div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Actions */}
+        <div className="space-y-3">
+          <Button 
+            className="w-full spotify-btn-primary" 
+            onClick={handleUpgradeClick}
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full mr-2" />
+            ) : (
+              <Crown className="h-4 w-4 mr-2" />
+            )}
+            Start Premium
+            <ExternalLink className="h-3 w-3 ml-1" />
+          </Button>
+          
+          <button 
+            className="w-full p-2 text-sm spotify-text-secondary hover:spotify-text-primary transition-colors" 
+            onClick={onClose}
+          >
+            Not now
+          </button>
+        </div>
+
+        <div className="text-xs spotify-text-muted text-center mt-4">
+          🔒 Secure billing through Stripe
+        </div>
+      </div>
+    </div>
   );
 }
