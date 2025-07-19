@@ -21,6 +21,11 @@
   background-color: var(--spotify-dark-gray);
 }
 
+.spotify-surface {
+  background-color: var(--spotify-gray);
+  color: var(--spotify-text-primary);
+}
+
 .spotify-card {
   background-color: var(--spotify-gray);
   border: 1px solid var(--spotify-border);
