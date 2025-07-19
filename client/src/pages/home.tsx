@@ -34,6 +34,7 @@ export default function Home() {
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLyrics, setShowLyrics] = useState(false);
   const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
@@ -151,6 +152,16 @@ export default function Home() {
     }, 300);
   };
 
+  const handlePremiumRequested = (song: Song) => {
+    setSelectedSong(song);
+    setShowPremiumModal(true);
+  };
+
+  const handleActivationRequired = (song: Song) => {
+    setSelectedSong(song);
+    setShowActivationModal(true);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
@@ -232,10 +243,8 @@ export default function Home() {
                 key={song.id}
                 song={song}
                 onClick={() => handleSongClick(song)}
-                onActivationRequired={(song) => {
-                  setSelectedSong(song);
-                  setShowActivationModal(true);
-                }}
+                onPremiumRequested={handlePremiumRequested}
+                onActivationRequired={handleActivationRequired}
               />
             ))}
           </div>
@@ -274,8 +283,17 @@ export default function Home() {
         />
       )}
 
-      {/* Premium Modal for Premium Songs - managed by Zustand */}
-      <PremiumModal />
+      {/* Premium Modal for Premium Songs */}
+      {showPremiumModal && selectedSong && (
+        <PremiumModal
+          isOpen={showPremiumModal}
+          onClose={() => {
+            setShowPremiumModal(false);
+            setSelectedSong(null);
+          }}
+          song={selectedSong}
+        />
+      )}
 
       {/* Lyrics Overlay */}
       {showLyrics && currentLyricsId > 0 && (

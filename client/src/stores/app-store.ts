@@ -1,13 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import type { DatabaseUser } from '@shared/schema';
-
-interface Song {
-  id: number;
-  title: string;
-  artist: string;
-  isFree: boolean;
-}
+import type { DatabaseUser, Song } from '@shared/schema';
 
 interface AppState {
   // Authentication state
@@ -38,9 +31,6 @@ interface AppState {
   setCurrentSong: (song: Song | null) => void;
   setPlaying: (playing: boolean) => void;
   refreshUserData: () => Promise<void>;
-  
-  // Computed getters
-  canAccessSong: (song: Song) => boolean;
 }
 
 const useAppStore = create<AppState>()(
@@ -116,12 +106,7 @@ const useAppStore = create<AppState>()(
         setLoading(false);
       }
     },
-    
-    // Computed getters
-    canAccessSong: (song) => {
-      const { isPremium } = get();
-      return song.isFree || isPremium;
-    }
+
   }))
 );
 
@@ -138,13 +123,24 @@ export const useAuth = () => useAppStore((state) => ({
   refreshUserData: state.refreshUserData,
 }));
 
-export const useSubscription = () => useAppStore((state) => ({
-  isPremium: state.isPremium,
-  subscriptionStatus: state.subscriptionStatus,
-  setPremium: state.setPremium,
-  setSubscriptionStatus: state.setSubscriptionStatus,
-  canAccessSong: state.canAccessSong,
-}));
+export const useSubscription = () => {
+  const isPremium = useAppStore((state) => state.isPremium);
+  const subscriptionStatus = useAppStore((state) => state.subscriptionStatus);
+  const setPremium = useAppStore((state) => state.setPremium);
+  const setSubscriptionStatus = useAppStore((state) => state.setSubscriptionStatus);
+  
+  const canAccessSong = (song: Song) => {
+    return song.isFree || isPremium;
+  };
+  
+  return {
+    isPremium,
+    subscriptionStatus,
+    setPremium,
+    setSubscriptionStatus,
+    canAccessSong,
+  };
+};
 
 export const usePremiumModal = () => useAppStore((state) => ({
   showPremiumModal: state.showPremiumModal,

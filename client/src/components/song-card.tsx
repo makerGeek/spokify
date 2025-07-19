@@ -6,38 +6,38 @@ import { useMarquee } from "@/hooks/use-marquee";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { PremiumBadge } from "@/components/premium-gate";
-import { useSubscription, usePremiumModal } from "@/stores/app-store";
 
 import { type Song } from "@shared/schema";
 
 interface SongCardProps {
   song: Song & { canAccess?: boolean; requiresPremium?: boolean };
   onClick: () => void;
+  onPremiumRequested?: (song: Song) => void;
   onActivationRequired?: (song: Song) => void;
 }
 
-export default function SongCard({ song, onClick, onActivationRequired }: SongCardProps) {
+export default function SongCard({ song, onClick, onPremiumRequested, onActivationRequired }: SongCardProps) {
   const { setCurrentSong, currentSong } = useAudio();
   const { user } = useAuth();
   const { checkSongAccess } = useSongAccess();
-  const { canAccessSong } = useSubscription();
-  const { showPremiumModalFor } = usePremiumModal();
   const { textRef: titleRef, containerRef } = useMarquee({ text: song.title });
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Check if user can access this song using Zustand store
-    if (!canAccessSong(song)) {
-      showPremiumModalFor(song);
+    // Check if this is a premium song that user doesn't have access to
+    if (song.requiresPremium && !song.canAccess) {
+      if (onPremiumRequested) {
+        onPremiumRequested(song);
+      }
       return;
     }
     
     const accessResult = checkSongAccess(song);
     
     if (!accessResult.canAccess) {
-      if (accessResult.requiresAuth) {
-        showPremiumModalFor(song);
+      if (accessResult.requiresAuth && onPremiumRequested) {
+        onPremiumRequested(song);
         return;
       }
       
@@ -74,7 +74,7 @@ export default function SongCard({ song, onClick, onActivationRequired }: SongCa
                 FREE
               </span>
             )}
-            {!song.isFree && !canAccessSong(song) && (
+            {song.requiresPremium && !song.canAccess && (
               <PremiumBadge />
             )}
           </div>
