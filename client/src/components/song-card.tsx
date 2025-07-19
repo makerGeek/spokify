@@ -1,12 +1,8 @@
-import { Play, Crown } from "lucide-react";
+import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
 import { useMarquee } from "@/hooks/use-marquee";
-import { useAuth } from "@/contexts/auth-context";
-import { useSongAccess } from "@/hooks/use-song-access";
-
-import { useSubscription, usePremiumModal, canAccessSong } from "@/stores/app-store";
 
 import { type Song } from "@shared/schema";
 
@@ -14,38 +10,22 @@ interface SongCardProps {
   song: Song & { canAccess?: boolean; requiresPremium?: boolean };
   onClick: () => void;
   onActivationRequired?: (song: Song) => void;
+  isPremium?: boolean;
+  onPremiumRequired?: (song: Song) => void;
 }
 
-export default function SongCard({ song, onClick, onActivationRequired }: SongCardProps) {
-  const { setCurrentSong, currentSong } = useAudio();
-  const { user, databaseUser } = useAuth();
-  const { checkSongAccess } = useSongAccess();
-  const { isPremium } = useSubscription();
-  const { showPremiumModalFor } = usePremiumModal();
+export default function SongCard({ song, onClick, onActivationRequired, isPremium = false, onPremiumRequired }: SongCardProps) {
+  const { setCurrentSong } = useAudio();
   const { textRef: titleRef, containerRef } = useMarquee({ text: song.title });
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Check if user can access this song using utility function
-    if (!canAccessSong(song, isPremium)) {
-      showPremiumModalFor(song);
-      return;
-    }
+    // Check if user can access this song
+    const canAccess = song.isFree || isPremium;
     
-    const accessResult = checkSongAccess(song);
-    
-    if (!accessResult.canAccess) {
-      if (accessResult.requiresAuth) {
-        showPremiumModalFor(song);
-        return;
-      }
-      
-      if (accessResult.requiresActivation && onActivationRequired) {
-        onActivationRequired(song);
-        return;
-      }
-      
+    if (!canAccess && onPremiumRequired) {
+      onPremiumRequired(song);
       return;
     }
     

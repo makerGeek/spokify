@@ -16,6 +16,7 @@ import FullscreenButton from "@/components/fullscreen-button";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
+import { usePremiumModal } from "@/stores/app-store";
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
@@ -31,6 +32,7 @@ export default function Home() {
   const { currentSong } = useAudio();
   const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
+  const { showPremiumModalFor } = usePremiumModal();
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -236,6 +238,8 @@ export default function Home() {
                   setSelectedSong(song);
                   setShowActivationModal(true);
                 }}
+                isPremium={databaseUser?.subscriptionStatus === 'active'}
+                onPremiumRequired={showPremiumModalFor}
               />
             ))}
           </div>
