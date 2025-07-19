@@ -64,6 +64,20 @@ Preferred communication style: Simple, everyday language.
 4. **Progress Tracking**: Learning metrics updated in real-time
 5. **Offline Support**: Critical data cached for offline vocabulary review
 
+## Recent Changes
+
+### July 19, 2025 - Android APK Build Complete ✅
+- **APK Generation**: Successfully built Android APK using Capacitor
+  - **Java Environment**: Upgraded to OpenJDK 21 for Capacitor compatibility
+  - **Build Configuration**: Updated Gradle settings for Java 21 compatibility
+  - **Android SDK**: Set up command line tools and platform components
+  - **Build Output**: Created app-debug.apk (6.7MB) in android/app/build/outputs/apk/debug/
+  - **Build Script**: Updated build-apk.sh with working Java 21 configuration
+- **Build Process**: Automated web asset building and Capacitor sync
+  - **Web Assets**: Built with Vite to dist/public directory
+  - **Capacitor Sync**: Assets copied to Android project structure
+  - **Gradle Build**: Debug APK compilation successful with 85 tasks executed
+
 ## External Dependencies
 
 ### Core Dependencies
