@@ -14,6 +14,9 @@ export interface DatabaseUser {
   weeklyGoal?: number;
   wordsLearned: number;
   isActive: boolean;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: string;
+  stripeCustomerId?: string;
 }
 
 export interface UserSyncResult {

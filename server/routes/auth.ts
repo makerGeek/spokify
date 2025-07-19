@@ -82,7 +82,10 @@ router.get('/user',
         weeklyGoal: req.user.weeklyGoal,
         wordsLearned: req.user.wordsLearned,
         invitedBy: req.user.invitedBy,
-        isActive: req.user.isActive
+        isActive: req.user.isActive,
+        subscriptionStatus: req.user.subscriptionStatus,
+        subscriptionEndsAt: req.user.subscriptionEndsAt,
+        stripeCustomerId: req.user.stripeCustomerId
       };
 
       res.json({ user: safeUserData });

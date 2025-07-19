@@ -23,6 +23,10 @@ export interface AuthenticatedRequest extends Request {
     streak?: number;
     weeklyGoal?: number;
     wordsLearned?: number;
+    subscriptionStatus?: string;
+    subscriptionEndsAt?: Date;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
   };
 }
 
