@@ -6,7 +6,7 @@ import { useMarquee } from "@/hooks/use-marquee";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { PremiumBadge } from "@/components/premium-gate";
-import { useSubscription, usePremiumModal } from "@/stores/app-store";
+import { useSubscription, usePremiumModal, canAccessSong } from "@/stores/app-store";
 
 import { type Song } from "@shared/schema";
 
@@ -20,17 +20,15 @@ export default function SongCard({ song, onClick, onActivationRequired }: SongCa
   const { setCurrentSong, currentSong } = useAudio();
   const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
+  const { isPremium } = useSubscription();
   const { showPremiumModalFor } = usePremiumModal();
   const { textRef: titleRef, containerRef } = useMarquee({ text: song.title });
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Check if song is free or user has premium subscription
-    const isPremium = databaseUser?.subscriptionStatus === 'active';
-    const canAccess = song.isFree || isPremium;
-    
-    if (!canAccess) {
+    // Check if user can access this song using utility function
+    if (!canAccessSong(song, isPremium)) {
       showPremiumModalFor(song);
       return;
     }
@@ -76,7 +74,7 @@ export default function SongCard({ song, onClick, onActivationRequired }: SongCa
                 FREE
               </span>
             )}
-            {!song.isFree && databaseUser?.subscriptionStatus !== 'active' && (
+            {!canAccessSong(song, isPremium) && (
               <PremiumBadge />
             )}
           </div>

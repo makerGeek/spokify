@@ -38,9 +38,6 @@ interface AppState {
   setCurrentSong: (song: Song | null) => void;
   setPlaying: (playing: boolean) => void;
   refreshUserData: () => Promise<void>;
-  
-  // Computed getters
-  canAccessSong: (song: Song) => boolean;
 }
 
 const useAppStore = create<AppState>()(
@@ -115,12 +112,6 @@ const useAppStore = create<AppState>()(
       } finally {
         setLoading(false);
       }
-    },
-    
-    // Computed getters
-    canAccessSong: (song) => {
-      const { isPremium } = get();
-      return song.isFree || isPremium;
     }
   }))
 );
@@ -143,7 +134,6 @@ export const useSubscription = () => useAppStore((state) => ({
   subscriptionStatus: state.subscriptionStatus,
   setPremium: state.setPremium,
   setSubscriptionStatus: state.setSubscriptionStatus,
-  canAccessSong: state.canAccessSong,
 }));
 
 export const usePremiumModal = () => useAppStore((state) => ({
@@ -159,3 +149,8 @@ export const useAudioPlayer = () => useAppStore((state) => ({
   setCurrentSong: state.setCurrentSong,
   setPlaying: state.setPlaying,
 }));
+
+// Utility function for song access logic (outside of store to prevent re-renders)
+export const canAccessSong = (song: Song, isPremium: boolean): boolean => {
+  return song.isFree || isPremium;
+};
