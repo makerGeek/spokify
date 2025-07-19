@@ -16,7 +16,7 @@ import FullscreenButton from "@/components/fullscreen-button";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
-import { usePremiumModal } from "@/stores/app-store";
+
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
@@ -32,13 +32,18 @@ export default function Home() {
   const { currentSong } = useAudio();
   const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
-  const { showPremiumModalFor } = usePremiumModal();
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLyrics, setShowLyrics] = useState(false);
   const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
+
+  const handlePremiumRequired = (song: Song) => {
+    setSelectedSong(song);
+    setShowPremiumModal(true);
+  };
 
   // Query for specific song when accessing via URL
   const { data: urlSong } = useQuery<Song>({
@@ -239,7 +244,7 @@ export default function Home() {
                   setShowActivationModal(true);
                 }}
                 isPremium={databaseUser?.subscriptionStatus === 'active'}
-                onPremiumRequired={showPremiumModalFor}
+                onPremiumRequired={handlePremiumRequired}
               />
             ))}
           </div>
