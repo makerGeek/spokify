@@ -9,6 +9,8 @@ import TranslationOverlay from "@/components/translation-overlay";
 
 import MiniPlayer from "@/components/mini-player";
 import { useAudio } from "@/hooks/use-audio";
+import { useAuth } from "@/contexts/auth-context";
+import { useSongAccess } from "@/hooks/use-song-access";
 import { type Song } from "@shared/schema";
 
 export default function LyricsPlayer() {
@@ -22,6 +24,8 @@ export default function LyricsPlayer() {
   const [autoScroll, setAutoScroll] = useState(true);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
+  const { user } = useAuth();
+  const { checkSongAccess } = useSongAccess();
 
   const { data: song, isLoading } = useQuery<Song>({
     queryKey: ["/api/songs", songId],
@@ -31,6 +35,20 @@ export default function LyricsPlayer() {
       return response.json();
     }
   });
+
+  // Check song access and redirect if needed
+  useEffect(() => {
+    if (song) {
+      const accessResult = checkSongAccess(song);
+      
+      if (!accessResult.canAccess) {
+        // User doesn't have access - redirect to home
+        // The home component will handle showing appropriate modals
+        setLocation("/home");
+        return;
+      }
+    }
+  }, [song, checkSongAccess, setLocation]);
 
   // Initialize YouTube player for this song when it loads
   useEffect(() => {

@@ -69,6 +69,8 @@ export default function Home() {
             setShowAuthModal(true);
           } else if (accessResult.requiresActivation) {
             setShowActivationModal(true);
+          } else if (accessResult.requiresPremium) {
+            setShowPremiumModal(true);
           }
           
           // Redirect to home after a short delay
@@ -135,6 +137,8 @@ export default function Home() {
         setShowAuthModal(true);
       } else if (accessResult.requiresActivation) {
         setShowActivationModal(true);
+      } else if (accessResult.requiresPremium) {
+        setShowPremiumModal(true);
       }
       return;
     }
