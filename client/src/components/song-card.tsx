@@ -18,17 +18,19 @@ interface SongCardProps {
 
 export default function SongCard({ song, onClick, onActivationRequired }: SongCardProps) {
   const { setCurrentSong, currentSong } = useAudio();
-  const { user } = useAuth();
+  const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
-  const { canAccessSong } = useSubscription();
   const { showPremiumModalFor } = usePremiumModal();
   const { textRef: titleRef, containerRef } = useMarquee({ text: song.title });
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Check if user can access this song using Zustand store
-    if (!canAccessSong(song)) {
+    // Check if song is free or user has premium subscription
+    const isPremium = databaseUser?.subscriptionStatus === 'active';
+    const canAccess = song.isFree || isPremium;
+    
+    if (!canAccess) {
       showPremiumModalFor(song);
       return;
     }
@@ -74,7 +76,7 @@ export default function SongCard({ song, onClick, onActivationRequired }: SongCa
                 FREE
               </span>
             )}
-            {!song.isFree && !canAccessSong(song) && (
+            {!song.isFree && databaseUser?.subscriptionStatus !== 'active' && (
               <PremiumBadge />
             )}
           </div>
