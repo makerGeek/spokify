@@ -5,7 +5,6 @@ import { useAudio } from "@/hooks/use-audio";
 import { useMarquee } from "@/hooks/use-marquee";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
-import { PremiumBadge } from "@/components/premium-gate";
 
 import { type Song } from "@shared/schema";
 
@@ -73,9 +72,6 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
               <span className="free-badge text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white">
                 FREE
               </span>
-            )}
-            {song.requiresPremium && !song.canAccess && (
-              <PremiumBadge />
             )}
           </div>
           <p className="text-spotify-muted text-sm truncate">{song.artist}</p>
