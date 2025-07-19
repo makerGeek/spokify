@@ -223,27 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Song access validation endpoint
-  app.get("/api/songs/:id/access", optionalAuth, async (req: AuthenticatedRequest, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const accessCheck = await canAccessSong(req.user, id);
-      
-      if (!accessCheck.song) {
-        return res.status(404).json({ message: "Song not found" });
-      }
 
-      res.json({
-        songId: id,
-        canAccess: accessCheck.canAccess,
-        requiresPremium: accessCheck.requiresPremium,
-        isFree: accessCheck.song.isFree,
-        subscriptionStatus: req.user?.subscriptionStatus || 'free'
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to check song access" });
-    }
-  });
 
   // Progress routes - now protected
   app.get("/api/users/:userId/progress", authenticateToken, async (req: AuthenticatedRequest, res) => {
