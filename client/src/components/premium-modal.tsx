@@ -1,23 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Crown, Check, ExternalLink, X } from "lucide-react";
+import { type Song } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { useShowPremiumModal, usePremiumModalSong, useHidePremiumModal } from "@/stores/app-store";
 
-export function PremiumModal() {
+interface PremiumModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  song?: Song;
+}
+
+export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { toast } = useToast();
-  const showPremiumModal = useShowPremiumModal();
-  const premiumModalSong = usePremiumModalSong();
-  const hidePremiumModal = useHidePremiumModal();
 
   useEffect(() => {
-    if (showPremiumModal) {
+    if (isOpen) {
       setIsVisible(true);
     }
-  }, [showPremiumModal]);
+  }, [isOpen]);
 
   const handleUpgradeClick = async () => {
     setLoading(true);
@@ -44,11 +47,11 @@ export function PremiumModal() {
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      hidePremiumModal();
+      onClose();
     }
   };
 
-  if (!showPremiumModal) return null;
+  if (!isOpen) return null;
 
   return (
     <div
@@ -72,7 +75,7 @@ export function PremiumModal() {
       >
         {/* Close button */}
         <button
-          onClick={hidePremiumModal}
+          onClick={onClose}
           className="absolute top-4 right-4 text-spotify-muted hover:text-white transition-colors"
           aria-label="Close modal"
         >
@@ -89,9 +92,9 @@ export function PremiumModal() {
           <h2 className="spotify-heading-sm text-white mb-2">
             Premium Required
           </h2>
-          {premiumModalSong ? (
+          {song ? (
             <p className="spotify-text-muted text-sm">
-              "{premiumModalSong.title}" by {premiumModalSong.artist} is available for Premium subscribers only
+              "{song.title}" by {song.artist} is available for Premium subscribers only
             </p>
           ) : (
             <p className="spotify-text-muted text-sm">
@@ -141,7 +144,7 @@ export function PremiumModal() {
           
           <button 
             className="w-full p-2 text-sm spotify-text-secondary hover:spotify-text-primary transition-colors" 
-            onClick={hidePremiumModal}
+            onClick={onClose}
           >
             Not now
           </button>

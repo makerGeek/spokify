@@ -16,7 +16,6 @@ import FullscreenButton from "@/components/fullscreen-button";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
-import { useShowPremiumModalFor } from "@/stores/app-store";
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
@@ -32,10 +31,10 @@ export default function Home() {
   const { currentSong } = useAudio();
   const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
-  const showPremiumModalFor = useShowPremiumModalFor();
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLyrics, setShowLyrics] = useState(false);
   const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
@@ -234,12 +233,20 @@ export default function Home() {
                 key={song.id}
                 song={song}
                 onClick={() => handleSongClick(song)}
+                onPremiumRequested={(song) => {
+                  setSelectedSong(song);
+                  if (user) {
+                    // User is authenticated but needs premium
+                    setShowPremiumModal(true);
+                  } else {
+                    // User needs to authenticate first
+                    setShowAuthModal(true);
+                  }
+                }}
                 onActivationRequired={(song) => {
                   setSelectedSong(song);
                   setShowActivationModal(true);
                 }}
-                isPremium={databaseUser?.subscriptionStatus === 'active'}
-                onPremiumRequired={showPremiumModalFor}
               />
             ))}
           </div>
@@ -278,8 +285,17 @@ export default function Home() {
         />
       )}
 
-      {/* Premium Modal for Premium Songs - managed by Zustand */}
-      <PremiumModal />
+      {/* Premium Modal for Premium Songs */}
+      {showPremiumModal && selectedSong && (
+        <PremiumModal
+          isOpen={showPremiumModal}
+          onClose={() => {
+            setShowPremiumModal(false);
+            setSelectedSong(null);
+          }}
+          song={selectedSong}
+        />
+      )}
 
       {/* Lyrics Overlay */}
       {showLyrics && currentLyricsId > 0 && (

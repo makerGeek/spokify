@@ -24,12 +24,10 @@ import { getBuildVersion, getBuildInfo } from "@/lib/build-info";
 import { api } from "@/lib/api-client";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import { useIsPremium } from "@/stores/app-store";
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth();
   const { toast } = useToast();
-  const isPremium = useIsPremium();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [canInstall, setCanInstall] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
@@ -253,13 +251,13 @@ export default function Profile() {
             <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
               <span>Current plan:</span>
               <span className="font-medium">
-                {isPremium ? 'Premium' : 'Free'}
+                {userData?.subscriptionStatus === 'active' ? 'Premium' : 'Free'}
               </span>
-              {isPremium && (
+              {userData?.subscriptionStatus === 'active' && (
                 <Crown className="h-4 w-4 text-[var(--spotify-green)]" />
               )}
             </div>
-            {!isPremium && (
+            {userData?.subscriptionStatus !== 'active' && (
               <button 
                 className="spotify-btn-primary px-6 py-2 flex items-center space-x-2 disabled:opacity-50"
                 onClick={handleUpgradeClick}
