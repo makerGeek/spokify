@@ -58,13 +58,57 @@ export function usePWADetection() {
     };
   }, []);
 
-  const requestFullscreen = () => {
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen();
-    } else if ((document.documentElement as any).webkitRequestFullscreen) {
-      (document.documentElement as any).webkitRequestFullscreen();
-    } else if ((document.documentElement as any).msRequestFullscreen) {
-      (document.documentElement as any).msRequestFullscreen();
+  const requestFullscreen = async () => {
+    try {
+      // Check if fullscreen is supported
+      if (!document.fullscreenEnabled && !(document as any).webkitFullscreenEnabled && !(document as any).msFullscreenEnabled) {
+        console.warn('Fullscreen is not supported by this browser or is disabled by user preferences');
+        return false;
+      }
+
+      // Try modern fullscreen API first
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+        return true;
+      } 
+      // Try webkit fullscreen (Safari)
+      else if ((document.documentElement as any).webkitRequestFullscreen) {
+        await (document.documentElement as any).webkitRequestFullscreen();
+        return true;
+      } 
+      // Try MS fullscreen (old Edge)
+      else if ((document.documentElement as any).msRequestFullscreen) {
+        await (document.documentElement as any).msRequestFullscreen();
+        return true;
+      } 
+      // Try mozRequestFullScreen (Firefox)
+      else if ((document.documentElement as any).mozRequestFullScreen) {
+        await (document.documentElement as any).mozRequestFullScreen();
+        return true;
+      } else {
+        console.warn('Fullscreen API not available in this browser');
+        return false;
+      }
+    } catch (error) {
+      // Handle common fullscreen errors
+      if (error instanceof DOMException) {
+        switch (error.name) {
+          case 'NotAllowedError':
+            console.warn('Fullscreen request denied by user or browser policy');
+            break;
+          case 'InvalidStateError':
+            console.warn('Element is not connected to the document or is already in fullscreen');
+            break;
+          case 'TypeError':
+            console.warn('Fullscreen request failed due to type error');
+            break;
+          default:
+            console.warn('Fullscreen request failed:', error.message);
+        }
+      } else {
+        console.error('Unexpected error during fullscreen request:', error);
+      }
+      return false;
     }
   };
 
