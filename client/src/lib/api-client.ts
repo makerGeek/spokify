@@ -89,8 +89,8 @@ export const api = {
     getAll: () => api.get('/feature-flags'),
   },
 
-  translate: (text: string, targetLanguage: string, fromLanguage: string = "es") => 
-    api.post('/translate', { text, fromLanguage, toLanguage: targetLanguage }),
+  translate: (text: string, targetLanguage: string, fromLanguage: string = "es", songId?: number) => 
+    api.post('/translate', { text, fromLanguage, toLanguage: targetLanguage, songId }),
 };
 
 export default apiClient;

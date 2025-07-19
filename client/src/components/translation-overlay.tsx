@@ -45,7 +45,7 @@ export default function TranslationOverlay({ line, onClose, songId, songName, so
 
   const translateMutation = useMutation({
     mutationFn: async (text: string) => {
-      return api.translate(text, "en", songLanguage);
+      return api.translate(text, "en", songLanguage, songId);
     },
     onSuccess: (data) => {
       setVocabulary(data.vocabulary || []);

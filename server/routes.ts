@@ -16,6 +16,28 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
 });
 
+// Helper function to check if user can access premium content
+function canAccessPremiumContent(user: any): boolean {
+  return user?.subscriptionStatus === 'active';
+}
+
+// Helper function to check if user can access specific song
+async function canAccessSong(user: any, songId: number): Promise<{ canAccess: boolean; song: any; requiresPremium: boolean }> {
+  const song = await storage.getSong(songId);
+  if (!song) {
+    return { canAccess: false, song: null, requiresPremium: false };
+  }
+
+  if (song.isFree) {
+    return { canAccess: true, song, requiresPremium: false };
+  }
+
+  const requiresPremium = true;
+  const canAccess = canAccessPremiumContent(user);
+  
+  return { canAccess, song, requiresPremium };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Session configuration for invite code validation
@@ -158,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Song not found" });
       }
 
-      // Add access control information
+      // Check if song is premium and user has access
       let canAccess = true;
       let requiresPremium = false;
 
@@ -173,6 +195,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Security: If user cannot access premium song, return limited data without lyrics
+      if (!canAccess && requiresPremium) {
+        return res.json({
+          id: song.id,
+          title: song.title,
+          artist: song.artist,
+          genre: song.genre,
+          language: song.language,
+          difficulty: song.difficulty,
+          rating: song.rating,
+          albumCover: song.albumCover,
+          canAccess: false,
+          requiresPremium: true,
+          // Exclude: lyrics, youtubeId, spotifyId, keyWords
+          message: "Premium subscription required to access full song content"
+        });
+      }
+
       res.json({
         ...song,
         canAccess,
@@ -180,6 +220,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch song" });
+    }
+  });
+
+  // Song access validation endpoint
+  app.get("/api/songs/:id/access", optionalAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const accessCheck = await canAccessSong(req.user, id);
+      
+      if (!accessCheck.song) {
+        return res.status(404).json({ message: "Song not found" });
+      }
+
+      res.json({
+        songId: id,
+        canAccess: accessCheck.canAccess,
+        requiresPremium: accessCheck.requiresPremium,
+        isFree: accessCheck.song.isFree,
+        subscriptionStatus: req.user?.subscriptionStatus || 'free'
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to check song access" });
     }
   });
 
@@ -257,6 +319,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
       
+      // Security: If songId is provided, verify user can access this song
+      if (vocabularyData.songId) {
+        const accessCheck = await canAccessSong(req.user, vocabularyData.songId);
+        if (!accessCheck.canAccess && accessCheck.requiresPremium) {
+          return res.status(403).json({ 
+            message: "Premium subscription required to save vocabulary from this song",
+            requiresPremium: true 
+          });
+        }
+      }
+      
       const vocabulary = await storage.createVocabulary(vocabularyData);
       res.json(vocabulary);
     } catch (error) {
@@ -264,12 +337,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Translation routes
-  app.post("/api/translate", async (req, res) => {
+  // Translation routes - protected for premium content
+  app.post("/api/translate", optionalAuth, async (req: AuthenticatedRequest, res) => {
     try {
-      const { text, fromLanguage, toLanguage } = req.body;
+      const { text, fromLanguage, toLanguage, songId } = req.body;
       if (!text || !fromLanguage || !toLanguage) {
         return res.status(400).json({ message: "Missing required fields: text, fromLanguage, toLanguage" });
+      }
+      
+      // Security: If songId is provided, verify user can access this song
+      if (songId) {
+        const accessCheck = await canAccessSong(req.user, parseInt(songId));
+        if (!accessCheck.canAccess && accessCheck.requiresPremium) {
+          return res.status(403).json({ 
+            message: "Premium subscription required to translate content from this song",
+            requiresPremium: true 
+          });
+        }
       }
       
       // Check if translation already exists in cache

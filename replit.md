@@ -99,6 +99,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 19, 2025 - Comprehensive Server-Side Premium Content Security
+- **Complete Server-Side Access Control**: Implemented robust security to prevent non-premium users from accessing premium content
+  - **Song Detail Protection**: Premium songs return limited metadata only (no lyrics, YouTube IDs, or sensitive data) for non-premium users
+  - **Translation Security**: Added songId validation to translation endpoint - premium content cannot be translated without active subscription
+  - **Vocabulary Protection**: Enhanced vocabulary saving to verify user has access to the source song before allowing saves
+  - **Access Validation Helper**: Created `canAccessSong()` and `canAccessPremiumContent()` functions for consistent security checks
+- **Enhanced API Security Endpoints**:
+  - **New Access Endpoint**: Added `/api/songs/:id/access` to validate user permissions for specific songs
+  - **Enhanced Error Messages**: Clear security messages inform users when premium subscription is required
+  - **Subscription Status Integration**: All protected endpoints check `subscriptionStatus === 'active'` for premium access
+- **Frontend Security Integration**: 
+  - **Updated API Client**: Translation requests now include songId for server-side validation
+  - **Enhanced User Interface**: Subscription status properly reflected in DatabaseUser interface for premium user identification
+  - **Secure Translation Flow**: Translation overlay passes songId to ensure premium content protection
+
 ### July 18, 2025 - Stripe Payment Integration & Premium Subscription System
 - **Full Stripe Integration**: Implemented complete payment processing system for premium subscriptions
   - **Database Schema**: Added Stripe customer/subscription fields to users table (stripeCustomerId, stripeSubscriptionId, subscriptionStatus, subscriptionEndsAt)
