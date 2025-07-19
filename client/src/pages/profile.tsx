@@ -24,12 +24,12 @@ import { getBuildVersion, getBuildInfo } from "@/lib/build-info";
 import { api } from "@/lib/api-client";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import { useSubscription } from "@/stores/app-store";
+import { useIsPremium } from "@/stores/app-store";
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth();
   const { toast } = useToast();
-  const { isPremium } = useSubscription();
+  const isPremium = useIsPremium();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [canInstall, setCanInstall] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);

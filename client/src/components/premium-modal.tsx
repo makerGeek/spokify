@@ -3,13 +3,15 @@ import { Crown, Check, ExternalLink, X } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { usePremiumModal } from "@/stores/app-store";
+import { useShowPremiumModal, usePremiumModalSong, useHidePremiumModal } from "@/stores/app-store";
 
 export function PremiumModal() {
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { toast } = useToast();
-  const { showPremiumModal, premiumModalSong, hidePremiumModal } = usePremiumModal();
+  const showPremiumModal = useShowPremiumModal();
+  const premiumModalSong = usePremiumModalSong();
+  const hidePremiumModal = useHidePremiumModal();
 
   useEffect(() => {
     if (showPremiumModal) {

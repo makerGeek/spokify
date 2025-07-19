@@ -118,37 +118,13 @@ const useAppStore = create<AppState>()(
 
 export default useAppStore;
 
-// Convenience hooks for specific slices
-export const useAuth = () => useAppStore((state) => ({
-  user: state.user,
-  isAuthenticated: state.isAuthenticated,
-  isLoading: state.isLoading,
-  setUser: state.setUser,
-  setAuthenticated: state.setAuthenticated,
-  setLoading: state.setLoading,
-  refreshUserData: state.refreshUserData,
-}));
-
-export const useSubscription = () => useAppStore((state) => ({
-  isPremium: state.isPremium,
-  subscriptionStatus: state.subscriptionStatus,
-  setPremium: state.setPremium,
-  setSubscriptionStatus: state.setSubscriptionStatus,
-}));
-
-export const usePremiumModal = () => useAppStore((state) => ({
-  showPremiumModal: state.showPremiumModal,
-  premiumModalSong: state.premiumModalSong,
-  showPremiumModalFor: state.showPremiumModalFor,
-  hidePremiumModal: state.hidePremiumModal,
-}));
-
-export const useAudioPlayer = () => useAppStore((state) => ({
-  currentSong: state.currentSong,
-  isPlaying: state.isPlaying,
-  setCurrentSong: state.setCurrentSong,
-  setPlaying: state.setPlaying,
-}));
+// Simple selectors that return individual values to prevent object re-creation
+export const useIsPremium = () => useAppStore((state) => state.isPremium);
+export const useSubscriptionStatus = () => useAppStore((state) => state.subscriptionStatus);
+export const useShowPremiumModal = () => useAppStore((state) => state.showPremiumModal);
+export const usePremiumModalSong = () => useAppStore((state) => state.premiumModalSong);
+export const useShowPremiumModalFor = () => useAppStore((state) => state.showPremiumModalFor);
+export const useHidePremiumModal = () => useAppStore((state) => state.hidePremiumModal);
 
 // Utility function for song access logic (outside of store to prevent re-renders)
 export const canAccessSong = (song: Song, isPremium: boolean): boolean => {
