@@ -11,6 +11,7 @@ declare global {
 interface AudioContextType {
   currentSong: Song | null;
   isPlaying: boolean;
+  isLoading: boolean;
   setCurrentSong: (song: Song | null, autoPlay?: boolean) => void;
   togglePlay: () => void;
   play: () => void;
@@ -26,6 +27,7 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined);
 export function AudioProvider({ children }: { children: ReactNode }) {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isYouTubeReady, setIsYouTubeReady] = useState(false);
@@ -134,10 +136,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
               console.log('Player state changed:', event.data);
               if (event.data === window.YT.PlayerState.PLAYING) {
                 setIsPlaying(true);
+                setIsLoading(false); // Clear loading state when actually playing
                 startTimeUpdate();
               } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
                 setIsPlaying(false);
+                setIsLoading(false); // Clear loading state when paused/ended
                 stopTimeUpdate();
+              } else if (event.data === window.YT.PlayerState.BUFFERING) {
+                setIsLoading(true); // Show loading during buffering
               }
             },
             onError: (event: any) => {
@@ -208,14 +214,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
       try {
         console.log('Calling playVideo');
+        setIsLoading(true); // Set loading state when play is requested
         playerRef.current.playVideo();
       } catch (error) {
         console.error('Error calling playVideo:', error);
         setHasError(true);
+        setIsLoading(false); // Clear loading state on error
       }
     } else {
       console.error('Player not ready or playVideo not available');
       setHasError(true);
+      setIsLoading(false); // Clear loading state on error
     }
   };
 
@@ -224,13 +233,16 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
       try {
         console.log('Calling pauseVideo');
+        setIsLoading(false); // Clear loading state when pausing
         playerRef.current.pauseVideo();
       } catch (error) {
         console.error('Error calling pauseVideo:', error);
         setIsPlaying(false);
+        setIsLoading(false); // Clear loading state on error
       }
     } else {
       console.error('Player not ready or pauseVideo not available');
+      setIsLoading(false); // Clear loading state if player not ready
     }
   };
 
@@ -277,6 +289,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setCurrentSong(song);
     setShouldAutoPlay(autoPlay);
     setIsPlaying(false);
+    setIsLoading(false); // Reset loading state when setting new song
     setCurrentTime(0);
     setDuration(0);
     setHasError(false); // Reset error state when setting new song
@@ -287,6 +300,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       value={{
         currentSong,
         isPlaying,
+        isLoading,
         setCurrentSong: setCurrentSongWrapper,
         togglePlay,
         play,

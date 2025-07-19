@@ -1,4 +1,4 @@
-import { Play, Pause, ChevronUp, ChevronDown } from "lucide-react";
+import { Play, Pause, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 
 export default function MiniPlayer() {
   const [location, setLocation] = useLocation();
-  const { currentSong, isPlaying, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
+  const { currentSong, isPlaying, isLoading, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
   const [isLyricsShown, setIsLyricsShown] = useState(false);
 
   // Check if we're currently on a lyrics page
@@ -94,10 +94,16 @@ export default function MiniPlayer() {
                     : "bg-spotify-green hover:bg-spotify-accent"
                 }`}
                 onClick={togglePlay}
-                disabled={hasError}
-                title={hasError ? "Video unavailable for playback" : undefined}
+                disabled={hasError || isLoading}
+                title={hasError ? "Video unavailable for playback" : isLoading ? "Loading..." : undefined}
               >
-                {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                {isLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : isPlaying ? (
+                  <Pause size={16} />
+                ) : (
+                  <Play size={16} />
+                )}
               </Button>
               <Button
                 variant="ghost"
