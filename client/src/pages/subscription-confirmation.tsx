@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/auth-context';
+import { useSubscription } from '@/contexts/subscription-context';
 
 export default function SubscriptionConfirmation() {
   const [location] = useLocation();
   const { toast } = useToast();
   const { refreshUserData } = useAuth();
+  const { verifySubscription } = useSubscription();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [subscriptionData, setSubscriptionData] = useState<any>(null);
   const [hasVerified, setHasVerified] = useState(false);
@@ -27,16 +29,10 @@ export default function SubscriptionConfirmation() {
         // Wait 2 seconds to ensure Stripe has processed the subscription
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        const response = await apiRequest('POST', '/api/verify-subscription');
-        const data = await response.json();
+        const isActive = await verifySubscription();
 
-        if (data.error) {
-          throw new Error(data.error.message || 'Failed to verify subscription');
-        }
-
-        if (data.subscriptionActive) {
+        if (isActive) {
           setStatus('success');
-          setSubscriptionData(data.subscription);
           
           // Refresh user data to update subscription status in UI
           await refreshUserData();

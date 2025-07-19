@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Crown, Check, ExternalLink, X } from "lucide-react";
 import { type Song } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { useSubscription } from "@/contexts/subscription-context";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 
@@ -12,8 +12,8 @@ interface PremiumModalProps {
 }
 
 export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
-  const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const { upgradeToPreemium, loading: subscriptionLoading } = useSubscription();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -23,26 +23,7 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
   }, [isOpen]);
 
   const handleUpgradeClick = async () => {
-    setLoading(true);
-    try {
-      const response = await apiRequest("POST", "/api/stripe-portal");
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error.message || 'Failed to create portal session');
-      }
-      
-      // Redirect to Stripe portal
-      window.location.href = data.url;
-    } catch (err: any) {
-      console.error('Portal error:', err);
-      setLoading(false);
-      toast({
-        title: "Error",
-        description: "Failed to open billing portal. Please try again.",
-        variant: "destructive",
-      });
-    }
+    await upgradeToPreemium();
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -131,9 +112,9 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
           <Button 
             className="w-full spotify-btn-primary" 
             onClick={handleUpgradeClick}
-            disabled={loading}
+            disabled={subscriptionLoading}
           >
-            {loading ? (
+            {subscriptionLoading ? (
               <div className="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full mr-2" />
             ) : (
               <Crown className="h-4 w-4 mr-2" />

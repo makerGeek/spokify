@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/auth-context";
+import { useSubscription } from "@/contexts/subscription-context";
 import {
   LogOut,
   Trophy,
@@ -27,10 +28,10 @@ import { apiRequest } from "@/lib/queryClient";
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth();
+  const { subscription, upgradeToPreemium, manageBilling } = useSubscription();
   const { toast } = useToast();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [canInstall, setCanInstall] = useState(false);
-  const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [autoNextReview, setAutoNextReview] = useState(() => {
     const saved = localStorage.getItem("reviewAutoNext");
     return saved ? JSON.parse(saved) : false;
@@ -177,27 +178,12 @@ export default function Profile() {
 
   const handleUpgradeClick = async () => {
     if (!user) return;
-    
-    setUpgradeLoading(true);
-    try {
-      const response = await apiRequest("POST", "/api/stripe-portal");
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error.message || 'Failed to create portal session');
-      }
-      
-      // Redirect to Stripe portal
-      window.location.href = data.url;
-    } catch (err: any) {
-      console.error('Portal error:', err);
-      setUpgradeLoading(false);
-      toast({
-        title: "Error",
-        description: "Failed to open billing portal. Please try again.",
-        variant: "destructive",
-      });
-    }
+    await upgradeToPreemium();
+  };
+
+  const handleManageBilling = async () => {
+    if (!user) return;
+    await manageBilling();
   };
 
   const getInitials = (email: string) => {
@@ -251,24 +237,32 @@ export default function Profile() {
             <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
               <span>Current plan:</span>
               <span className="font-medium">
-                {userData?.subscriptionStatus === 'active' ? 'Premium' : 'Free'}
+                {subscription.isPremium ? 'Premium' : 'Free'}
               </span>
-              {userData?.subscriptionStatus === 'active' && (
+              {subscription.isPremium && (
                 <Crown className="h-4 w-4 text-[var(--spotify-green)]" />
               )}
             </div>
-            {userData?.subscriptionStatus !== 'active' && (
+            {!subscription.isPremium && (
               <button 
                 className="spotify-btn-primary px-6 py-2 flex items-center space-x-2 disabled:opacity-50"
                 onClick={handleUpgradeClick}
-                disabled={upgradeLoading}
+                disabled={subscription.loading}
               >
-                {upgradeLoading ? (
+                {subscription.loading ? (
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
                 ) : (
                   <Crown className="h-4 w-4" />
                 )}
                 <span>Upgrade</span>
+              </button>
+            )}
+            {subscription.isPremium && (
+              <button 
+                className="spotify-btn-secondary px-6 py-2 flex items-center space-x-2"
+                onClick={handleManageBilling}
+              >
+                <span>Manage Billing</span>
               </button>
             )}
           </div>

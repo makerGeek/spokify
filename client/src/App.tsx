@@ -6,8 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import { initializePWA } from "@/lib/pwa";
 import { AudioProvider } from "@/hooks/use-audio";
-import { AuthProvider } from "@/contexts/auth-context";
-import { InviteProvider } from "@/contexts/invite-context";
+import { AppStateProvider } from "@/contexts/app-state-provider";
 import SmartRedirect from "@/components/smart-redirect";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
@@ -28,6 +27,7 @@ import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
 import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
+import { useSubscription } from "@/contexts/subscription-context";
 import { getAuthToken } from "@/lib/auth";
 
 // Admin route component - authorization is handled by the APIs themselves
@@ -110,16 +110,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <InviteProvider>
-          <AuthProvider>
-            <AudioProvider>
-              <div className="min-h-screen bg-spotify-bg text-spotify-text">
-                <Toaster />
-                <Router />
-              </div>
-            </AudioProvider>
-          </AuthProvider>
-        </InviteProvider>
+        <AppStateProvider>
+          <AudioProvider>
+            <div className="min-h-screen bg-spotify-bg text-spotify-text">
+              <Toaster />
+              <Router />
+            </div>
+          </AudioProvider>
+        </AppStateProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

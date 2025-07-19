@@ -113,6 +113,24 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 19, 2025 - Centralized Global State Architecture Implementation
+- **Clean Global State Management**: Implemented centralized subscription context alongside existing auth context for clean state architecture
+  - **Subscription Context**: Created `SubscriptionProvider` that provides centralized subscription state management with real-time updates
+  - **App State Provider**: Implemented `AppStateProvider` that wraps all global contexts (Auth, Subscription, Invite) for consistent state access
+  - **Premium Hook**: Added `usePremium()` hook for convenient access to subscription status throughout the app
+  - **Context Integration**: Subscription context automatically syncs with database user changes and provides unified subscription info
+- **Enhanced Component State Management**: Updated key components to use centralized subscription state instead of scattered approaches
+  - **Premium Modal**: Now uses subscription context methods (`upgradeToPreemium`) instead of manual API calls
+  - **Profile Page**: Updated to use subscription context for plan display and billing management
+  - **Subscribe Page**: Refactored to use centralized subscription methods with proper premium/free state handling
+  - **Subscription Confirmation**: Integrated with subscription context for streamlined verification flow
+- **Benefits of New Architecture**:
+  - **Single Source of Truth**: All subscription state managed in one place with automatic sync
+  - **Consistent Access Patterns**: Clean `useSubscription()` and `usePremium()` hooks throughout the app
+  - **Real-time Updates**: Subscription changes automatically reflected across all components
+  - **Improved Performance**: Targeted re-renders only when subscription state changes
+  - **Scalable Structure**: Easy to add new subscription features and maintain code
+
 ### July 19, 2025 - Comprehensive Server-Side Premium Content Security
 - **Complete Server-Side Access Control**: Implemented robust security to prevent non-premium users from accessing premium content
   - **Song Detail Protection**: Premium songs return limited metadata only (no lyrics, YouTube IDs, or sensitive data) for non-premium users

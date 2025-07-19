@@ -1,39 +1,9 @@
-import { useState } from 'react';
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import { Crown, Check, X, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
-import { useUser } from "@/hooks/use-user";
+import { useSubscription } from "@/contexts/subscription-context";
 
 export default function Subscribe() {
-  const [loading, setLoading] = useState(false);
-  const { user } = useUser();
-  const { toast } = useToast();
-
-  const handleUpgradeClick = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      const response = await apiRequest("POST", "/api/stripe-portal");
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error.message || 'Failed to create portal session');
-      }
-      
-      // Redirect to Stripe portal
-      window.location.href = data.url;
-    } catch (err: any) {
-      console.error('Portal error:', err);
-      setLoading(false);
-      toast({
-        title: "Error",
-        description: "Failed to open billing portal. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const { subscription, upgradeToPreemium, manageBilling } = useSubscription();
 
   return (
     <div className="min-h-screen spotify-bg">
@@ -42,8 +12,15 @@ export default function Subscribe() {
           <Link href="/profile" className="spotify-text-secondary hover:spotify-text-primary inline-flex items-center space-x-2 mb-4">
             <span>← Back to Profile</span>
           </Link>
-          <h1 className="spotify-heading-xl mb-2">Upgrade to Premium</h1>
-          <p className="spotify-text-secondary">Unlock unlimited access to all songs and features</p>
+          <h1 className="spotify-heading-xl mb-2">
+            {subscription.isPremium ? 'Manage Premium Subscription' : 'Upgrade to Premium'}
+          </h1>
+          <p className="spotify-text-secondary">
+            {subscription.isPremium 
+              ? 'Manage your premium subscription and billing settings' 
+              : 'Unlock unlimited access to all songs and features'
+            }
+          </p>
         </div>
 
         <div className="max-w-md mx-auto">
@@ -69,12 +46,28 @@ export default function Subscribe() {
               ))}
             </div>
 
-            <button
-              onClick={handleUpgradeClick}
-              disabled={loading}
-              className="w-full spotify-btn-primary px-6 py-3 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
+            {subscription.isPremium ? (
+              <button
+                onClick={manageBilling}
+                disabled={subscription.loading}
+                className="w-full spotify-btn-secondary px-6 py-3 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subscription.loading ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <span>Manage Billing</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={upgradeToPreemium}
+                disabled={subscription.loading}
+                className="w-full spotify-btn-primary px-6 py-3 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subscription.loading ? (
                 <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
               ) : (
                 <>
@@ -82,8 +75,9 @@ export default function Subscribe() {
                   <span>Upgrade to Premium</span>
                   <ExternalLink className="h-4 w-4" />
                 </>
-              )}
-            </button>
+                )}
+              </button>
+            )}
 
             <div className="mt-4 text-xs spotify-text-secondary text-center">
               You'll be redirected to Stripe to manage your subscription securely.
