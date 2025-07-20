@@ -201,7 +201,7 @@ export default function Library() {
         }}
       >
         {/* Delete background */}
-        <div className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6">
+        <div className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6 rounded-lg">
           <Trash2 className="h-6 w-6 text-white" />
         </div>
         
