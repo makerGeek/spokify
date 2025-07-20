@@ -72,7 +72,7 @@ export default function MiniPlayer() {
       {/* Main Player Content */}
       <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl border-t-0 relative">
         <CardContent className="p-3">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={handleToggleLyrics}>
             <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
               <img
                 src={currentSong.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
@@ -99,7 +99,10 @@ export default function MiniPlayer() {
                     ? "bg-red-500 hover:bg-red-600" 
                     : "bg-spotify-green hover:bg-spotify-accent"
                 }`}
-                onClick={togglePlay}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
                 disabled={hasError || isLoading}
                 title={hasError ? "Video unavailable for playback" : isLoading ? "Loading..." : undefined}
               >
@@ -115,7 +118,10 @@ export default function MiniPlayer() {
                 variant="ghost"
                 size="sm"
                 className="w-10 h-10 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50"
-                onClick={handleToggleLyrics}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleLyrics();
+                }}
               >
                 {isLyricsShown ? (
                   <ChevronDown size={16} className="transition-transform duration-200" />
