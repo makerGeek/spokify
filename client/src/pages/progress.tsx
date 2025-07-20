@@ -3,6 +3,7 @@ import { Trophy, Target, Flame, BookOpen, Star, Crown, Music } from "lucide-reac
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import BottomNavigation from "@/components/bottom-navigation";
+import { api } from "@/lib/api-client";
 import { type Vocabulary } from "@shared/schema";
 
 export default function Progress() {
@@ -12,9 +13,7 @@ export default function Progress() {
   const { data: vocabulary = [] } = useQuery<Vocabulary[]>({
     queryKey: ["/api/users", userId, "vocabulary"],
     queryFn: async () => {
-      const response = await fetch(`/api/users/${userId}/vocabulary`);
-      if (!response.ok) throw new Error("Failed to fetch vocabulary");
-      return response.json();
+      return api.users.getVocabulary(userId);
     }
   });
 
