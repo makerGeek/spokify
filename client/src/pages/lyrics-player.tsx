@@ -181,7 +181,7 @@ export default function LyricsPlayer() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-50 transition-transform duration-300 ease-out ${
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-40 transition-transform duration-300 ease-out ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div className="text-center">
@@ -194,7 +194,7 @@ export default function LyricsPlayer() {
 
   if (!song) {
     return (
-      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-50 transition-transform duration-300 ease-out ${
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-40 transition-transform duration-300 ease-out ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div className="text-center">
@@ -208,7 +208,7 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className={`min-h-screen bg-spotify-bg pb-32 overflow-x-hidden fixed inset-0 z-50 transition-transform duration-300 ease-out ${
+    <div className={`min-h-screen bg-spotify-bg pb-32 overflow-x-hidden fixed inset-0 z-40 transition-transform duration-300 ease-out ${
       isVisible ? 'translate-y-0' : 'translate-y-full'
     }`}>
       {/* Fixed Header - Always Visible */}
