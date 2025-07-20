@@ -334,8 +334,7 @@ export default function LyricsPlayer() {
         </div>
       </div>
 
-      {/* Mini Player Component */}
-      <MiniPlayer />
+
 
       {/* Translation Overlay */}
       {showTranslation && selectedLine && (

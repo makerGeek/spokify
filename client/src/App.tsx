@@ -26,6 +26,7 @@ import Checkout from "@/pages/checkout";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
+import MiniPlayer from "@/components/mini-player";
 import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
 import { useSubscription } from "@/contexts/subscription-context";
