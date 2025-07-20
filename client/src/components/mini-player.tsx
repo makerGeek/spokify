@@ -107,7 +107,7 @@ export default function MiniPlayer() {
                 title={hasError ? "Video unavailable for playback" : isLoading ? "Loading..." : undefined}
               >
                 {isLoading ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin will-change-transform" />
                 ) : isPlaying ? (
                   <Pause size={16} />
                 ) : (
