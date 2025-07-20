@@ -125,7 +125,7 @@ function Router() {
   );
 }
 
-function App() {
+function AppContent() {
   const [isAppReady, setIsAppReady] = useState(false);
 
   useEffect(() => {
@@ -161,14 +161,20 @@ function App() {
   }
 
   return (
+    <div className="min-h-screen bg-spotify-bg text-spotify-text">
+      <Toaster />
+      <Router />
+    </div>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AppStateProvider>
           <AudioProvider>
-            <div className="min-h-screen bg-spotify-bg text-spotify-text">
-              <Toaster />
-              <Router />
-            </div>
+            <AppContent />
           </AudioProvider>
         </AppStateProvider>
       </TooltipProvider>

@@ -26,18 +26,18 @@ export default function LanguageSelection() {
   };
 
   return (
-    <div className="min-h-screen spotify-bg p-4 flex flex-col justify-center items-center">
+    <div className="min-h-screen bg-spotify-bg p-4 flex flex-col justify-center items-center">
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-12">
           <Music className="text-spotify-green mx-auto mb-6" size={80} />
-          <h1 className="spotify-heading-xl mb-4">Spokify</h1>
-          <p className="spotify-text-secondary text-lg">Learn languages through music</p>
+          <h1 className="text-4xl font-bold text-spotify-text mb-4">Spokify</h1>
+          <p className="text-spotify-muted text-lg">Learn languages through music</p>
         </div>
 
         {/* Language Selection */}
         <div className="mb-8">
-          <h2 className="spotify-heading-lg text-center mb-8">
+          <h2 className="text-2xl font-bold text-spotify-text text-center mb-8">
             What language would you like to learn?
           </h2>
           
@@ -55,7 +55,7 @@ export default function LanguageSelection() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="spotify-text-primary font-semibold text-xl hover:text-spotify-green transition-colors duration-300">
+                <span className="text-spotify-text font-semibold text-xl hover:text-spotify-green transition-colors duration-300">
                   {lang.name}
                 </span>
               </button>
