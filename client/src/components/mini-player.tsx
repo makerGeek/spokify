@@ -42,7 +42,7 @@ export default function MiniPlayer() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[9999]" style={{ paddingBottom: '64px' }}>
+    <div className="fixed left-0 right-0 z-[9999]" style={{ bottom: '64px' }}>
       {/* Compact Progress Bar - Spotify style */}
       <div className="bg-spotify-card/95 backdrop-blur-md relative overflow-visible">
         <div className="relative group py-2 px-0 overflow-visible">
