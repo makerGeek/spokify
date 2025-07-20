@@ -33,10 +33,29 @@ export default function Library() {
   // Delete vocabulary mutation
   const deleteVocabularyMutation = useMutation({
     mutationFn: (vocabularyId: number) => api.vocabulary.delete(vocabularyId),
-    onSuccess: () => {
-      // Invalidate and refetch vocabulary-related queries
+    onMutate: async (vocabularyId) => {
+      // Cancel outgoing refetches to prevent interference
+      await queryClient.cancelQueries({ queryKey: ["/api/users", databaseUser?.id, "vocabulary"] });
+      
+      // Snapshot the previous value
+      const previousVocabulary = queryClient.getQueryData(["/api/users", databaseUser?.id, "vocabulary"]);
+      
+      // Optimistically update to remove the deleted item
+      queryClient.setQueryData(["/api/users", databaseUser?.id, "vocabulary"], (old: any) => {
+        return old ? old.filter((item: any) => item.id !== vocabularyId) : old;
+      });
+      
+      return { previousVocabulary };
+    },
+    onError: (err, vocabularyId, context) => {
+      // Revert on error
+      if (context?.previousVocabulary) {
+        queryClient.setQueryData(["/api/users", databaseUser?.id, "vocabulary"], context.previousVocabulary);
+      }
+    },
+    onSettled: () => {
+      // Refetch to ensure data consistency
       if (databaseUser?.id) {
-        queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary"] });
         queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary", "stats"] });
       }
     }
@@ -145,17 +164,15 @@ export default function Library() {
     }
 
     const handleDelete = async () => {
-      // Start collapse animation
+      // Start collapse animation immediately
       setIsCollapsing(true)
-      
-      // Animate card sliding completely off screen first
       setTranslateX(-window.innerWidth)
       
-      // Wait for slide animation to complete, then start delete process
+      // Wait for full animation to complete before API call
       setTimeout(async () => {
-        setIsDeleting(true)
         try {
           await deleteVocabularyMutation.mutateAsync(word.id)
+          setIsDeleting(true) // This will cause the component to return null
         } catch (error) {
           console.error('Failed to delete vocabulary:', error)
           // Reset states on error
@@ -163,7 +180,7 @@ export default function Library() {
           setIsCollapsing(false)
           setTranslateX(0)
         }
-      }, 300) // Match the CSS transition duration
+      }, 600) // Wait for both slide (300ms) + collapse (300ms)
     }
 
     // Don't render anything if we're deleting (item removed from list)
