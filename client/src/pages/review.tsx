@@ -275,7 +275,7 @@ export default function Review() {
                     return (
                       <button
                         key={index}
-                        className={`w-full text-left p-4 h-auto rounded-lg transition-all font-medium ${
+                        className={`w-full text-center p-6 h-auto rounded-lg transition-all font-medium ${
                           showCorrectAnswer
                             ? "bg-green-600/20 border border-green-500 text-green-400"
                             : showWrongAnswer
@@ -289,15 +289,7 @@ export default function Review() {
                         onClick={() => handleAnswerSelect(option)}
                         disabled={isAnswered}
                       >
-                        <div className="flex flex-col items-start w-full">
-                          <span className="text-sm leading-tight">{option}</span>
-                          {showResult && (
-                            <div className="mt-2 self-end">
-                              {isCorrect && <CheckCircle size={16} className="text-green-400" />}
-                              {showWrongAnswer && <XCircle size={16} className="text-red-400" />}
-                            </div>
-                          )}
-                        </div>
+                        <span className="text-lg leading-relaxed">{option}</span>
                       </button>
                     );
                   })}
