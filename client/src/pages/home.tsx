@@ -11,6 +11,7 @@ import { AuthModal } from "@/components/auth-modal";
 import ActivationModal from "@/components/activation-modal";
 import { PremiumModal } from "@/components/premium-modal";
 import FullscreenButton from "@/components/fullscreen-button";
+import LyricsOverlay from "@/components/lyrics-overlay";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
@@ -37,6 +38,8 @@ export default function Home() {
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [showLyricsOverlay, setShowLyricsOverlay] = useState(false);
+  const [lyricsSongId, setLyricsSongId] = useState<number | null>(null);
 
   // Check for access denied redirects from lyrics pages
   const [isFromLyricsRedirect, setIsFromLyricsRedirect] = useState(false);
@@ -64,6 +67,21 @@ export default function Home() {
       }
     }
   }, []);
+
+  // Handle lyrics overlay visibility based on URL
+  useEffect(() => {
+    if (location.startsWith('/lyrics/')) {
+      const songIdMatch = location.match(/\/lyrics\/(\d+)/);
+      if (songIdMatch) {
+        const songId = parseInt(songIdMatch[1]);
+        setLyricsSongId(songId);
+        setShowLyricsOverlay(true);
+      }
+    } else {
+      setShowLyricsOverlay(false);
+      setLyricsSongId(null);
+    }
+  }, [location]);
 
 
 
@@ -278,7 +296,18 @@ export default function Home() {
         />
       )}
 
-
+      {/* Lyrics Overlay */}
+      {showLyricsOverlay && lyricsSongId && (
+        <LyricsOverlay
+          songId={lyricsSongId}
+          isVisible={showLyricsOverlay}
+          onClose={() => {
+            setShowLyricsOverlay(false);
+            setLyricsSongId(null);
+            setLocation("/home");
+          }}
+        />
+      )}
     </div>
   );
 }
