@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'wouter'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
@@ -183,12 +184,11 @@ export default function LoginForm({
 
       {/* Forgot Password Link */}
       <div className="text-center mt-4">
-        <a 
-          href="/forgot-password"
-          className="spotify-text-muted hover:text-white text-sm transition-colors inline-block"
-        >
-          Forgot your password?
-        </a>
+        <Link href="/forgot-password">
+          <button className="spotify-text-muted hover:text-white text-sm transition-colors">
+            Forgot your password?
+          </button>
+        </Link>
       </div>
 
       {/* Terms and Privacy Agreement */}
