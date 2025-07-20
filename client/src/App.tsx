@@ -15,6 +15,7 @@ import Profile from "@/pages/profile";
 import Login from "@/pages/login";
 import Library from "@/pages/library";
 import Review from "@/pages/review";
+import LyricsPlayer from "@/pages/lyrics-player";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import InviteAdmin from "@/pages/invite-admin";
@@ -25,10 +26,12 @@ import Checkout from "@/pages/checkout";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
+import MiniPlayer from "@/components/mini-player";
 import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
 import { useSubscription } from "@/contexts/subscription-context";
 import { getAuthToken } from "@/lib/auth";
+import { useAudio } from "@/hooks/use-audio";
 
 // Admin route component - authorization is handled by the APIs themselves
 function AdminRoute() {
@@ -37,6 +40,7 @@ function AdminRoute() {
 
 function Router() {
   const [location] = useLocation();
+  const { currentSong } = useAudio();
   
   // Determine current page for bottom navigation
   const getCurrentPage = () => {
@@ -57,7 +61,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/home" component={Home} />
         <Route path="/search" component={SearchPage} />
-        <Route path="/lyrics/:id" component={Home} />
+        <Route path="/lyrics/:id" component={LyricsPlayer} />
         <Route path="/library">
           <AuthenticatedOnly contextMessage="Login to see your favorite songs and learned vocabulary">
             <Library />
@@ -93,6 +97,11 @@ function Router() {
         <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
         <Route component={NotFound} />
       </Switch>
+      
+      {/* Mini Player - Only visible on home and lyrics pages */}
+      {currentSong && (location === '/home' || location.startsWith('/lyrics/')) && (
+        <MiniPlayer />
+      )}
       
       {/* Bottom Navigation - visible on main app pages */}
       {location !== '/' && location !== '/language-selection' && location !== '/song-offset' && (

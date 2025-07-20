@@ -299,6 +299,7 @@
 .spotify-progress-slider {
   z-index: 60 !important;
   position: relative !important;
+  overflow: visible !important;
 }
 
 .spotify-progress-slider [data-radix-slider-track] {
@@ -307,6 +308,7 @@
   border-radius: 2px !important;
   position: relative !important;
   z-index: 60 !important;
+  overflow: visible !important;
 }
 
 .spotify-progress-slider [data-radix-slider-range] {
@@ -315,6 +317,7 @@
   border-radius: 2px !important;
   position: relative !important;
   z-index: 60 !important;
+  overflow: visible !important;
 }
 
 .spotify-progress-slider [data-radix-slider-thumb] {
@@ -325,8 +328,9 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
   opacity: 0 !important;
   transition: opacity 0.2s ease !important;
-  z-index: 70 !important;
+  z-index: 80 !important;
   position: relative !important;
+  overflow: visible !important;
 }
 
 .spotify-progress-slider:hover [data-radix-slider-thumb] {

@@ -23,6 +23,8 @@ export default function LyricsPlayer() {
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [showTranslationMode, setShowTranslationMode] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
   const { user } = useAuth();
@@ -43,8 +45,15 @@ export default function LyricsPlayer() {
       const accessResult = checkSongAccess(song);
       
       if (!accessResult.canAccess) {
-        // User doesn't have access - redirect to home
-        // The home component will handle showing appropriate modals
+        // Store the song info in sessionStorage so Home can show appropriate modal
+        sessionStorage.setItem('accessDeniedSong', JSON.stringify({
+          song,
+          requiresAuth: accessResult.requiresAuth,
+          requiresActivation: accessResult.requiresActivation,
+          requiresPremium: accessResult.requiresPremium
+        }));
+        
+        // Redirect to home - it will check sessionStorage and show appropriate modal
         setLocation("/home");
         return;
       }
@@ -59,8 +68,40 @@ export default function LyricsPlayer() {
     }
   }, [song, currentSong, setCurrentSong]);
 
+  // Handle slide animation on mount/unmount
+  useEffect(() => {
+    // Check if this is a direct navigation or from mini-player
+    const navigationSource = sessionStorage.getItem('lyricsNavigationSource');
+    
+    if (navigationSource === 'mini-player' || !navigationSource) {
+      // Animate in from bottom for mini-player or first visit
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 50); // Small delay for smooth animation
+      
+      // Clean up the navigation source
+      sessionStorage.removeItem('lyricsNavigationSource');
+      
+      return () => clearTimeout(timer);
+    } else {
+      // Direct navigation - show immediately
+      setIsVisible(true);
+    }
+  }, []);
+
+  // Slide animation exit handler
+  const handleSlideExit = () => {
+    setIsAnimating(true);
+    setIsVisible(false);
+    
+    // Wait for animation to complete before navigating
+    setTimeout(() => {
+      setLocation("/home");
+    }, 300); // Match animation duration
+  };
+
   const handleCloseLyrics = () => {
-    setLocation("/home");
+    handleSlideExit();
   };
 
   const handleLineClick = (line: any) => {
@@ -140,7 +181,9 @@ export default function LyricsPlayer() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-10 transition-transform duration-300 ease-out ${
+        isVisible ? 'translate-y-0' : 'translate-y-full'
+      }`} style={{ bottom: '140px' }}>
         <div className="text-center">
           <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
           <p className="text-spotify-muted">Loading song...</p>
@@ -151,7 +194,9 @@ export default function LyricsPlayer() {
 
   if (!song) {
     return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-10 transition-transform duration-300 ease-out ${
+        isVisible ? 'translate-y-0' : 'translate-y-full'
+      }`} style={{ bottom: '140px' }}>
         <div className="text-center">
           <p className="text-spotify-muted">Song not found</p>
           <Button onClick={handleCloseLyrics} className="mt-4">
@@ -163,10 +208,12 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className="min-h-screen bg-spotify-bg pb-32 overflow-x-hidden">
-      {/* Main Content - Full Height Lyrics */}
-      <div className="p-4 w-full max-w-full">
-        <div className="flex items-center justify-between mb-6">
+    <div className={`bg-spotify-bg pb-32 overflow-x-hidden fixed top-0 left-0 right-0 z-10 transition-transform duration-300 ease-out ${
+      isVisible ? 'translate-y-0' : 'translate-y-full'
+    }`} style={{ bottom: '140px', height: 'calc(100vh - 140px)' }}>
+      {/* Fixed Header - Always Visible */}
+      <div className="sticky top-0 z-10 bg-spotify-bg/95 backdrop-blur-sm p-4 w-full">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -242,11 +289,14 @@ export default function LyricsPlayer() {
             </Button>
           </div>
         </div>
-        
+      </div>
+
+      {/* Main Content - Scrollable Lyrics */}
+      <div className="px-4 w-full max-w-full">
         <div className="space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain" 
              id="lyrics-container"
              style={{ 
-               height: 'calc(100vh - 240px)', // Screen minus header, controls, and bottom sections
+               height: 'calc(100vh - 200px)', // Screen minus fixed header and bottom sections
                WebkitOverflowScrolling: 'touch',
                scrollBehavior: 'smooth',
                touchAction: 'pan-y',
@@ -284,8 +334,7 @@ export default function LyricsPlayer() {
         </div>
       </div>
 
-      {/* Mini Player Component */}
-      <MiniPlayer />
+
 
       {/* Translation Overlay */}
       {showTranslation && selectedLine && (
