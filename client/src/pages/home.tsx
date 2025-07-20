@@ -16,6 +16,7 @@ import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { usePremium } from "@/hooks/use-premium";
+import { useFeatureFlag } from "@/hooks/use-feature-flags";
 import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
@@ -33,6 +34,7 @@ export default function Home() {
   const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
   const { isPremium } = usePremium();
+  const { isEnabled: showGenreFilters } = useFeatureFlag('SHOW_GENRES_FILTERS');
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -109,10 +111,11 @@ export default function Home() {
   } = userPreferences;
 
   const { data: songs = [], isLoading } = useQuery<Song[]>({
-    queryKey: ["/api/songs", selectedGenre, targetLanguage],
+    queryKey: ["/api/songs", showGenreFilters ? selectedGenre : "all", targetLanguage],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (selectedGenre !== "all") {
+      // Only filter by genre if genre filters are enabled
+      if (showGenreFilters && selectedGenre !== "all") {
         params.append("genre", selectedGenre);
       }
       // Always filter by target language
@@ -225,17 +228,19 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Genre Filters */}
-      <GenreFilters
-        selectedGenre={selectedGenre}
-        onGenreChange={setSelectedGenre}
-      />
+      {/* Genre Filters - conditionally rendered based on feature flag */}
+      {showGenreFilters && (
+        <GenreFilters
+          selectedGenre={selectedGenre}
+          onGenreChange={setSelectedGenre}
+        />
+      )}
 
       {/* Songs List */}
       <div className="p-4">
         <div className="max-w-md mx-auto">
           <h2 className="text-2xl font-bold mb-4 circular-font">
-            {selectedGenre === "all" ? "All Songs" : `${selectedGenre} Songs`}
+            {!showGenreFilters || selectedGenre === "all" ? "All Songs" : `${selectedGenre} Songs`}
           </h2>
 
           <div className="space-y-4">
