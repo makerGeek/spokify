@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Music } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 const targetLanguages = [
   { code: "es", name: "Spanish", flagImage: "/flags/es.png" },

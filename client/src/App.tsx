@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import { initializePWA } from "@/lib/pwa";
+import { initGA } from "@/lib/analytics";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { AudioProvider } from "@/hooks/use-audio";
 import { AppStateProvider } from "@/contexts/app-state-provider";
 import SmartRedirect from "@/components/smart-redirect";
@@ -45,6 +47,9 @@ function AdminRoute() {
 function Router() {
   const [location] = useLocation();
   const { currentSong } = useAudio();
+  
+  // Track page views when routes change
+  useAnalytics();
   
   // Determine current page for bottom navigation
   const getCurrentPage = () => {
@@ -133,6 +138,13 @@ function AppContent() {
       try {
         // Initialize PWA functionality
         initializePWA();
+        
+        // Initialize Google Analytics
+        if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
+          console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+        } else {
+          initGA();
+        }
         
         // Add small delay to ensure proper initialization in PWA mode
         await new Promise(resolve => setTimeout(resolve, 100));

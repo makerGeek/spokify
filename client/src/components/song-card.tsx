@@ -6,6 +6,7 @@ import { useMarquee } from "@/hooks/use-marquee";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { usePremium } from "@/hooks/use-premium";
+import { trackEvent } from "@/lib/analytics";
 
 import { type Song } from "@shared/schema";
 
@@ -26,8 +27,12 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
+    // Track play button click
+    trackEvent('song_play_clicked', 'music', song.title, song.id);
+    
     // Check if user is authenticated
     if (!user) {
+      trackEvent('play_blocked_authentication', 'music', song.title);
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
@@ -36,6 +41,7 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     
     // Check if this is a premium song (not free) and user doesn't have active subscription
     if (!song.isFree && !canAccessPremiumContent) {
+      trackEvent('play_blocked_premium', 'music', song.title);
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
@@ -43,12 +49,17 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     }
     
     // User has access - play the song
+    trackEvent('song_started', 'music', song.title, song.id);
     setCurrentSong(song, true); // Second parameter indicates auto-play
   };
 
   const handleCardClick = () => {
+    // Track song card click
+    trackEvent('song_card_clicked', 'music', song.title, song.id);
+    
     // Check if user is authenticated
     if (!user) {
+      trackEvent('lyrics_blocked_authentication', 'music', song.title);
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
@@ -57,6 +68,7 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     
     // Check if this is a premium song (not free) and user doesn't have active subscription
     if (!song.isFree && !canAccessPremiumContent) {
+      trackEvent('lyrics_blocked_premium', 'music', song.title);
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
@@ -64,6 +76,7 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     }
     
     // User has access - set current song and play it, then open lyrics
+    trackEvent('lyrics_opened', 'music', song.title, song.id);
     setCurrentSong(song, true); // Auto-play the song
     onClick(); // Open lyrics overlay
   };
