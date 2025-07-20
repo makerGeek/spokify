@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { ArrowDown, Bookmark, Languages, RotateCcw, Share2 } from "lucide-react";
+import { ArrowDown, Bookmark, BookmarkCheck, Languages, RotateCcw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -231,10 +231,11 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
               onClick={() => toggleBookmark(songId)}
               disabled={isToggling}
             >
-              <Bookmark 
-                className={bookmarkStatus?.isBookmarked ? "text-spotify-green" : "text-spotify-muted"} 
-                size={20} 
-              />
+              {bookmarkStatus?.isBookmarked ? (
+                <BookmarkCheck className="text-spotify-green" size={20} />
+              ) : (
+                <Bookmark className="text-spotify-muted" size={20} />
+              )}
             </Button>
             <Button
               variant="ghost"
@@ -242,7 +243,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
               className="w-10 h-10 bg-spotify-card rounded-full p-0"
               onClick={handleShare}
             >
-              <Share2 className="text-spotify-muted hover:text-spotify-text" size={20} />
+              <Share2 className="text-spotify-muted" size={20} />
             </Button>
           </div>
         </div>
