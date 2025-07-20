@@ -68,6 +68,14 @@ export const vocabulary = pgTable("vocabulary", {
   context: text("context"),
   learnedAt: timestamp("learned_at").defaultNow(),
   reviewCount: integer("review_count").notNull().default(0),
+  // Spaced repetition fields
+  memorizationScore: integer("memorization_score").notNull().default(50), // 0-100
+  nextReviewDate: timestamp("next_review_date").defaultNow(), // When word is due for review
+  lastReviewedAt: timestamp("last_reviewed_at"), // Last time word was reviewed
+  correctAnswers: integer("correct_answers").notNull().default(0),
+  totalReviews: integer("total_reviews").notNull().default(0),
+  intervalDays: integer("interval_days").notNull().default(1), // Days until next review
+  easeFactor: integer("ease_factor").notNull().default(250), // SM-2 ease factor * 100 (2.5 = 250)
 });
 
 export const featureFlags = pgTable("feature_flags", {
@@ -192,6 +200,13 @@ export const insertBookmarkSchema = createInsertSchema(bookmarks).pick({
   userId: true,
   songId: true,
 });
+
+// Review result schema for spaced repetition
+export const reviewResultSchema = z.object({
+  quality: z.number().min(1).max(5), // 1=Again, 2=Hard, 3=Okay, 4=Good, 5=Perfect
+});
+
+export type ReviewResult = z.infer<typeof reviewResultSchema>;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ActivateUser = z.infer<typeof activateUserSchema>;

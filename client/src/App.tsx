@@ -19,6 +19,7 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Library from "@/pages/library";
 import Review from "@/pages/review";
+import ReviewSession from "@/pages/review-session";
 
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
@@ -56,7 +57,7 @@ function Router() {
     if (location === '/home') return 'home';
     if (location === '/search') return 'search';
     if (location === '/library') return 'library';
-    if (location === '/review') return 'review';
+    if (location === '/review' || location === '/review-session') return 'review';
     if (location === '/profile') return 'profile';
     if (location.startsWith('/lyrics/')) return 'home'; // Lyrics player belongs to home flow
     return 'home';
@@ -86,6 +87,11 @@ function Router() {
         <Route path="/review">
           <AuthenticatedOnly contextMessage="Login to practice vocabulary with interactive quizzes">
             <Review />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/review-session">
+          <AuthenticatedOnly contextMessage="Login to start vocabulary review session">
+            <ReviewSession />
           </AuthenticatedOnly>
         </Route>
         <Route path="/profile">

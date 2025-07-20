@@ -29,6 +29,17 @@ export interface IStorage {
   getUserVocabulary(userId: number): Promise<Vocabulary[]>;
   createVocabulary(vocabulary: InsertVocabulary): Promise<Vocabulary>;
   updateVocabulary(id: number, updates: Partial<Vocabulary>): Promise<Vocabulary>;
+  
+  // Spaced repetition methods
+  getDueVocabulary(userId: number): Promise<Vocabulary[]>;
+  submitReview(vocabularyId: number, quality: number): Promise<Vocabulary>;
+  getVocabularyStats(userId: number): Promise<{
+    totalWords: number;
+    dueCount: number;
+    masteredCount: number;
+    averageScore: number;
+    streak: number;
+  }>;
 
   // Feature flag methods
   getFeatureFlag(name: string): Promise<FeatureFlag | undefined>;
@@ -210,6 +221,212 @@ export class DatabaseStorage implements IStorage {
       .where(eq(vocabulary.id, id))
       .returning();
     return vocab;
+  }
+
+  // Spaced repetition implementation
+  async getDueVocabulary(userId: number): Promise<Vocabulary[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(vocabulary)
+      .where(
+        and(
+          eq(vocabulary.userId, userId),
+          sql`${vocabulary.nextReviewDate} <= ${now}`
+        )
+      )
+      .orderBy(vocabulary.nextReviewDate);
+  }
+
+  async submitReview(vocabularyId: number, quality: number): Promise<Vocabulary> {
+    // First get the current vocabulary item
+    const [currentVocab] = await db
+      .select()
+      .from(vocabulary)
+      .where(eq(vocabulary.id, vocabularyId));
+
+    if (!currentVocab) {
+      throw new Error("Vocabulary item not found");
+    }
+
+    // Calculate new values using SM-2 algorithm
+    const result = this.calculateSpacedRepetition(currentVocab, quality);
+
+    // Update the vocabulary item with new spaced repetition values
+    const [updatedVocab] = await db
+      .update(vocabulary)
+      .set({
+        memorizationScore: result.memorizationScore,
+        nextReviewDate: result.nextReviewDate,
+        lastReviewedAt: new Date(),
+        correctAnswers: currentVocab.correctAnswers + (quality >= 3 ? 1 : 0),
+        totalReviews: currentVocab.totalReviews + 1,
+        intervalDays: result.intervalDays,
+        easeFactor: result.easeFactor,
+        reviewCount: currentVocab.reviewCount + 1,
+      })
+      .where(eq(vocabulary.id, vocabularyId))
+      .returning();
+
+    return updatedVocab;
+  }
+
+  async getVocabularyStats(userId: number): Promise<{
+    totalWords: number;
+    dueCount: number;
+    masteredCount: number;
+    averageScore: number;
+    streak: number;
+  }> {
+    const now = new Date();
+    
+    // Get all vocabulary for the user
+    const allVocab = await db
+      .select()
+      .from(vocabulary)
+      .where(eq(vocabulary.userId, userId));
+
+    // Count due words
+    const dueWords = await db
+      .select()
+      .from(vocabulary)
+      .where(
+        and(
+          eq(vocabulary.userId, userId),
+          sql`${vocabulary.nextReviewDate} <= ${now}`
+        )
+      );
+
+    // Count mastered words (score >= 90)
+    const masteredWords = allVocab.filter(word => word.memorizationScore >= 90);
+
+    // Calculate average score
+    const averageScore = allVocab.length > 0 
+      ? Math.round(allVocab.reduce((sum, word) => sum + word.memorizationScore, 0) / allVocab.length)
+      : 0;
+
+    // Calculate streak (consecutive days with reviews)
+    // For now, we'll use a simple calculation based on recent review activity
+    const streak = await this.calculateReviewStreak(userId);
+
+    return {
+      totalWords: allVocab.length,
+      dueCount: dueWords.length,
+      masteredCount: masteredWords.length,
+      averageScore,
+      streak,
+    };
+  }
+
+  private calculateSpacedRepetition(vocab: Vocabulary, quality: number): {
+    memorizationScore: number;
+    nextReviewDate: Date;
+    intervalDays: number;
+    easeFactor: number;
+  } {
+    const currentScore = vocab.memorizationScore;
+    const currentInterval = vocab.intervalDays;
+    const currentEase = vocab.easeFactor; // Stored as integer (250 = 2.5)
+    
+    // Calculate new memorization score (0-100)
+    let newScore = currentScore;
+    switch (quality) {
+      case 5: // Perfect
+        newScore = Math.min(100, currentScore + 15);
+        break;
+      case 4: // Good
+        newScore = Math.min(100, currentScore + 10);
+        break;
+      case 3: // Okay
+        newScore = Math.min(100, currentScore + 5);
+        break;
+      case 2: // Hard
+        newScore = Math.max(10, currentScore - 10);
+        break;
+      case 1: // Again
+        newScore = Math.max(10, currentScore - 20);
+        break;
+    }
+
+    // Calculate new ease factor using SM-2 algorithm
+    let newEase = currentEase;
+    if (quality >= 3) {
+      newEase = Math.max(130, currentEase + (8 - (9 - quality) * (8 - (9 - quality)) - 2) * 10);
+    } else {
+      newEase = Math.max(130, currentEase - 20);
+    }
+
+    // Calculate new interval
+    let newInterval: number;
+    if (quality < 3) {
+      // Reset interval for poor performance
+      newInterval = 1;
+    } else if (vocab.totalReviews === 0) {
+      // First review
+      newInterval = 1;
+    } else if (vocab.totalReviews === 1) {
+      // Second review
+      newInterval = 6;
+    } else {
+      // Use ease factor for subsequent reviews
+      newInterval = Math.round(currentInterval * (newEase / 100));
+    }
+
+    // Calculate next review date
+    const nextReviewDate = new Date();
+    nextReviewDate.setDate(nextReviewDate.getDate() + newInterval);
+
+    return {
+      memorizationScore: newScore,
+      nextReviewDate,
+      intervalDays: newInterval,
+      easeFactor: newEase,
+    };
+  }
+
+  private async calculateReviewStreak(userId: number): Promise<number> {
+    // Simple streak calculation based on consecutive review days
+    // This could be enhanced to track actual daily review completion
+    const recentReviews = await db
+      .select()
+      .from(vocabulary)
+      .where(
+        and(
+          eq(vocabulary.userId, userId),
+          sql`${vocabulary.lastReviewedAt} IS NOT NULL`
+        )
+      )
+      .orderBy(sql`${vocabulary.lastReviewedAt} DESC`)
+      .limit(30); // Look at last 30 reviews
+
+    if (recentReviews.length === 0) return 0;
+
+    // Group reviews by date and count consecutive days
+    const reviewDates = new Set();
+    recentReviews.forEach(review => {
+      if (review.lastReviewedAt) {
+        const dateStr = review.lastReviewedAt.toISOString().split('T')[0];
+        reviewDates.add(dateStr);
+      }
+    });
+
+    const sortedDates = Array.from(reviewDates).sort().reverse();
+    let streak = 0;
+    const today = new Date().toISOString().split('T')[0];
+    let currentDate = new Date(today);
+
+    for (const dateStr of sortedDates) {
+      const reviewDate = new Date(dateStr);
+      const daysDiff = Math.floor((currentDate.getTime() - reviewDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === streak) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    return streak;
   }
 
   async getFeatureFlag(name: string): Promise<FeatureFlag | undefined> {

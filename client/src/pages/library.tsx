@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Heart, BookOpen } from 'lucide-react'
+import { Heart, BookOpen, Brain, Target, Zap } from 'lucide-react'
 import { useLocation } from 'wouter'
 
 import { type Song, type Vocabulary } from '@shared/schema'
@@ -48,6 +48,18 @@ export default function Library() {
     refetchOnWindowFocus: false,
   })
 
+  // Fetch vocabulary stats for spaced repetition
+  const { data: vocabularyStats } = useQuery({
+    queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary", "stats"] : [],
+    queryFn: async () => {
+      if (!databaseUser?.id) return { totalWords: 0, dueCount: 0, masteredCount: 0, averageScore: 0, streak: 0 };
+      return api.users.getVocabularyStats(databaseUser.id);
+    },
+    enabled: !!databaseUser?.id && !!user,
+    staleTime: 30 * 1000, // Cache for 30 seconds
+    refetchOnWindowFocus: false,
+  })
+
   // Use real bookmarked songs from the database
   const savedSongs = bookmarkedSongs
 
@@ -65,21 +77,59 @@ export default function Library() {
 
   // VocabularyItem component
   function VocabularyItem({ word, index }: { word: Vocabulary; index: number }) {
+    const getScoreColor = (score: number) => {
+      if (score >= 90) return 'text-green-500'
+      if (score >= 70) return 'text-blue-500'
+      if (score >= 50) return 'text-yellow-500'
+      return 'text-red-500'
+    }
+
+    const getDifficultyColor = (difficulty: string) => {
+      switch (difficulty) {
+        case 'easy': return 'text-green-500'
+        case 'medium': return 'text-yellow-500'
+        case 'hard': return 'text-red-500'
+        default: return 'spotify-text-muted'
+      }
+    }
+
+    const isOverdue = word.nextReviewDate && new Date(word.nextReviewDate) <= new Date()
 
     return (
       <div className="spotify-card p-4 hover:bg-[var(--spotify-light-gray)] transition-colors duration-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-[var(--spotify-green)] rounded-full flex items-center justify-center text-black text-sm font-bold">
-              {index + 1}
+            <div className="relative">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+                isOverdue ? 'bg-orange-500 text-white' : 'bg-[var(--spotify-green)] text-black'
+              }`}>
+                {word.memorizationScore || 50}%
+              </div>
+              {isOverdue && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              )}
             </div>
-            <div>
-              <p className="spotify-text-primary font-semibold text-lg">{word.word}</p>
-              <p className="spotify-text-secondary">{word.translation}</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="spotify-text-primary font-semibold text-lg">{word.word}</p>
+                {isOverdue && (
+                  <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                    Due
+                  </span>
+                )}
+              </div>
+              <p className="spotify-text-secondary mb-2">{word.translation}</p>
+              
+              {/* Spaced repetition stats */}
+              <div className="flex items-center gap-4 text-xs spotify-text-muted">
+                <span>Reviews: {word.totalReviews || 0}</span>
+                <span>Accuracy: {word.totalReviews > 0 ? Math.round((word.correctAnswers / word.totalReviews) * 100) : 0}%</span>
+                <span>Next: {word.nextReviewDate ? new Date(word.nextReviewDate).toLocaleDateString() : 'Now'}</span>
+              </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-muted text-xs font-medium mb-1">
+          <div className="text-right flex flex-col items-end">
+            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mb-2 ${getDifficultyColor(word.difficulty)}`}>
               {word.difficulty}
             </div>
             {word.songName && (
@@ -175,8 +225,52 @@ export default function Library() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="spotify-heading-lg">Your Vocabulary</h2>
-              <p className="spotify-text-muted text-sm">{vocabulary.length} words</p>
+              <div className="flex items-center gap-4">
+                {vocabularyStats && vocabularyStats.dueCount > 0 && (
+                  <button
+                    onClick={() => setLocation('/review-session')}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition-colors"
+                  >
+                    <Brain className="h-4 w-4" />
+                    Review {vocabularyStats.dueCount} {vocabularyStats.dueCount === 1 ? 'word' : 'words'}
+                  </button>
+                )}
+                <p className="spotify-text-muted text-sm">{vocabulary.length} words</p>
+              </div>
             </div>
+
+            {/* Stats Section */}
+            {vocabularyStats && vocabulary.length > 0 && (
+              <div className="bg-spotify-card rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold spotify-text-primary">{vocabularyStats.masteredCount}</div>
+                    <div className="text-sm spotify-text-muted flex items-center justify-center gap-1">
+                      <Target className="h-3 w-3" />
+                      Mastered
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-orange-500">{vocabularyStats.dueCount}</div>
+                    <div className="text-sm spotify-text-muted flex items-center justify-center gap-1">
+                      <Brain className="h-3 w-3" />
+                      Due for Review
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-spotify-accent">{vocabularyStats.averageScore}%</div>
+                    <div className="text-sm spotify-text-muted">Average Score</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-yellow-500">{vocabularyStats.streak}</div>
+                    <div className="text-sm spotify-text-muted flex items-center justify-center gap-1">
+                      <Zap className="h-3 w-3" />
+                      Day Streak
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {vocabulary.length === 0 ? (
               <div className="text-center py-12">

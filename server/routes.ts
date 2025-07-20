@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { translateText } from "./services/gemini";
-import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema, insertBookmarkSchema } from "@shared/schema";
+import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema, insertBookmarkSchema, reviewResultSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, requireAdmin, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 import session from "express-session";
@@ -314,6 +314,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(vocabulary);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Invalid vocabulary data" });
+    }
+  });
+
+  // Spaced repetition routes
+  app.get("/api/users/:userId/vocabulary/due", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Users can only access their own vocabulary
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const dueVocabulary = await storage.getDueVocabulary(userId);
+      res.json(dueVocabulary);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch due vocabulary" });
+    }
+  });
+
+  app.post("/api/vocabulary/:id/review", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const vocabularyId = parseInt(req.params.id);
+      const reviewData = reviewResultSchema.parse(req.body);
+      
+      // Verify user owns this vocabulary record
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Get the vocabulary item to verify ownership
+      const allUserVocab = await storage.getUserVocabulary(user.id);
+      const vocabItem = allUserVocab.find(v => v.id === vocabularyId);
+      if (!vocabItem) {
+        return res.status(403).json({ message: "Vocabulary item not found or access denied" });
+      }
+      
+      const updatedVocabulary = await storage.submitReview(vocabularyId, reviewData.quality);
+      res.json(updatedVocabulary);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to submit review" });
+    }
+  });
+
+  app.get("/api/users/:userId/vocabulary/stats", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Users can only access their own vocabulary stats
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const stats = await storage.getVocabularyStats(userId);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch vocabulary stats" });
     }
   });
 

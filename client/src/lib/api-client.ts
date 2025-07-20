@@ -71,6 +71,8 @@ export const api = {
 
   users: {
     getVocabulary: (userId: number) => api.get(`/users/${userId}/vocabulary`),
+    getDueVocabulary: (userId: number) => api.get(`/users/${userId}/vocabulary/due`),
+    getVocabularyStats: (userId: number) => api.get(`/users/${userId}/vocabulary/stats`),
     getProgress: (userId: number) => api.get(`/users/${userId}/progress`),
     getInviteCodes: (userId: number) => api.get(`/users/${userId}/invite-codes`),
     getBookmarks: (userId: number) => api.get(`/users/${userId}/bookmarks`),
@@ -84,6 +86,8 @@ export const api = {
 
   vocabulary: {
     save: (vocabulary: any) => api.post('/vocabulary', vocabulary),
+    submitReview: (vocabularyId: number, quality: number) => 
+      api.post(`/vocabulary/${vocabularyId}/review`, { quality }),
   },
 
   bookmarks: {
