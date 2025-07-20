@@ -172,7 +172,7 @@ export default function LyricsPlayer() {
   return (
     <div className="min-h-screen bg-spotify-bg pb-32 overflow-x-hidden">
       {/* Fixed Header - Always Visible */}
-      <div className="sticky top-0 z-10 bg-spotify-bg/95 backdrop-blur-sm border-b border-spotify-card/20 p-4 w-full">
+      <div className="sticky top-0 z-10 bg-spotify-bg/95 backdrop-blur-sm p-4 w-full">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
