@@ -93,6 +93,7 @@ export default function Library() {
     const [translateX, setTranslateX] = useState(0)
     const [isDragging, setIsDragging] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
+    const [isCollapsing, setIsCollapsing] = useState(false)
     const [startX, setStartX] = useState(0)
     
     const getScoreColor = (score: number) => {
@@ -134,7 +135,7 @@ export default function Library() {
     const handleTouchEnd = () => {
       setIsDragging(false)
       
-      // If swiped more than 60px, trigger delete
+      // If swiped more than 60px, trigger delete animation
       if (translateX < -60) {
         handleDelete()
       } else {
@@ -144,28 +145,44 @@ export default function Library() {
     }
 
     const handleDelete = async () => {
-      setIsDeleting(true)
-      try {
-        await deleteVocabularyMutation.mutateAsync(word.id)
-      } catch (error) {
-        console.error('Failed to delete vocabulary:', error)
-        setIsDeleting(false)
-        setTranslateX(0)
-      }
+      // Start collapse animation
+      setIsCollapsing(true)
+      
+      // Animate card sliding completely off screen first
+      setTranslateX(-window.innerWidth)
+      
+      // Wait for slide animation to complete, then start delete process
+      setTimeout(async () => {
+        setIsDeleting(true)
+        try {
+          await deleteVocabularyMutation.mutateAsync(word.id)
+        } catch (error) {
+          console.error('Failed to delete vocabulary:', error)
+          // Reset states on error
+          setIsDeleting(false)
+          setIsCollapsing(false)
+          setTranslateX(0)
+        }
+      }, 300) // Match the CSS transition duration
     }
 
+    // Don't render anything if we're deleting (item removed from list)
     if (isDeleting) {
-      return (
-        <div className="spotify-card p-4 bg-red-500 bg-opacity-20 animate-pulse">
-          <div className="flex items-center justify-center">
-            <p className="spotify-text-muted">Deleting...</p>
-          </div>
-        </div>
-      )
+      return null
     }
 
     return (
-      <div className="relative overflow-hidden">
+      <div 
+        className={`relative overflow-hidden transition-all duration-300 ease-out ${
+          isCollapsing ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+        }`}
+        style={{
+          marginBottom: isCollapsing ? '0px' : '12px',
+          transition: isCollapsing 
+            ? 'max-height 0.3s ease-out, opacity 0.3s ease-out, margin-bottom 0.3s ease-out' 
+            : 'margin-bottom 0.2s ease-out'
+        }}
+      >
         {/* Delete background */}
         <div className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6">
           <Trash2 className="h-6 w-6 text-white" />

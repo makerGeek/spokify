@@ -196,6 +196,20 @@ Preferred communication style: Simple, everyday language.
   - **Frontend Components**: Built ReviewSession page with progress tracking, session statistics, and smooth navigation flow
   - **Score Calculation**: Memorization scores increase/decrease based on quality ratings with minimum/maximum bounds for stability
 
+### July 20, 2025 - Vocabulary Swipe-to-Delete with Smooth Collapse Animation ✅
+- **Enhanced Swipe Functionality**: Improved vocabulary deletion with professional collapse animation
+  - **Smooth Animation Flow**: Cards slide completely off-screen, then collapse height and margins to zero
+  - **Visual Feedback**: Red delete background with trash icon appears during swipe gesture
+  - **Gesture Detection**: Left swipe of 60px+ triggers deletion, shorter swipes snap back to original position
+  - **Multi-Stage Animation**: Slide animation (300ms) → height collapse (300ms) → removal from DOM
+  - **Error Handling**: Failed deletions reset animation state and return card to original position
+- **Technical Implementation**: 
+  - **Touch Events**: Proper touch start/move/end handlers with drag state management
+  - **CSS Transitions**: Coordinated max-height, opacity, and margin-bottom animations for smooth collapse
+  - **State Management**: Separate states for dragging, collapsing, and deleting phases
+  - **API Integration**: DELETE endpoint with authentication and proper React Query cache invalidation
+  - **Performance**: Optimized transition timing and easing for responsive user experience
+
 ### July 20, 2025 - Complete Bookmark System Implementation ✅
 - **Full Database Integration**: Implemented comprehensive bookmark system with PostgreSQL storage
   - **Database Schema**: Added `bookmarks` table with proper foreign key relationships to users and songs
