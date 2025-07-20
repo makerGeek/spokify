@@ -118,14 +118,7 @@ export default function Library() {
                   </span>
                 )}
               </div>
-              <p className="spotify-text-secondary mb-2">{word.translation}</p>
-              
-              {/* Spaced repetition stats */}
-              <div className="flex items-center gap-4 text-xs spotify-text-muted">
-                <span>Reviews: {word.totalReviews || 0}</span>
-                <span>Accuracy: {word.totalReviews > 0 ? Math.round((word.correctAnswers / word.totalReviews) * 100) : 0}%</span>
-                <span>Next: {word.nextReviewDate ? new Date(word.nextReviewDate).toLocaleDateString() : 'Now'}</span>
-              </div>
+              <p className="spotify-text-secondary">{word.translation}</p>
             </div>
           </div>
           <div className="text-right flex flex-col items-end">
