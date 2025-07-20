@@ -96,6 +96,9 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       
+      {/* Mini Player - always visible when there's a current song */}
+      <MiniPlayer />
+      
       {/* Bottom Navigation - visible on main app pages */}
       {location !== '/' && location !== '/language-selection' && location !== '/song-offset' && (
         <BottomNavigation currentPage={getCurrentPage()} />
