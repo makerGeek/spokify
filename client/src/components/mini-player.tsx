@@ -20,9 +20,13 @@ export default function MiniPlayer() {
 
   const handleToggleLyrics = () => {
     if (isLyricsShown) {
-      // Hide lyrics - trigger slide down animation in lyrics player
-      // The lyrics player will handle the animation and navigation
-      setLocation('/home');
+      // Hide lyrics - trigger slide down animation first
+      // Set flag for lyrics overlay to handle closing animation
+      sessionStorage.setItem('lyricsCloseSource', 'mini-player');
+      
+      // Create a custom event to tell lyrics overlay to close with animation
+      const closeEvent = new CustomEvent('closeLyricsWithAnimation');
+      window.dispatchEvent(closeEvent);
     } else {
       // Show lyrics - mark as mini-player navigation and go to lyrics page
       sessionStorage.setItem('lyricsNavigationSource', 'mini-player');

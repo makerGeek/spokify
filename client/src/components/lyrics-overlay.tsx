@@ -66,6 +66,33 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
     }
   }, [isVisible]);
 
+  // Listen for close animation event from mini-player
+  useEffect(() => {
+    const handleCloseWithAnimation = () => {
+      // Check if this close was triggered by mini-player
+      const closeSource = sessionStorage.getItem('lyricsCloseSource');
+      if (closeSource === 'mini-player') {
+        sessionStorage.removeItem('lyricsCloseSource');
+        
+        // Start slide down animation
+        setShouldSlideUp(false);
+        
+        // Wait for animation to complete, then navigate
+        setTimeout(() => {
+          // Use setLocation to navigate to home
+          const event = new CustomEvent('navigateToHome');
+          window.dispatchEvent(event);
+        }, 300);
+      }
+    };
+
+    window.addEventListener('closeLyricsWithAnimation', handleCloseWithAnimation);
+    
+    return () => {
+      window.removeEventListener('closeLyricsWithAnimation', handleCloseWithAnimation);
+    };
+  }, []);
+
   // Check song access and close overlay if needed
   useEffect(() => {
     if (song) {

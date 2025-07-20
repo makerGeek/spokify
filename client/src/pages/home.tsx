@@ -68,6 +68,19 @@ export default function Home() {
     }
   }, []);
 
+  // Listen for navigation events from lyrics overlay
+  useEffect(() => {
+    const handleNavigateToHome = () => {
+      setLocation('/home');
+    };
+
+    window.addEventListener('navigateToHome', handleNavigateToHome);
+    
+    return () => {
+      window.removeEventListener('navigateToHome', handleNavigateToHome);
+    };
+  }, [setLocation]);
+
   // Handle lyrics overlay visibility based on URL
   useEffect(() => {
     if (location.startsWith('/lyrics/')) {
