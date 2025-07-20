@@ -98,8 +98,8 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       
-      {/* Mini Player - Global component outside all route stacking contexts */}
-      {currentSong && (
+      {/* Mini Player - Only visible on home and lyrics pages */}
+      {currentSong && (location === '/home' || location.startsWith('/lyrics/')) && (
         <MiniPlayer />
       )}
       
