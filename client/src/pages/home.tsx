@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Music, User } from "lucide-react";
+import { Music, User, Crown } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import FullscreenButton from "@/components/fullscreen-button";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
+import { usePremium } from "@/hooks/use-premium";
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
@@ -31,6 +32,7 @@ export default function Home() {
   const { currentSong } = useAudio();
   const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
+  const { isPremium } = usePremium();
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -179,7 +181,16 @@ export default function Home() {
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center space-x-3">
             <Music className="text-spotify-green" size={24} />
-            <h1 className="text-xl font-bold circular-font">Spokify</h1>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-xl font-bold circular-font">Spokify</h1>
+              {isPremium && (
+                <Crown 
+                  className="text-yellow-400" 
+                  size={20}
+                  fill="currentColor"
+                />
+              )}
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <div
