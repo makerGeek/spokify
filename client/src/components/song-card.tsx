@@ -26,7 +26,7 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // First check if user is authenticated
+    // Check if user is authenticated
     if (!user) {
       if (onPremiumRequested) {
         onPremiumRequested(song);
@@ -34,35 +34,11 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
       return;
     }
     
-    // Check if this is a premium song and user doesn't have premium access
+    // Check if this is a premium song (not free) and user doesn't have active subscription
     if (!song.isFree && !canAccessPremiumContent) {
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
-      return;
-    }
-    
-    // Additional legacy checks for backward compatibility
-    if (song.requiresPremium && !song.canAccess) {
-      if (onPremiumRequested) {
-        onPremiumRequested(song);
-      }
-      return;
-    }
-    
-    const accessResult = checkSongAccess(song);
-    
-    if (!accessResult.canAccess) {
-      if (accessResult.requiresAuth && onPremiumRequested) {
-        onPremiumRequested(song);
-        return;
-      }
-      
-      if (accessResult.requiresActivation && onActivationRequired) {
-        onActivationRequired(song);
-        return;
-      }
-      
       return;
     }
     
@@ -71,7 +47,7 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
   };
 
   const handleCardClick = () => {
-    // First check if user is authenticated
+    // Check if user is authenticated
     if (!user) {
       if (onPremiumRequested) {
         onPremiumRequested(song);
@@ -79,35 +55,11 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
       return;
     }
     
-    // Check if this is a premium song and user doesn't have premium access
+    // Check if this is a premium song (not free) and user doesn't have active subscription
     if (!song.isFree && !canAccessPremiumContent) {
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
-      return;
-    }
-    
-    // Additional legacy checks for backward compatibility
-    if (song.requiresPremium && !song.canAccess) {
-      if (onPremiumRequested) {
-        onPremiumRequested(song);
-      }
-      return;
-    }
-    
-    const accessResult = checkSongAccess(song);
-    
-    if (!accessResult.canAccess) {
-      if (accessResult.requiresAuth && onPremiumRequested) {
-        onPremiumRequested(song);
-        return;
-      }
-      
-      if (accessResult.requiresActivation && onActivationRequired) {
-        onActivationRequired(song);
-        return;
-      }
-      
       return;
     }
     

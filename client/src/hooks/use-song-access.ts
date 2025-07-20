@@ -3,12 +3,14 @@ import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
 import { type Song } from '@shared/schema';
 import { useFeatureFlag } from '@/hooks/use-feature-flags';
+import { usePremium } from '@/hooks/use-premium';
 
 export interface SongAccessResult {
   canAccess: boolean;
-  reason: 'authenticated' | 'not_authenticated' | 'not_active' | 'free_song';
+  reason: 'authenticated' | 'not_authenticated' | 'not_active' | 'free_song' | 'premium_required';
   requiresAuth: boolean;
   requiresActivation: boolean;
+  requiresPremium: boolean;
 }
 
 export function useSongAccess() {
@@ -16,6 +18,7 @@ export function useSongAccess() {
   const [isActive, setIsActive] = useState<boolean | null>(null);
   const [checkingActive, setCheckingActive] = useState(false);
   const { isEnabled: inviteCodesEnabled } = useFeatureFlag('ENABLE_INVITE_CODES');
+  const { canAccessPremiumContent } = usePremium();
 
   // Check activation status when user changes - only if invite codes are enabled
   useEffect(() => {
@@ -77,6 +80,7 @@ export function useSongAccess() {
         reason: 'free_song',
         requiresAuth: false,
         requiresActivation: false,
+        requiresPremium: false,
       };
     }
 
@@ -87,26 +91,40 @@ export function useSongAccess() {
         reason: 'not_authenticated',
         requiresAuth: true,
         requiresActivation: false,
+        requiresPremium: false,
       };
     }
 
-    // Premium songs require activation
+    // Premium songs require activation (if invite codes are enabled)
     if (isActive === false) {
       return {
         canAccess: false,
         reason: 'not_active',
         requiresAuth: false,
         requiresActivation: true,
+        requiresPremium: false,
       };
     }
 
-    // User is authenticated and active
+    // Premium songs require premium subscription
+    if (!canAccessPremiumContent) {
+      return {
+        canAccess: false,
+        reason: 'premium_required',
+        requiresAuth: false,
+        requiresActivation: false,
+        requiresPremium: true,
+      };
+    }
+
+    // User is authenticated, active, and has premium access
     if (isActive === true) {
       return {
         canAccess: true,
         reason: 'authenticated',
         requiresAuth: false,
         requiresActivation: false,
+        requiresPremium: false,
       };
     }
 
@@ -116,8 +134,9 @@ export function useSongAccess() {
       reason: 'not_active',
       requiresAuth: false,
       requiresActivation: true,
+      requiresPremium: false,
     };
-  }, [user, isActive]); // Memoize based on user and isActive state
+  }, [user, isActive, canAccessPremiumContent]); // Memoize based on user, isActive state, and premium access
 
   return {
     checkSongAccess,
