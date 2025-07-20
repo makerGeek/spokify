@@ -15,6 +15,9 @@ export default function LanguageSelection() {
   const [selectedLanguage, setSelectedLanguage] = useState("");
 
   const handleLanguageSelect = (languageCode: string) => {
+    // Track language selection
+    trackEvent('language_selected', 'onboarding', languageCode);
+    
     // Store language preferences in localStorage (both individual keys and userPreferences for compatibility)
     localStorage.setItem("nativeLanguage", "en");
     localStorage.setItem("targetLanguage", languageCode);
