@@ -89,7 +89,6 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
           {[
             "All songs unlocked",
             "Vocabulary tracking",
-            "Offline mode",
             "No ads"
           ].map((feature, index) => (
             <div key={index} className="flex items-center space-x-3">
