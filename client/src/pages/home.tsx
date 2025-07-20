@@ -39,6 +39,31 @@ export default function Home() {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
 
+  // Check for access denied redirects from lyrics pages
+  useEffect(() => {
+    const accessDeniedData = sessionStorage.getItem('accessDeniedSong');
+    if (accessDeniedData) {
+      try {
+        const { song, requiresAuth, requiresActivation, requiresPremium } = JSON.parse(accessDeniedData);
+        setSelectedSong(song);
+        
+        if (requiresAuth) {
+          setShowAuthModal(true);
+        } else if (requiresActivation) {
+          setShowActivationModal(true);
+        } else if (requiresPremium) {
+          setShowPremiumModal(true);
+        }
+        
+        // Clear the sessionStorage data
+        sessionStorage.removeItem('accessDeniedSong');
+      } catch (error) {
+        console.error('Error parsing accessDeniedData:', error);
+        sessionStorage.removeItem('accessDeniedSong');
+      }
+    }
+  }, []);
+
 
 
   // Get user preferences from localStorage

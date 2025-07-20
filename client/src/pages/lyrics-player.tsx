@@ -43,8 +43,15 @@ export default function LyricsPlayer() {
       const accessResult = checkSongAccess(song);
       
       if (!accessResult.canAccess) {
-        // User doesn't have access - redirect to home
-        // The home component will handle showing appropriate modals
+        // Store the song info in sessionStorage so Home can show appropriate modal
+        sessionStorage.setItem('accessDeniedSong', JSON.stringify({
+          song,
+          requiresAuth: accessResult.requiresAuth,
+          requiresActivation: accessResult.requiresActivation,
+          requiresPremium: accessResult.requiresPremium
+        }));
+        
+        // Redirect to home - it will check sessionStorage and show appropriate modal
         setLocation("/home");
         return;
       }
