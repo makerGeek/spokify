@@ -113,6 +113,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 20, 2025 - Smooth Slide Animation for Lyrics Player ✅
+- **Slide Up/Down Animation**: Implemented smooth CSS transition animations for lyrics player
+  - **Slide Up**: Lyrics player smoothly slides up from bottom when opened from mini-player or direct navigation
+  - **Slide Down**: Smooth exit animation when closing lyrics player with proper timing
+  - **Smart Detection**: Navigation source detection using sessionStorage to trigger appropriate animations
+  - **Mini-Player Integration**: Fixed z-index layering so lyrics slide behind mini-player while keeping it visible
+  - **Responsive Layout**: Lyrics player positioned to avoid covering mini-player area (140px bottom margin)
+- **Technical Implementation**: 
+  - **CSS Transforms**: Uses `translate-y-full` to `translate-y-0` transitions with 300ms duration
+  - **State Management**: `isVisible` state controls animation timing with proper mount/unmount handling
+  - **Z-Index Layering**: Mini-player (z-60) stays above lyrics player (z-40) for proper visual hierarchy
+  - **Global Component Structure**: Mini-player rendered at Home component level, lyrics player as independent page
+  - **Animation Timing**: 50ms delay on mount and 300ms exit animation for smooth user experience
+
 ### July 20, 2025 - Complete Bookmark System Implementation ✅
 - **Full Database Integration**: Implemented comprehensive bookmark system with PostgreSQL storage
   - **Database Schema**: Added `bookmarks` table with proper foreign key relationships to users and songs

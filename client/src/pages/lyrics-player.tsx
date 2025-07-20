@@ -181,9 +181,9 @@ export default function LyricsPlayer() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-40 transition-transform duration-300 ease-out ${
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-40 transition-transform duration-300 ease-out ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
-      }`}>
+      }`} style={{ bottom: '140px' }}>
         <div className="text-center">
           <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
           <p className="text-spotify-muted">Loading song...</p>
@@ -194,9 +194,9 @@ export default function LyricsPlayer() {
 
   if (!song) {
     return (
-      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-40 transition-transform duration-300 ease-out ${
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-40 transition-transform duration-300 ease-out ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
-      }`}>
+      }`} style={{ bottom: '140px' }}>
         <div className="text-center">
           <p className="text-spotify-muted">Song not found</p>
           <Button onClick={handleCloseLyrics} className="mt-4">
@@ -208,9 +208,9 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className={`min-h-screen bg-spotify-bg pb-32 overflow-x-hidden fixed inset-0 z-40 transition-transform duration-300 ease-out ${
+    <div className={`min-h-screen bg-spotify-bg pb-32 overflow-x-hidden fixed top-0 left-0 right-0 bottom-0 z-40 transition-transform duration-300 ease-out ${
       isVisible ? 'translate-y-0' : 'translate-y-full'
-    }`}>
+    }`} style={{ bottom: '140px' }}>
       {/* Fixed Header - Always Visible */}
       <div className="sticky top-0 z-10 bg-spotify-bg/95 backdrop-blur-sm p-4 w-full">
         <div className="flex items-center justify-between">
