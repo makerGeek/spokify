@@ -106,10 +106,11 @@ export default function Library() {
   }
 
   return (
-    <div className="min-h-screen spotify-bg spotify-text-primary flex flex-col">
-      {/* Fixed Header */}
-      <div className="sticky top-0 z-10 spotify-bg border-b border-[var(--spotify-border)]">
-        <div className="px-6 pt-16 pb-4">
+    <div className="min-h-screen spotify-bg spotify-text-primary">
+      {/* Scrollable Container */}
+      <div className="overflow-y-auto px-6 pt-16 pb-24">
+        {/* Page Header */}
+        <div className="mb-8">
           <h1 className="spotify-heading-xl mb-8">Your Library</h1>
           
           {/* Tabs */}
@@ -138,10 +139,8 @@ export default function Library() {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-24">
+        {/* Content */}
         {/* Saved Songs Tab */}
         {activeTab === 'saved' && (
           <div>
