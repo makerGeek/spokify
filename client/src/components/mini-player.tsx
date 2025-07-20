@@ -51,7 +51,7 @@ export default function MiniPlayer() {
             onValueChange={handleSeek}
             max={duration || 100}
             step={1}
-            className="h-[2px] cursor-pointer spotify-progress-slider relative overflow-visible"
+            className="h-[1px] cursor-pointer spotify-progress-slider relative overflow-visible"
           />
           {/* Time indicators on hover */}
           <div className="absolute inset-x-0 -top-8 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[80]">
