@@ -1,4 +1,4 @@
-import { Play, Crown } from "lucide-react";
+import { Play, Pause, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
@@ -18,7 +18,7 @@ interface SongCardProps {
 }
 
 export default function SongCard({ song, onClick, onPremiumRequested, onActivationRequired }: SongCardProps) {
-  const { setCurrentSong, currentSong } = useAudio();
+  const { setCurrentSong, currentSong, isPlaying, togglePlay } = useAudio();
   const { user } = useAuth();
   const { checkSongAccess } = useSongAccess();
   const { canAccessPremiumContent, isPremium } = usePremium();
@@ -40,6 +40,14 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
+      return;
+    }
+    
+    // If this is already the current song, just toggle play/pause
+    if (currentSong?.id === song.id) {
+      // Toggle play state for current song
+      trackEvent('song_toggled', 'music', song.title, song.id);
+      togglePlay();
       return;
     }
     
@@ -65,9 +73,15 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
       return;
     }
     
-    // User has access - set current song and play it, then open lyrics
+    // Track lyrics opening
     trackEvent('lyrics_opened', 'music', song.title, song.id);
-    setCurrentSong(song, true); // Auto-play the song
+    
+    // If this is not the current song, set it and auto-play
+    if (currentSong?.id !== song.id) {
+      setCurrentSong(song, true); // Auto-play the song
+    }
+    
+    // Always open lyrics overlay
     onClick(); // Open lyrics overlay
   };
 
@@ -108,7 +122,11 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
             className="w-10 h-10 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors p-0"
             onClick={handlePlayClick}
           >
-            <Play size={16} />
+            {currentSong?.id === song.id && isPlaying ? (
+              <Pause size={16} />
+            ) : (
+              <Play size={16} />
+            )}
           </Button>
         </div>
       </CardContent>

@@ -276,8 +276,21 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
 
   const setCurrentSongWrapper = (song: Song | null, autoPlay: boolean = false) => {
+    // If it's the same song, don't recreate the player - just handle play state
+    if (currentSong && song && currentSong.id === song.id) {
+      console.log('Same song requested, handling play state instead of recreating player');
+      setShouldAutoPlay(autoPlay);
+      
+      if (autoPlay && !isPlaying) {
+        // If auto-play is requested and not currently playing, start playing
+        setTimeout(() => play(), 100);
+      }
+      return;
+    }
+    
+    // Different song or null - destroy existing player and create new one
     if (playerRef.current) {
-      console.log('Destroying existing player');
+      console.log('Destroying existing player for new song');
       try {
         playerRef.current.destroy();
       } catch (error) {
