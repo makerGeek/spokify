@@ -250,6 +250,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     if (isPlaying) {
       pause();
     } else {
+      // Set loading immediately for responsive UI
+      setIsLoading(true);
       play();
     }
   };
@@ -282,6 +284,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setShouldAutoPlay(autoPlay);
       
       if (autoPlay && !isPlaying) {
+        // Set loading immediately for responsive UI
+        setIsLoading(true);
         // If auto-play is requested and not currently playing, start playing
         setTimeout(() => play(), 100);
       }
@@ -302,7 +306,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setCurrentSong(song);
     setShouldAutoPlay(autoPlay);
     setIsPlaying(false);
-    setIsLoading(false); // Reset loading state when setting new song
+    // Set loading immediately if auto-play is requested for responsive UI
+    setIsLoading(autoPlay);
     setCurrentTime(0);
     setDuration(0);
     setHasError(false); // Reset error state when setting new song

@@ -1,4 +1,4 @@
-import { Play, Pause, Crown } from "lucide-react";
+import { Play, Pause, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAudio } from "@/hooks/use-audio";
@@ -18,7 +18,7 @@ interface SongCardProps {
 }
 
 export default function SongCard({ song, onClick, onPremiumRequested, onActivationRequired }: SongCardProps) {
-  const { setCurrentSong, currentSong, isPlaying, togglePlay } = useAudio();
+  const { setCurrentSong, currentSong, isPlaying, togglePlay, isLoading } = useAudio();
   const { user } = useAuth();
   const { checkSongAccess } = useSongAccess();
   const { canAccessPremiumContent, isPremium } = usePremium();
@@ -121,8 +121,11 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
             size="sm"
             className="w-10 h-10 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors p-0"
             onClick={handlePlayClick}
+            disabled={currentSong?.id === song.id && isLoading}
           >
-            {currentSong?.id === song.id && isPlaying ? (
+            {currentSong?.id === song.id && isLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : currentSong?.id === song.id && isPlaying ? (
               <Pause size={16} />
             ) : (
               <Play size={16} />
