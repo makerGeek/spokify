@@ -52,10 +52,39 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     setCurrentSong(song, true); // Second parameter indicates auto-play
   };
 
+  const handleCardClick = () => {
+    // Check if this is a premium song that user doesn't have access to
+    if (song.requiresPremium && !song.canAccess) {
+      if (onPremiumRequested) {
+        onPremiumRequested(song);
+      }
+      return;
+    }
+    
+    const accessResult = checkSongAccess(song);
+    
+    if (!accessResult.canAccess) {
+      if (accessResult.requiresAuth && onPremiumRequested) {
+        onPremiumRequested(song);
+        return;
+      }
+      
+      if (accessResult.requiresActivation && onActivationRequired) {
+        onActivationRequired(song);
+        return;
+      }
+      
+      return;
+    }
+    
+    // User has access - proceed with original click handler
+    onClick();
+  };
+
 
 
   return (
-    <Card className="song-card bg-spotify-card border-spotify-card cursor-pointer" onClick={onClick}>
+    <Card className="song-card bg-spotify-card border-spotify-card cursor-pointer" onClick={handleCardClick}>
       <CardContent className="p-4 flex items-center space-x-4">
         <img
           src={song.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400"}
