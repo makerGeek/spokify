@@ -181,7 +181,7 @@ export default function LyricsPlayer() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-40 transition-transform duration-300 ease-out ${
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-10 transition-transform duration-300 ease-out ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`} style={{ bottom: '140px' }}>
         <div className="text-center">
@@ -194,7 +194,7 @@ export default function LyricsPlayer() {
 
   if (!song) {
     return (
-      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-40 transition-transform duration-300 ease-out ${
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-10 transition-transform duration-300 ease-out ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`} style={{ bottom: '140px' }}>
         <div className="text-center">
@@ -208,7 +208,7 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className={`bg-spotify-bg pb-32 overflow-x-hidden fixed top-0 left-0 right-0 z-40 transition-transform duration-300 ease-out ${
+    <div className={`bg-spotify-bg pb-32 overflow-x-hidden fixed top-0 left-0 right-0 z-10 transition-transform duration-300 ease-out ${
       isVisible ? 'translate-y-0' : 'translate-y-full'
     }`} style={{ bottom: '140px', height: 'calc(100vh - 140px)' }}>
       {/* Fixed Header - Always Visible */}

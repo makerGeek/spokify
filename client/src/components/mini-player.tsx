@@ -42,7 +42,7 @@ export default function MiniPlayer() {
   };
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-[100]">
+    <div className="fixed bottom-16 left-0 right-0 z-[9999]">
       {/* Compact Progress Bar - Spotify style */}
       <div className="bg-spotify-card/95 backdrop-blur-md relative">
         <div className="relative group">
