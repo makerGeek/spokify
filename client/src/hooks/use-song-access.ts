@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { supabase } from '@/lib/supabase';
 import { type Song } from '@shared/schema';
-import { useFeatureFlag } from '@/hooks/use-feature-flags';
+
 import { usePremium } from '@/hooks/use-premium';
 
 export interface SongAccessResult {
@@ -14,63 +13,8 @@ export interface SongAccessResult {
 }
 
 export function useSongAccess() {
-  const { user, databaseUser } = useAuth();
-  const [isActive, setIsActive] = useState<boolean | null>(null);
-  const [checkingActive, setCheckingActive] = useState(false);
-  const { isEnabled: inviteCodesEnabled } = useFeatureFlag('ENABLE_INVITE_CODES');
+  const { user } = useAuth();
   const { canAccessPremiumContent } = usePremium();
-
-  // Check activation status when user changes - only if invite codes are enabled
-  useEffect(() => {
-    const checkActiveStatus = async () => {
-      if (!user) {
-        setIsActive(null);
-        return;
-      }
-
-      // If invite codes are disabled, all users are considered active
-      if (!inviteCodesEnabled) {
-        setIsActive(true);
-        setCheckingActive(false);
-        return;
-      }
-
-      // If we have database user data, use it
-      if (databaseUser) {
-        setIsActive(databaseUser.isActive);
-        return;
-      }
-
-      setCheckingActive(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) {
-          setIsActive(false);
-          setCheckingActive(false);
-          return;
-        }
-
-        const response = await fetch('/api/auth/isActive', {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setIsActive(data.isActive);
-        } else {
-          setIsActive(false);
-        }
-      } catch (error) {
-        console.error('Error checking user active status:', error);
-        setIsActive(false);
-      }
-      setCheckingActive(false);
-    };
-
-    checkActiveStatus();
-  }, [user, databaseUser, inviteCodesEnabled]);
 
   const checkSongAccess = useCallback((song: Song): SongAccessResult => {
     // All songs require authentication first
@@ -84,38 +28,13 @@ export function useSongAccess() {
       };
     }
 
-    // Free songs are accessible once authenticated and activated
+    // Free songs are accessible once authenticated
     if (song.isFree) {
-      // Check if user needs activation (only if invite codes are enabled)
-      if (isActive === false) {
-        return {
-          canAccess: false,
-          reason: 'not_active',
-          requiresAuth: false,
-          requiresActivation: true,
-          requiresPremium: false,
-        };
-      }
-
-      // User is authenticated and (activated or invite codes disabled)
-      if (isActive === true || isActive === null) {
-        return {
-          canAccess: true,
-          reason: 'free_song',
-          requiresAuth: false,
-          requiresActivation: false,
-          requiresPremium: false,
-        };
-      }
-    }
-
-    // Premium songs require activation (if invite codes are enabled)
-    if (isActive === false) {
       return {
-        canAccess: false,
-        reason: 'not_active',
+        canAccess: true,
+        reason: 'free_song',
         requiresAuth: false,
-        requiresActivation: true,
+        requiresActivation: false,
         requiresPremium: false,
       };
     }
@@ -131,30 +50,19 @@ export function useSongAccess() {
       };
     }
 
-    // User is authenticated, active, and has premium access
-    if (isActive === true) {
-      return {
-        canAccess: true,
-        reason: 'authenticated',
-        requiresAuth: false,
-        requiresActivation: false,
-        requiresPremium: false,
-      };
-    }
-
-    // Still checking activation status
+    // User is authenticated and has premium access
     return {
-      canAccess: false,
-      reason: 'not_active',
+      canAccess: true,
+      reason: 'authenticated',
       requiresAuth: false,
-      requiresActivation: true,
+      requiresActivation: false,
       requiresPremium: false,
     };
-  }, [user, isActive, canAccessPremiumContent]); // Memoize based on user, isActive state, and premium access
+  }, [user, canAccessPremiumContent]);
 
   return {
     checkSongAccess,
-    isActive,
-    checkingActive,
+    isActive: true, // All users are now active
+    checkingActive: false,
   };
 }

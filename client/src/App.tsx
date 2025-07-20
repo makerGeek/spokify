@@ -23,7 +23,7 @@ import ReviewSession from "@/pages/review-session";
 
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
-import InviteAdmin from "@/pages/invite-admin";
+
 import ServiceWorkerAdmin from "@/pages/service-worker-admin";
 import Subscribe from "@/pages/subscribe";
 import SubscriptionConfirmation from "@/pages/subscription-confirmation";
@@ -115,7 +115,7 @@ function Router() {
           </AuthenticatedOnly>
         </Route>
         <Route path="/song-offset" component={AdminRoute} />
-        <Route path="/invite-admin" component={InviteAdmin} />
+
         <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />

@@ -1,38 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticateToken, rateLimit, validateInput, requireAdmin, type AuthenticatedRequest } from '../middleware/auth';
-import { 
-  validateInviteCode, 
-  generateSecureInviteCode
-} from '../services/auth';
+// Remove invite code imports
 import { storage } from '../storage';
 
 const router = Router();
 
-/**
- * Validate invite code
- * POST /api/auth/validate-invite
- */
-router.post('/validate-invite', 
-  rateLimit(5, 60000), // 5 attempts per minute
-  validateInput(z.object({
-    code: z.string().min(1).max(20),
-  })),
-  async (req, res) => {
-    try {
-      const { code } = req.body;
-      const isValid = await validateInviteCode(code);
-      
-      res.json({ 
-        valid: isValid,
-        message: isValid ? 'Invite code is valid' : 'Invalid invite code'
-      });
-    } catch (error) {
-      console.error('Invite validation error:', error);
-      res.status(500).json({ error: 'Failed to validate invite code' });
-    }
-  }
-);
+
 
 /**
  * Check if user is active
@@ -77,11 +51,9 @@ router.get('/user',
       const safeUserData = {
         id: req.user.id,
         email: req.user.email,
-        inviteCode: req.user.inviteCode,
         streak: req.user.streak,
         weeklyGoal: req.user.weeklyGoal,
         wordsLearned: req.user.wordsLearned,
-        invitedBy: req.user.invitedBy,
         isActive: req.user.isActive,
         subscriptionStatus: req.user.subscriptionStatus,
         subscriptionEndsAt: req.user.subscriptionEndsAt,
@@ -116,64 +88,7 @@ router.get('/admin-check',
 
 
 
-/**
- * Get user's invite codes
- * GET /api/auth/invite-codes
- */
-router.get('/invite-codes',
-  authenticateToken,
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'No authenticated user' });
-      }
 
-      const inviteCodes = await storage.getUserInviteCodes(req.user.id);
-      res.json({ inviteCodes });
-    } catch (error) {
-      console.error('Get invite codes error:', error);
-      res.status(500).json({ error: 'Failed to get invite codes' });
-    }
-  }
-);
-
-/**
- * Generate new invite code for user
- * POST /api/auth/generate-invite
- */
-router.post('/generate-invite',
-  authenticateToken,
-  rateLimit(3, 300000), // 3 codes per 5 minutes
-  validateInput(z.object({
-    maxUses: z.number().min(1).max(10).default(1),
-    expiresInDays: z.number().min(1).max(365).default(30),
-  })),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'No authenticated user' });
-      }
-
-      const { maxUses, expiresInDays } = req.body;
-      const code = await generateSecureInviteCode();
-      
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
-
-      const inviteCode = await storage.createInviteCode({
-        code,
-        createdBy: req.user.id,
-        maxUses,
-        expiresAt,
-      });
-
-      res.json({ inviteCode });
-    } catch (error) {
-      console.error('Generate invite error:', error);
-      res.status(500).json({ error: 'Failed to generate invite code' });
-    }
-  }
-);
 
 /**
  * Update user profile
@@ -204,63 +119,6 @@ router.put('/profile',
   }
 );
 
-/**
- * Activate user account with invite code
- * POST /api/auth/activate
- */
-router.post('/activate',
-  authenticateToken,
-  rateLimit(3, 60000), // 3 attempts per minute
-  validateInput(z.object({
-    inviteCode: z.string().min(1).max(20),
-  })),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'No authenticated user' });
-      }
 
-      const { inviteCode } = req.body;
-      
-      // Find and validate the invite code
-      const inviteCodeData = await storage.getInviteCodeByCode(inviteCode);
-      if (!inviteCodeData) {
-        return res.status(400).json({ error: 'Invalid invite code' });
-      }
-
-      // Check if code is expired
-      if (inviteCodeData.expiresAt && new Date() > inviteCodeData.expiresAt) {
-        return res.status(400).json({ error: 'Invite code has expired' });
-      }
-
-      // Check if code has reached max uses
-      if (inviteCodeData.currentUses >= inviteCodeData.maxUses) {
-        return res.status(400).json({ error: 'Invite code has reached maximum uses' });
-      }
-
-      // Update user with invite information
-      await storage.updateUser(req.user.id, {
-        invitedBy: inviteCodeData.createdBy,
-        isActive: true,
-        activatedAt: new Date(),
-      });
-
-      // Update invite code usage
-      await storage.updateInviteCode(inviteCodeData.id, {
-        usedBy: req.user.id,
-        usedAt: new Date(),
-        currentUses: inviteCodeData.currentUses + 1,
-      });
-
-      res.json({ 
-        success: true, 
-        message: 'Account activated successfully' 
-      });
-    } catch (error) {
-      console.error('Account activation error:', error);
-      res.status(500).json({ error: 'Failed to activate account' });
-    }
-  }
-);
 
 export default router;

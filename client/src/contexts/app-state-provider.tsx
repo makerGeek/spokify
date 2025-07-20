@@ -1,7 +1,6 @@
 import { ReactNode } from 'react'
 import { AuthProvider } from './auth-context'
 import { SubscriptionProvider } from './subscription-context'
-import { InviteProvider } from './invite-context'
 
 interface AppStateProviderProps {
   children: ReactNode
@@ -15,9 +14,7 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   return (
     <AuthProvider>
       <SubscriptionProvider>
-        <InviteProvider>
-          {children}
-        </InviteProvider>
+        {children}
       </SubscriptionProvider>
     </AuthProvider>
   )

@@ -10,7 +10,7 @@ import {
   Download,
   Smartphone,
   Crown,
-  Users,
+
   Copy,
   Settings,
   Gift,
@@ -321,56 +321,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Invite Friends Section */}
-        {userData?.inviteCode && (
-          <div className="spotify-card p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <Users className="h-6 w-6 text-[var(--spotify-green)]" />
-                <div>
-                  <h3 className="spotify-heading-md">Invite Friends</h3>
-                  <p className="spotify-text-secondary text-sm">
-                    Share your invite code to let friends join Spokify
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-[var(--spotify-light-gray)] rounded-lg">
-                <div>
-                  <p className="spotify-text-secondary text-sm mb-1">
-                    Your invite code:
-                  </p>
-                  <code className="text-lg font-mono font-bold text-[var(--spotify-green)]">
-                    {userData.inviteCode}
-                  </code>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(userData.inviteCode);
-                    toast({
-                      title: "Copied!",
-                      description: "Invite code copied to clipboard.",
-                    });
-                  }}
-                  className="spotify-btn-secondary"
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy
-                </Button>
-              </div>
-
-              <div className="text-center">
-                <p className="spotify-text-muted text-sm">
-                  Share this code with friends so they can join Spokify and
-                  start learning languages through music!
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Settings Section */}
         <div className="spotify-card p-6 mb-8">

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { translateText } from "./services/gemini";
-import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema, insertBookmarkSchema, reviewResultSchema } from "@shared/schema";
+import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertBookmarkSchema, reviewResultSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, requireAdmin, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 import session from "express-session";
@@ -590,61 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Invite code routes
-  app.post("/api/invite-codes/validate", async (req, res) => {
-    try {
-      const { code } = req.body;
-      if (!code) {
-        return res.status(400).json({ message: "Invite code is required" });
-      }
-      
-      const validation = await storage.validateInviteCode(code);
-      res.json(validation);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to validate invite code" });
-    }
-  });
 
-  app.post("/api/invite-codes", async (req, res) => {
-    try {
-      const codeData = insertInviteCodeSchema.parse(req.body);
-      const code = await storage.createInviteCode(codeData);
-      res.json(code);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : "Invalid invite code data" });
-    }
-  });
-
-  app.get("/api/users/:userId/invite-codes", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.userId);
-      const codes = await storage.getUserInviteCodes(userId);
-      res.json(codes);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch invite codes" });
-    }
-  });
-
-  app.post("/api/invite-codes/generate", async (req, res) => {
-    try {
-      const { userId } = req.body;
-      if (!userId) {
-        return res.status(400).json({ message: "User ID is required" });
-      }
-
-      const code = await storage.generateUniqueInviteCode();
-      const inviteCode = await storage.createInviteCode({
-        code,
-        createdBy: userId,
-        maxUses: 1,
-        expiresAt: null, // No expiration by default
-      });
-      
-      res.json(inviteCode);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to generate invite code" });
-    }
-  });
 
   // Admin Management Routes - Require admin privileges
   app.get("/api/management/songs", authenticateToken, requireAdmin, async (req: AuthenticatedRequest, res) => {

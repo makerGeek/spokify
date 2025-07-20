@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
 import { AuthModal } from "@/components/auth-modal";
-import ActivationModal from "@/components/activation-modal";
+
 import { PremiumModal } from "@/components/premium-modal";
 import FullscreenButton from "@/components/fullscreen-button";
 import LyricsOverlay from "@/components/lyrics-overlay";
@@ -37,7 +37,7 @@ export default function Home() {
   const { isEnabled: showGenreFilters } = useFeatureFlag('SHOW_GENRES_FILTERS');
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showActivationModal, setShowActivationModal] = useState(false);
+
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLyricsOverlay, setShowLyricsOverlay] = useState(false);
@@ -49,14 +49,12 @@ export default function Home() {
     const accessDeniedData = sessionStorage.getItem('accessDeniedSong');
     if (accessDeniedData) {
       try {
-        const { song, requiresAuth, requiresActivation, requiresPremium } = JSON.parse(accessDeniedData);
+        const { song, requiresAuth, requiresPremium } = JSON.parse(accessDeniedData);
         setSelectedSong(song);
         setIsFromLyricsRedirect(true);
         
         if (requiresAuth) {
           setShowAuthModal(true);
-        } else if (requiresActivation) {
-          setShowActivationModal(true);
         } else if (requiresPremium) {
           setShowPremiumModal(true);
         }
@@ -143,8 +141,6 @@ export default function Home() {
       
       if (accessResult.requiresAuth) {
         setShowAuthModal(true);
-      } else if (accessResult.requiresActivation) {
-        setShowActivationModal(true);
       } else if (accessResult.requiresPremium) {
         setShowPremiumModal(true);
       }
@@ -260,8 +256,8 @@ export default function Home() {
                   }
                 }}
                 onActivationRequired={(song) => {
-                  setSelectedSong(song);
-                  setShowActivationModal(true);
+                  // No longer needed - all users are active
+                  console.log("Activation no longer required");
                 }}
               />
             ))}
@@ -286,21 +282,7 @@ export default function Home() {
         </AuthModal>
       )}
 
-      {/* Activation Modal for Inactive Users */}
-      {showActivationModal && selectedSong && (
-        <ActivationModal
-          isOpen={showActivationModal}
-          onClose={() => {
-            setShowActivationModal(false);
-            setSelectedSong(null);
-          }}
-          onActivated={() => {
-            // Refresh the page to reload user data
-            window.location.reload();
-          }}
-          contextMessage={`To play "${selectedSong.title}", you need to activate your account with an invite code.`}
-        />
-      )}
+
 
       {/* Premium Modal for Premium Songs */}
       {showPremiumModal && selectedSong && (

@@ -4,6 +4,8 @@
 
 Spokify is a modern web application that helps users learn languages through interactive song lyrics. The application combines music streaming with AI-powered translations and vocabulary building to create an engaging language learning experience. Built with React on the frontend and Express on the backend, it features a Spotify-inspired interface with real-time translation capabilities.
 
+**NEW: Open Access - No Invite Codes Required! All users can now access Spokify immediately after registration without any invite codes or activation requirements.**
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

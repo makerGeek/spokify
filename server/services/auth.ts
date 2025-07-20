@@ -17,7 +17,6 @@ export interface SupabaseUser {
 export interface UserSyncResult {
   user: any;
   isNewUser: boolean;
-  inviteCodeUsed?: boolean;
 }
 
 /**
@@ -25,8 +24,7 @@ export interface UserSyncResult {
  * Only uses verified user data from Supabase session
  */
 export async function syncUserToDatabase(
-  supabaseUser: SupabaseUser,
-  inviteCode?: string
+  supabaseUser: SupabaseUser
 ): Promise<UserSyncResult> {
   try {
     // Check if user already exists
@@ -36,7 +34,7 @@ export async function syncUserToDatabase(
       return { user, isNewUser: false };
     }
 
-    // Create new inactive user
+    // Create new active user (no invite system)
     const userData: InsertUser = {
       email: supabaseUser.email,
       supabaseId: supabaseUser.id,
@@ -47,44 +45,22 @@ export async function syncUserToDatabase(
 
     user = await storage.createUser(userData);
 
-    // If invite code provided, validate and activate
-    if (inviteCode) {
-      const validation = await storage.validateInviteCode(inviteCode);
-      if (validation.valid && validation.inviteCode) {
-        // Activate user with invite code
-        const activationData: ActivateUser = {
-          invitedBy: validation.inviteCode.createdBy.toString(),
-          inviteCode: await generateSecureInviteCode(),
-          isActive: true,
-          activatedAt: new Date(),
-        };
+    // Automatically activate user
+    const activationData: ActivateUser = {
+      isActive: true,
+      activatedAt: new Date(),
+    };
 
-        user = await storage.activateUser(user.id, activationData);
-        await storage.useInviteCode(inviteCode, user.id);
-        
-        return { user, isNewUser: true, inviteCodeUsed: true };
-      }
-    }
+    user = await storage.activateUser(user.id, activationData);
 
-    return { user, isNewUser: true, inviteCodeUsed: false };
+    return { user, isNewUser: true };
   } catch (error) {
     console.error('User sync error:', error);
     throw new Error('Failed to sync user to database');
   }
 }
 
-/**
- * Validate invite code and store in server-side session
- */
-export async function validateInviteCode(code: string): Promise<boolean> {
-  try {
-    const validation = await storage.validateInviteCode(code);
-    return validation.valid;
-  } catch (error) {
-    console.error('Invite code validation error:', error);
-    return false;
-  }
-}
+
 
 /**
  * Extract first name from Supabase user metadata
@@ -121,26 +97,7 @@ function extractProfileImage(userMetadata?: any): string | null {
          null;
 }
 
-/**
- * Generate secure invite code
- */
-export async function generateSecureInviteCode(): Promise<string> {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code: string;
-  let isUnique = false;
 
-  do {
-    code = '';
-    for (let i = 0; i < 8; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    
-    const validation = await storage.validateInviteCode(code);
-    isUnique = !validation.valid;
-  } while (!isUnique);
-
-  return code;
-}
 
 /**
  * Check if user has admin privileges

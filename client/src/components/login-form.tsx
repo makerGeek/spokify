@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Chrome, Facebook, Eye, EyeOff } from 'lucide-react'
 import { useSocialLogin } from '@/hooks/use-social-login'
 import { useAuth } from '@/contexts/auth-context'
-import { InviteCodeInput } from './invite-code-input'
+
 
 interface LoginFormProps {
   onSuccess?: () => void

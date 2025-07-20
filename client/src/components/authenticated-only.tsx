@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import LoginForm from '@/components/login-form'
-import AuthGuard from '@/components/auth-guard'
+
 
 interface AuthenticatedOnlyProps {
   children: ReactNode
@@ -44,10 +44,6 @@ export default function AuthenticatedOnly({
     )
   }
 
-  // Use AuthGuard to check if user is active before showing protected content
-  return (
-    <AuthGuard>
-      {children}
-    </AuthGuard>
-  )
+  // User is authenticated, show protected content
+  return <>{children}</>
 }

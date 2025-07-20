@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import LoginForm from "@/components/login-form";
-import AuthGuard from "@/components/auth-guard";
+
 
 interface AuthModalProps {
   children: ReactNode;
@@ -45,13 +45,9 @@ export function AuthModal({
     );
   }
 
-  // If user is authenticated, use AuthGuard to check if they're active
+  // If user is authenticated, show the content directly
   if (user) {
-    return (
-      <AuthGuard>
-        {children}
-      </AuthGuard>
-    );
+    return <>{children}</>;
   }
 
   // If not authenticated, show blurred background with compact modal
