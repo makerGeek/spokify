@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Clock, Heart, BookOpen } from 'lucide-react'
+import { Heart, BookOpen } from 'lucide-react'
 import { useLocation } from 'wouter'
 
-import { type Song, type Vocabulary, type UserProgress } from '@shared/schema'
+import { type Song, type Vocabulary } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
 import { useMarquee } from '@/hooks/use-marquee'
 import { useAuth } from '@/contexts/auth-context'
@@ -16,11 +16,11 @@ export default function Library() {
   
   // Get active tab from URL params or default to 'saved'
   const searchParams = new URLSearchParams(window.location.search)
-  const tabFromUrl = searchParams.get('tab') as 'saved' | 'history' | 'vocabulary' | null
-  const [activeTab, setActiveTab] = useState<'saved' | 'history' | 'vocabulary'>(tabFromUrl || 'saved')
+  const tabFromUrl = searchParams.get('tab') as 'saved' | 'vocabulary' | null
+  const [activeTab, setActiveTab] = useState<'saved' | 'vocabulary'>(tabFromUrl || 'saved')
   
   // Update URL when tab changes
-  const handleTabChange = (tab: 'saved' | 'history' | 'vocabulary') => {
+  const handleTabChange = (tab: 'saved' | 'vocabulary') => {
     setActiveTab(tab)
     const url = new URL(window.location.href)
     url.searchParams.set('tab', tab)
@@ -49,25 +49,8 @@ export default function Library() {
     refetchOnWindowFocus: false,
   })
 
-  const { data: userProgress = [] } = useQuery<UserProgress[]>({
-    queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "progress"] : [],
-    queryFn: async () => {
-      if (!databaseUser?.id) return [];
-      return api.users.getProgress(databaseUser.id);
-    },
-    retry: false,
-    enabled: !!databaseUser?.id && !!user,
-    staleTime: 60 * 1000, // Cache for 1 minute
-    refetchOnWindowFocus: false,
-  })
-
   // Use real bookmarked songs from the database
   const savedSongs = bookmarkedSongs
-  
-  // Mock history based on user progress
-  const recentSongs = songs.filter(song => 
-    userProgress.some(p => p.songId === song.id)
-  ).slice(0, 10)
 
   const handleSongClick = (songId: number) => {
     setLocation(`/lyrics/${songId}`)
@@ -140,18 +123,7 @@ export default function Library() {
               }`}
             >
               <Heart className="inline w-4 h-4 mr-2" />
-              Saved Songs
-            </button>
-            <button
-              onClick={() => handleTabChange('history')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ml-2 ${
-                activeTab === 'history'
-                  ? 'bg-[var(--spotify-green)] text-black'
-                  : 'bg-[var(--spotify-light-gray)] spotify-text-secondary hover:bg-[var(--spotify-border)]'
-              }`}
-            >
-              <Clock className="inline w-4 h-4 mr-2" />
-              History
+              Saved
             </button>
             <button
               onClick={() => handleTabChange('vocabulary')}
@@ -203,33 +175,6 @@ export default function Library() {
           </div>
         )}
 
-        {/* History Tab */}
-        {activeTab === 'history' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="spotify-heading-lg">Recently Played</h2>
-              <p className="spotify-text-muted text-sm">{recentSongs.length} songs</p>
-            </div>
-            
-            {recentSongs.length === 0 ? (
-              <div className="text-center py-12">
-                <Clock className="h-16 w-16 spotify-text-muted mx-auto mb-4" />
-                <h3 className="spotify-heading-md mb-2">No recent activity</h3>
-                <p className="spotify-text-muted">Songs you've played will appear here</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {recentSongs.map((song) => (
-                  <SongCard
-                    key={song.id}
-                    song={song}
-                    onClick={() => handleSongClick(song.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Vocabulary Tab */}
         {activeTab === 'vocabulary' && (
