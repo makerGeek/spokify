@@ -181,8 +181,29 @@ export default function LoginForm({
         </button>
       </form>
 
+      {/* Terms and Privacy Agreement */}
+      <div className="text-center mt-4 mb-3">
+        <p className="spotify-text-muted text-xs leading-relaxed">
+          By using Spokify you agree to our{' '}
+          <button
+            onClick={() => window.open('/terms-of-service', '_blank')}
+            className="text-spotify-green hover:underline cursor-pointer"
+          >
+            Terms of Service
+          </button>
+          {' '}and{' '}
+          <button
+            onClick={() => window.open('/privacy-policy', '_blank')}
+            className="text-spotify-green hover:underline cursor-pointer"
+          >
+            Privacy Policy
+          </button>
+          .
+        </p>
+      </div>
+
       {/* Footer */}
-      <div className="text-center mt-4">
+      <div className="text-center">
         <p className="spotify-text-muted text-xs">
           New users will be automatically registered
         </p>

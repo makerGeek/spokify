@@ -23,6 +23,8 @@ import ServiceWorkerAdmin from "@/pages/service-worker-admin";
 import Subscribe from "@/pages/subscribe";
 import SubscriptionConfirmation from "@/pages/subscription-confirmation";
 import Checkout from "@/pages/checkout";
+import TermsOfService from "@/pages/terms-of-service";
+import PrivacyPolicy from "@/pages/privacy-policy";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -100,6 +102,8 @@ function Router() {
         <Route path="/song-offset" component={AdminRoute} />
         <Route path="/invite-admin" component={InviteAdmin} />
         <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
+        <Route path="/terms-of-service" component={TermsOfService} />
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route component={NotFound} />
       </Switch>
       
