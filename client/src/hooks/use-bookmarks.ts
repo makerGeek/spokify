@@ -91,6 +91,12 @@ export function useBookmarks() {
     return bookmarkedSongs.some(song => song.id === songId);
   }, [bookmarkedSongs]);
 
+  // Helper function to get bookmark status for a specific song
+  const getBookmarkStatus = useCallback((songId: number) => {
+    const isInList = isBookmarked(songId);
+    return { isBookmarked: isInList };
+  }, [isBookmarked]);
+
   // Helper function to toggle bookmark status
   const toggleBookmark = useCallback(async (songId: number) => {
     if (!databaseUser?.id) {
@@ -115,6 +121,7 @@ export function useBookmarks() {
     bookmarkedSongs,
     isLoading,
     isBookmarked,
+    getBookmarkStatus,
     toggleBookmark,
     isToggling: createBookmarkMutation.isPending || deleteBookmarkMutation.isPending,
   };
@@ -127,11 +134,11 @@ export function useBookmarkStatus(songId: number) {
   return useQuery({
     queryKey: databaseUser?.id ? ["/api/songs", songId, "bookmark"] : [],
     queryFn: async () => {
-      if (!databaseUser?.id) return { isBookmarked: false };
+      if (!databaseUser?.id || !songId) return { isBookmarked: false };
       return api.songs.getBookmarkStatus(songId);
     },
     enabled: !!databaseUser?.id && !!songId,
-    staleTime: 30 * 1000, // Cache for 30 seconds
+    staleTime: 10 * 1000, // Cache for 10 seconds
     refetchOnWindowFocus: false,
   });
 }

@@ -25,7 +25,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
-  const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
+  const { toggleBookmark, isToggling } = useBookmarks();
   const { data: bookmarkStatus } = useBookmarkStatus(songId);
 
   const { data: song, isLoading } = useQuery<Song>({
@@ -232,11 +232,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
               disabled={isToggling}
             >
               <Bookmark 
-                className={
-                  (isBookmarked(songId) || bookmarkStatus?.isBookmarked) 
-                    ? "text-spotify-green" 
-                    : "text-spotify-muted"
-                } 
+                className={bookmarkStatus?.isBookmarked ? "text-spotify-green" : "text-spotify-muted"} 
                 size={20} 
               />
             </Button>
