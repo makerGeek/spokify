@@ -40,12 +40,14 @@ export default function Home() {
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
 
   // Check for access denied redirects from lyrics pages
+  const [isFromLyricsRedirect, setIsFromLyricsRedirect] = useState(false);
   useEffect(() => {
     const accessDeniedData = sessionStorage.getItem('accessDeniedSong');
     if (accessDeniedData) {
       try {
         const { song, requiresAuth, requiresActivation, requiresPremium } = JSON.parse(accessDeniedData);
         setSelectedSong(song);
+        setIsFromLyricsRedirect(true);
         
         if (requiresAuth) {
           setShowAuthModal(true);
@@ -241,8 +243,10 @@ export default function Home() {
           onClose={() => {
             setShowAuthModal(false);
             setSelectedSong(null);
+            setIsFromLyricsRedirect(false);
           }}
           customMessage={`Login to play "${selectedSong.title}"`}
+          undismissible={isFromLyricsRedirect}
         >
           <div></div>
         </AuthModal>
