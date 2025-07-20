@@ -1,4 +1,4 @@
-import { users, songs, userProgress, vocabulary, featureFlags, inviteCodes, translations, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type InviteCode, type InsertInviteCode, type Translation, type InsertTranslation } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, inviteCodes, translations, bookmarks, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type InviteCode, type InsertInviteCode, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -50,6 +50,13 @@ export interface IStorage {
   // Translation caching methods
   getTranslation(text: string, fromLanguage: string, toLanguage: string): Promise<Translation | undefined>;
   createTranslation(translation: InsertTranslation): Promise<Translation>;
+
+  // Bookmark methods
+  getUserBookmarks(userId: number): Promise<Bookmark[]>;
+  getUserBookmarkedSongs(userId: number): Promise<Song[]>;
+  isBookmarked(userId: number, songId: number): Promise<boolean>;
+  createBookmark(bookmark: InsertBookmark): Promise<Bookmark>;
+  deleteBookmark(userId: number, songId: number): Promise<void>;
 
   // Stripe-related methods
   updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;
@@ -339,6 +346,58 @@ export class DatabaseStorage implements IStorage {
       .values(insertTranslation)
       .returning();
     return translation;
+  }
+
+  async getUserBookmarks(userId: number): Promise<Bookmark[]> {
+    return await db.select().from(bookmarks).where(eq(bookmarks.userId, userId));
+  }
+
+  async getUserBookmarkedSongs(userId: number): Promise<Song[]> {
+    const result = await db
+      .select({
+        id: songs.id,
+        title: songs.title,
+        artist: songs.artist,
+        genre: songs.genre,
+        language: songs.language,
+        difficulty: songs.difficulty,
+        rating: songs.rating,
+        albumCover: songs.albumCover,
+        audioUrl: songs.audioUrl,
+        duration: songs.duration,
+        lyrics: songs.lyrics,
+        spotifyId: songs.spotifyId,
+        youtubeId: songs.youtubeId,
+        keyWords: songs.keyWords,
+        isFree: songs.isFree,
+      })
+      .from(bookmarks)
+      .innerJoin(songs, eq(bookmarks.songId, songs.id))
+      .where(eq(bookmarks.userId, userId));
+    
+    return result;
+  }
+
+  async isBookmarked(userId: number, songId: number): Promise<boolean> {
+    const [bookmark] = await db
+      .select()
+      .from(bookmarks)
+      .where(and(eq(bookmarks.userId, userId), eq(bookmarks.songId, songId)));
+    return !!bookmark;
+  }
+
+  async createBookmark(insertBookmark: InsertBookmark): Promise<Bookmark> {
+    const [bookmark] = await db
+      .insert(bookmarks)
+      .values(insertBookmark)
+      .returning();
+    return bookmark;
+  }
+
+  async deleteBookmark(userId: number, songId: number): Promise<void> {
+    await db
+      .delete(bookmarks)
+      .where(and(eq(bookmarks.userId, userId), eq(bookmarks.songId, songId)));
   }
 
   async updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User> {

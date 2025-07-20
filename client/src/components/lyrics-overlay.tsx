@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import TranslationOverlay from "@/components/translation-overlay";
 
 import { useAudio } from "@/hooks/use-audio";
+import { useBookmarks, useBookmarkStatus } from "@/hooks/use-bookmarks";
 import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
@@ -19,12 +20,13 @@ interface LyricsOverlayProps {
 export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOverlayProps) {
   const [showTranslation, setShowTranslation] = useState(false);
   const [selectedLine, setSelectedLine] = useState<any>(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showTranslationMode, setShowTranslationMode] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
+  const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
+  const { data: bookmarkStatus } = useBookmarkStatus(songId);
 
   const { data: song, isLoading } = useQuery<Song>({
     queryKey: ["/api/songs", songId],
@@ -226,9 +228,17 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
               variant="ghost"
               size="sm"
               className="w-10 h-10 bg-spotify-card rounded-full p-0"
-              onClick={() => setIsBookmarked(!isBookmarked)}
+              onClick={() => toggleBookmark(songId)}
+              disabled={isToggling}
             >
-              <Bookmark className={isBookmarked ? "text-spotify-green" : "text-spotify-muted"} size={20} />
+              <Bookmark 
+                className={
+                  (isBookmarked(songId) || bookmarkStatus?.isBookmarked) 
+                    ? "text-spotify-green" 
+                    : "text-spotify-muted"
+                } 
+                size={20} 
+              />
             </Button>
             <Button
               variant="ghost"

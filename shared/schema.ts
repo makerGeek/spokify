@@ -104,6 +104,13 @@ export const translations = pgTable("translations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const bookmarks = pgTable("bookmarks", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  songId: integer("song_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   supabaseId: true,
@@ -181,6 +188,11 @@ export const insertTranslationSchema = createInsertSchema(translations).pick({
   vocabulary: true,
 });
 
+export const insertBookmarkSchema = createInsertSchema(bookmarks).pick({
+  userId: true,
+  songId: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ActivateUser = z.infer<typeof activateUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -197,3 +209,5 @@ export type InviteCode = typeof inviteCodes.$inferSelect;
 
 export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 export type Translation = typeof translations.$inferSelect;
+export type InsertBookmark = z.infer<typeof insertBookmarkSchema>;
+export type Bookmark = typeof bookmarks.$inferSelect;

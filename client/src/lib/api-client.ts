@@ -73,15 +73,22 @@ export const api = {
     getVocabulary: (userId: number) => api.get(`/users/${userId}/vocabulary`),
     getProgress: (userId: number) => api.get(`/users/${userId}/progress`),
     getInviteCodes: (userId: number) => api.get(`/users/${userId}/invite-codes`),
+    getBookmarks: (userId: number) => api.get(`/users/${userId}/bookmarks`),
   },
 
   songs: {
     getAll: () => api.get('/songs'),
     getById: (id: number) => api.get(`/songs/${id}`),
+    getBookmarkStatus: (songId: number) => api.get(`/songs/${songId}/bookmark`),
   },
 
   vocabulary: {
     save: (vocabulary: any) => api.post('/vocabulary', vocabulary),
+  },
+
+  bookmarks: {
+    create: (userId: number, songId: number) => api.post('/bookmarks', { userId, songId }),
+    delete: (userId: number, songId: number) => api.delete(`/bookmarks/${userId}/${songId}`),
   },
 
   featureFlags: {

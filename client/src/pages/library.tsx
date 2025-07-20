@@ -7,6 +7,7 @@ import { type Song, type Vocabulary, type UserProgress } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
 import { useMarquee } from '@/hooks/use-marquee'
 import { useAuth } from '@/contexts/auth-context'
+import { useBookmarks } from '@/hooks/use-bookmarks'
 import { api } from '@/lib/api-client'
 import SongCard from '@/components/song-card'
 
@@ -15,6 +16,7 @@ export default function Library() {
   const [activeTab, setActiveTab] = useState<'saved' | 'history' | 'vocabulary'>('saved')
   const { setCurrentSong } = useAudio()
   const { user, databaseUser } = useAuth()
+  const { bookmarkedSongs, isLoading: isLoadingBookmarks } = useBookmarks()
 
   // Fetch data for each tab
   const { data: songs = [] } = useQuery<Song[]>({
@@ -47,8 +49,8 @@ export default function Library() {
     refetchOnWindowFocus: false,
   })
 
-  // Mock saved songs (in real app, would come from user's saved songs)
-  const savedSongs = songs.slice(0, 5)
+  // Use real bookmarked songs from the database
+  const savedSongs = bookmarkedSongs
   
   // Mock history based on user progress
   const recentSongs = songs.filter(song => 
@@ -164,7 +166,12 @@ export default function Library() {
               <p className="spotify-text-muted text-sm">{savedSongs.length} songs</p>
             </div>
             
-            {savedSongs.length === 0 ? (
+            {isLoadingBookmarks ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-spotify-green mx-auto mb-4"></div>
+                <p className="spotify-text-muted">Loading your saved songs...</p>
+              </div>
+            ) : savedSongs.length === 0 ? (
               <div className="text-center py-12">
                 <Heart className="h-16 w-16 spotify-text-muted mx-auto mb-4" />
                 <h3 className="spotify-heading-md mb-2">No saved songs yet</h3>

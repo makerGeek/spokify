@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { translateText } from "./services/gemini";
-import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema } from "@shared/schema";
+import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema, insertBookmarkSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, requireAdmin, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 import session from "express-session";
@@ -314,6 +314,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(vocabulary);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Invalid vocabulary data" });
+    }
+  });
+
+  // Bookmark routes - protected
+  app.get("/api/users/:userId/bookmarks", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Users can only access their own bookmarks
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const bookmarkedSongs = await storage.getUserBookmarkedSongs(userId);
+      res.json(bookmarkedSongs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch bookmarks" });
+    }
+  });
+
+  app.get("/api/songs/:songId/bookmark", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const songId = parseInt(req.params.songId);
+      
+      // Get user ID
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Security: Verify user can access this song
+      const accessCheck = await canAccessSong(req.user, songId);
+      if (!accessCheck.canAccess && accessCheck.requiresPremium) {
+        return res.status(403).json({ 
+          message: "Premium subscription required to bookmark this song",
+          requiresPremium: true 
+        });
+      }
+      
+      const isBookmarked = await storage.isBookmarked(user.id, songId);
+      res.json({ isBookmarked });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to check bookmark status" });
+    }
+  });
+
+  app.post("/api/bookmarks", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const bookmarkData = insertBookmarkSchema.parse(req.body);
+      
+      // Verify user owns this bookmark record
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== bookmarkData.userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Security: Verify user can access this song
+      const accessCheck = await canAccessSong(req.user, bookmarkData.songId);
+      if (!accessCheck.canAccess && accessCheck.requiresPremium) {
+        return res.status(403).json({ 
+          message: "Premium subscription required to bookmark this song",
+          requiresPremium: true 
+        });
+      }
+      
+      // Check if already bookmarked to prevent duplicates
+      const isAlreadyBookmarked = await storage.isBookmarked(bookmarkData.userId, bookmarkData.songId);
+      if (isAlreadyBookmarked) {
+        return res.status(409).json({ message: "Song already bookmarked" });
+      }
+      
+      const bookmark = await storage.createBookmark(bookmarkData);
+      res.json(bookmark);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Invalid bookmark data" });
+    }
+  });
+
+  app.delete("/api/bookmarks/:userId/:songId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const songId = parseInt(req.params.songId);
+      
+      // Verify user owns this bookmark
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user || user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      await storage.deleteBookmark(userId, songId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete bookmark" });
     }
   });
 
