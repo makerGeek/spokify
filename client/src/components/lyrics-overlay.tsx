@@ -252,12 +252,6 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
             </Button>
           </div>
         </div>
-
-        {/* Song title and artist */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-spotify-text mb-2">{song.title}</h1>
-          <p className="text-lg text-spotify-muted">{song.artist}</p>
-        </div>
       </div>
 
       {/* Main Content - Scrollable Lyrics */}
