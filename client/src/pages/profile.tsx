@@ -7,10 +7,6 @@ import { useSubscription } from "@/contexts/subscription-context";
 import {
   LogOut,
   Trophy,
-  Target,
-  Clock,
-  BookOpen,
-  Flame,
   Download,
   Smartphone,
   Crown,
@@ -195,12 +191,6 @@ export default function Profile() {
   };
 
   const wordsLearned = vocabulary.length;
-  const songsCompleted = userProgress.filter(
-    (p) => p.progressPercentage === 100,
-  ).length;
-  const weeklyGoal = userData?.weeklyGoal || 50;
-  const streak = userData?.streak || 0;
-  const weeklyProgress = Math.min((wordsLearned / weeklyGoal) * 100, 100);
 
   return (
     <div className="min-h-screen spotify-bg spotify-text-primary">
@@ -278,7 +268,7 @@ export default function Profile() {
         {/* Stats Section */}
         <div className="mb-8">
           <h2 className="spotify-heading-lg mb-6">Your Progress</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="spotify-card spotify-hover-lift p-6">
               <div className="flex items-center justify-between mb-3">
                 <Trophy className="h-6 w-6 text-[var(--spotify-green)]" />
@@ -290,73 +280,10 @@ export default function Profile() {
                 Words Learned
               </p>
             </div>
-
-            <div className="spotify-card spotify-hover-lift p-6">
-              <div className="flex items-center justify-between mb-3">
-                <Flame className="h-6 w-6 text-[#ff6b35]" />
-                <span className="text-3xl font-bold spotify-text-primary">
-                  {streak}
-                </span>
-              </div>
-              <p className="spotify-text-secondary text-sm font-medium">
-                Day Streak
-              </p>
-            </div>
-
-            <div className="spotify-card spotify-hover-lift p-6">
-              <div className="flex items-center justify-between mb-3">
-                <BookOpen className="h-6 w-6 text-[var(--spotify-green)]" />
-                <span className="text-3xl font-bold spotify-text-primary">
-                  {songsCompleted}
-                </span>
-              </div>
-              <p className="spotify-text-secondary text-sm font-medium">
-                Songs Completed
-              </p>
-            </div>
-
-            <div className="spotify-card spotify-hover-lift p-6">
-              <div className="flex items-center justify-between mb-3">
-                <Clock className="h-6 w-6 text-[#8b5cf6]" />
-                <span className="text-3xl font-bold spotify-text-primary">
-                  15m
-                </span>
-              </div>
-              <p className="spotify-text-secondary text-sm font-medium">
-                Time Today
-              </p>
-            </div>
           </div>
         </div>
 
-        {/* Weekly Goal */}
-        <div className="spotify-card spotify-hover-lift p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <Target className="h-6 w-6 text-[var(--spotify-green)]" />
-              <h3 className="spotify-heading-md">Weekly Goal</h3>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold spotify-text-primary">
-                {wordsLearned}/{weeklyGoal}
-              </p>
-              <p className="spotify-text-secondary text-sm">words</p>
-            </div>
-          </div>
-          <div className="mb-3">
-            <div className="spotify-progress">
-              <div
-                className="spotify-progress-fill transition-all duration-500 ease-out"
-                style={{ width: `${weeklyProgress}%` }}
-              ></div>
-            </div>
-          </div>
-          <p className="spotify-text-secondary text-sm">
-            {weeklyGoal - wordsLearned > 0
-              ? `${weeklyGoal - wordsLearned} more words to reach your goal`
-              : "Goal achieved this week!"}
-          </p>
-        </div>
+
 
         {/* Install App Section */}
         <div className="spotify-card p-6 mb-8">
