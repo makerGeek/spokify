@@ -15,6 +15,7 @@ import Profile from "@/pages/profile";
 import Login from "@/pages/login";
 import Library from "@/pages/library";
 import Review from "@/pages/review";
+import LyricsPlayer from "@/pages/lyrics-player";
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 import InviteAdmin from "@/pages/invite-admin";
@@ -57,7 +58,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/home" component={Home} />
         <Route path="/search" component={SearchPage} />
-        <Route path="/lyrics/:id" component={Home} />
+        <Route path="/lyrics/:id" component={LyricsPlayer} />
         <Route path="/library">
           <AuthenticatedOnly contextMessage="Login to see your favorite songs and learned vocabulary">
             <Library />

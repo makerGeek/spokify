@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
 import MiniPlayer from "@/components/mini-player";
-import LyricsOverlay from "@/components/lyrics-overlay";
 import { AuthModal } from "@/components/auth-modal";
 import ActivationModal from "@/components/activation-modal";
 import { PremiumModal } from "@/components/premium-modal";
@@ -39,58 +38,8 @@ export default function Home() {
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-  const [showLyrics, setShowLyrics] = useState(false);
-  const [currentLyricsId, setCurrentLyricsId] = useState<number>(0);
 
-  // Query for specific song when accessing via URL
-  const { data: urlSong } = useQuery<Song>({
-    queryKey: ["/api/songs", params.id],
-    queryFn: async () => {
-      if (!params.id) throw new Error("No song ID provided");
-      return api.songs.getById(parseInt(params.id));
-    },
-    enabled: !!params.id && location.startsWith("/lyrics/"),
-  });
 
-  // Check if we're on a lyrics route
-  useEffect(() => {
-    const isLyricsRoute = location.startsWith("/lyrics/");
-    if (isLyricsRoute && params.id) {
-      const songId = parseInt(params.id);
-      setCurrentLyricsId(songId);
-
-      // Check authentication for direct URL access
-      if (urlSong) {
-        const accessResult = checkSongAccess(urlSong);
-        
-        if (!accessResult.canAccess) {
-          setSelectedSong(urlSong);
-          
-          if (accessResult.requiresAuth) {
-            setShowAuthModal(true);
-          } else if (accessResult.requiresActivation) {
-            setShowActivationModal(true);
-          } else if (accessResult.requiresPremium) {
-            setShowPremiumModal(true);
-          }
-          
-          // Redirect to home after a short delay
-          setTimeout(() => {
-            setLocation("/home");
-          }, 100);
-          return;
-        }
-
-        // Delay showing lyrics to ensure smooth animation from bottom
-        setTimeout(() => {
-          setShowLyrics(true);
-        }, 50);
-      }
-    } else {
-      setShowLyrics(false);
-      setCurrentLyricsId(0);
-    }
-  }, [location, params.id, urlSong, checkSongAccess, setLocation]);
 
   // Get user preferences from localStorage
   const userPreferences = JSON.parse(
@@ -146,14 +95,7 @@ export default function Home() {
     setLocation(`/lyrics/${song.id}`);
   };
 
-  const handleCloseLyrics = () => {
-    setShowLyrics(false);
-    // Delay clearing the lyrics ID to allow animation to complete
-    setTimeout(() => {
-      setCurrentLyricsId(0);
-      setLocation("/home");
-    }, 300);
-  };
+
 
   if (isLoading) {
     return (
@@ -309,14 +251,7 @@ export default function Home() {
         />
       )}
 
-      {/* Lyrics Overlay */}
-      {showLyrics && currentLyricsId > 0 && (
-        <LyricsOverlay
-          songId={currentLyricsId}
-          onClose={handleCloseLyrics}
-          isVisible={showLyrics}
-        />
-      )}
+
     </div>
   );
 }
