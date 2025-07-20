@@ -98,10 +98,10 @@ export function AuthModal({
           {/* Compact header */}
           <div className="text-center mb-6 px-8">
             <h2 className="spotify-heading-sm text-white mb-2">
-              {customMessage || "Sign in to save words"}
+              Sign in to save words
             </h2>
             <p className="spotify-text-muted text-sm">
-              {customMessage || "Create an account to build your vocabulary"}
+              Create an account to build your vocabulary
             </p>
           </div>
 
