@@ -5,6 +5,7 @@ import { useAudio } from "@/hooks/use-audio";
 import { useMarquee } from "@/hooks/use-marquee";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
+import { usePremium } from "@/hooks/use-premium";
 
 import { type Song } from "@shared/schema";
 
@@ -19,12 +20,29 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
   const { setCurrentSong, currentSong } = useAudio();
   const { user } = useAuth();
   const { checkSongAccess } = useSongAccess();
+  const { canAccessPremiumContent, isPremium } = usePremium();
   const { textRef: titleRef, containerRef } = useMarquee({ text: song.title });
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Check if this is a premium song that user doesn't have access to
+    // First check if user is authenticated
+    if (!user) {
+      if (onPremiumRequested) {
+        onPremiumRequested(song);
+      }
+      return;
+    }
+    
+    // Check if this is a premium song and user doesn't have premium access
+    if (!song.isFree && !canAccessPremiumContent) {
+      if (onPremiumRequested) {
+        onPremiumRequested(song);
+      }
+      return;
+    }
+    
+    // Additional legacy checks for backward compatibility
     if (song.requiresPremium && !song.canAccess) {
       if (onPremiumRequested) {
         onPremiumRequested(song);
@@ -53,7 +71,23 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
   };
 
   const handleCardClick = () => {
-    // Check if this is a premium song that user doesn't have access to
+    // First check if user is authenticated
+    if (!user) {
+      if (onPremiumRequested) {
+        onPremiumRequested(song);
+      }
+      return;
+    }
+    
+    // Check if this is a premium song and user doesn't have premium access
+    if (!song.isFree && !canAccessPremiumContent) {
+      if (onPremiumRequested) {
+        onPremiumRequested(song);
+      }
+      return;
+    }
+    
+    // Additional legacy checks for backward compatibility
     if (song.requiresPremium && !song.canAccess) {
       if (onPremiumRequested) {
         onPremiumRequested(song);
@@ -77,7 +111,7 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
       return;
     }
     
-    // User has access - proceed with original click handler
+    // User has access - proceed with original click handler (opens lyrics overlay)
     onClick();
   };
 
