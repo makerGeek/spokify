@@ -87,7 +87,7 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
         {/* Compact features list */}
         <div className="space-y-3 mb-6">
           {[
-            "All songs unlocked",
+            "All songs unlocked (new songs added daily)",
             "Vocabulary tracking",
             "No ads"
           ].map((feature, index) => (
