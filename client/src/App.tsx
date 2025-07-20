@@ -53,6 +53,11 @@ function Router() {
     return 'home';
   };
 
+  // Check if we're on library page with saved songs tab
+  const isLibrarySavedTab = location === '/library' && 
+    (new URLSearchParams(window.location.search).get('tab') === 'saved' || 
+     !new URLSearchParams(window.location.search).get('tab')); // Default to saved if no tab specified
+
   return (
     <div className="relative min-h-screen">
       <Switch>
@@ -98,8 +103,8 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       
-      {/* Mini Player - Only visible on home and lyrics pages */}
-      {currentSong && (location === '/home' || location.startsWith('/lyrics/')) && (
+      {/* Mini Player - Visible on home, lyrics pages, and library saved songs tab */}
+      {currentSong && (location === '/home' || location.startsWith('/lyrics/') || isLibrarySavedTab) && (
         <MiniPlayer />
       )}
       

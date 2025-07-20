@@ -12,8 +12,20 @@ import { api } from '@/lib/api-client'
 import SongCard from '@/components/song-card'
 
 export default function Library() {
-  const [_, setLocation] = useLocation()
-  const [activeTab, setActiveTab] = useState<'saved' | 'history' | 'vocabulary'>('saved')
+  const [location, setLocation] = useLocation()
+  
+  // Get active tab from URL params or default to 'saved'
+  const searchParams = new URLSearchParams(window.location.search)
+  const tabFromUrl = searchParams.get('tab') as 'saved' | 'history' | 'vocabulary' | null
+  const [activeTab, setActiveTab] = useState<'saved' | 'history' | 'vocabulary'>(tabFromUrl || 'saved')
+  
+  // Update URL when tab changes
+  const handleTabChange = (tab: 'saved' | 'history' | 'vocabulary') => {
+    setActiveTab(tab)
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', tab)
+    window.history.replaceState({}, '', url.toString())
+  }
   const { setCurrentSong } = useAudio()
   const { user, databaseUser } = useAuth()
   const { bookmarkedSongs, isLoading: isLoadingBookmarks } = useBookmarks()
@@ -120,7 +132,7 @@ export default function Library() {
           {/* Tabs */}
           <div className="flex space-x-0 mb-6">
             <button
-              onClick={() => setActiveTab('saved')}
+              onClick={() => handleTabChange('saved')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeTab === 'saved'
                   ? 'bg-[var(--spotify-green)] text-black'
@@ -131,7 +143,7 @@ export default function Library() {
               Saved Songs
             </button>
             <button
-              onClick={() => setActiveTab('history')}
+              onClick={() => handleTabChange('history')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ml-2 ${
                 activeTab === 'history'
                   ? 'bg-[var(--spotify-green)] text-black'
@@ -142,7 +154,7 @@ export default function Library() {
               History
             </button>
             <button
-              onClick={() => setActiveTab('vocabulary')}
+              onClick={() => handleTabChange('vocabulary')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ml-2 ${
                 activeTab === 'vocabulary'
                   ? 'bg-[var(--spotify-green)] text-black'
