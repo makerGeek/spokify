@@ -17,6 +17,7 @@ import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { usePremium } from "@/hooks/use-premium";
+import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
 const languageFlags = {
@@ -46,9 +47,7 @@ export default function Home() {
     queryKey: ["/api/songs", params.id],
     queryFn: async () => {
       if (!params.id) throw new Error("No song ID provided");
-      const response = await fetch(`/api/songs/${params.id}`);
-      if (!response.ok) throw new Error("Failed to fetch song");
-      return response.json();
+      return api.songs.getById(parseInt(params.id));
     },
     enabled: !!params.id && location.startsWith("/lyrics/"),
   });
@@ -114,9 +113,7 @@ export default function Home() {
       if (targetLanguage) {
         params.append("language", targetLanguage);
       }
-      const response = await fetch(`/api/songs?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch songs");
-      return response.json();
+      return api.get(`/songs?${params}`);
     },
   });
 
