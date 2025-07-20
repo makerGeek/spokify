@@ -199,14 +199,26 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <Button
-              size="sm"
-              className={`${showTranslationMode ? "bg-spotify-green" : "bg-spotify-card border-spotify-muted"} text-white`}
-              onClick={() => setShowTranslationMode(!showTranslationMode)}
-            >
-              <Languages size={16} className="mr-1" />
-              Translate
-            </Button>
+            <TooltipProvider delayDuration={700}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center space-x-2 bg-spotify-card rounded-full px-3 py-1 cursor-pointer">
+                    <Languages size={14} className={showTranslationMode ? "text-spotify-green" : "text-spotify-muted"} />
+                    <Switch
+                      checked={showTranslationMode}
+                      onCheckedChange={setShowTranslationMode}
+                      className="data-[state=checked]:bg-spotify-green"
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent 
+                  className="bg-black text-white border-gray-700 text-sm px-3 py-2 max-w-xs"
+                  sideOffset={8}
+                >
+                  <p>Show translations</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div className="difficulty-badge text-xs px-2 py-1 rounded-full font-medium text-white">
               {song.difficulty}
             </div>
