@@ -113,6 +113,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 20, 2025 - Lyrics Player Converted to Home Page Overlay ✅
+- **Architectural Refactor**: Converted standalone lyrics player page to overlay component within home page
+  - **Component Migration**: Created `LyricsOverlay` component from existing `LyricsPlayer` page functionality
+  - **URL-based Rendering**: Home page now detects `/lyrics/:id` URLs and conditionally renders lyrics overlay
+  - **Seamless Integration**: Song cards now directly play music and show lyrics overlay without page navigation
+  - **Maintained Features**: All existing functionality preserved including translation, bookmarking, auto-scroll, and audio controls
+  - **Simplified Routing**: Removed separate lyrics route, `/lyrics/:id` now renders Home component with overlay
+- **Benefits of New Architecture**:
+  - **Better User Experience**: No page transitions when accessing lyrics, smoother interaction flow
+  - **Reduced Complexity**: Single page component handles both song browsing and lyrics display
+  - **Consistent State**: Audio playback and user session state remain consistent across overlay transitions
+  - **Mobile Optimization**: Overlay approach provides better mobile experience with slide animations
+
 ### July 20, 2025 - Smooth Slide Animation for Lyrics Player ✅
 - **Slide Up/Down Animation**: Implemented smooth CSS transition animations for lyrics player
   - **Slide Up**: Lyrics player smoothly slides up from bottom when opened from mini-player or direct navigation
