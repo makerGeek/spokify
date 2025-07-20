@@ -26,6 +26,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
   const [showTranslationMode, setShowTranslationMode] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldSlideUp, setShouldSlideUp] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
   const { user } = useAuth();
@@ -39,6 +40,31 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
       return api.songs.getById(songId);
     }
   });
+
+  // Handle slide-up animation when opened from mini-player
+  useEffect(() => {
+    if (isVisible) {
+      // Check if opened from mini-player
+      const navigationSource = sessionStorage.getItem('lyricsNavigationSource');
+      if (navigationSource === 'mini-player') {
+        // Clear the flag and trigger slide animation
+        sessionStorage.removeItem('lyricsNavigationSource');
+        
+        // Start with slide down position, then animate up
+        setShouldSlideUp(false);
+        const timer = setTimeout(() => {
+          setShouldSlideUp(true);
+        }, 50); // Small delay to ensure initial position is set
+        
+        return () => clearTimeout(timer);
+      } else {
+        // For direct navigation, show immediately
+        setShouldSlideUp(true);
+      }
+    } else {
+      setShouldSlideUp(false);
+    }
+  }, [isVisible]);
 
   // Check song access and close overlay if needed
   useEffect(() => {
@@ -98,6 +124,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
 
   const handleCloseLyrics = () => {
     setIsAnimating(true);
+    setShouldSlideUp(false);
     setTimeout(() => {
       onClose();
     }, 300);
@@ -148,7 +175,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
   if (isLoading) {
     return (
       <div className={`fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
-        isVisible ? 'translate-y-0' : 'translate-y-full'
+        isVisible && shouldSlideUp ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div className="text-center">
           <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
@@ -161,7 +188,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
   if (!song) {
     return (
       <div className={`fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
-        isVisible ? 'translate-y-0' : 'translate-y-full'
+        isVisible && shouldSlideUp ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div className="text-center">
           <p className="text-spotify-muted">Song not found</p>
@@ -175,7 +202,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
 
   return (
     <div className={`fixed inset-0 z-50 bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
-      isVisible && !isAnimating ? 'translate-y-0' : 'translate-y-full'
+      isVisible && shouldSlideUp && !isAnimating ? 'translate-y-0' : 'translate-y-full'
     }`}>
       {/* Header with controls */}
       <div className="p-3 w-full max-w-full">
