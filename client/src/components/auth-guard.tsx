@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { supabase } from '@/lib/supabase'
 import { InviteCodeInput } from '@/components/invite-code-input'
 import { useToast } from '@/hooks/use-toast'
+import { useFeatureFlag } from '@/hooks/use-feature-flags'
 
 interface AuthGuardProps {
   children: ReactNode
@@ -14,9 +15,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const [checkingActive, setCheckingActive] = useState(false)
   const [needsInviteCode, setNeedsInviteCode] = useState(false)
   const { toast } = useToast()
+  const { isEnabled: inviteCodesEnabled } = useFeatureFlag('ENABLE_INVITE_CODES')
 
-  // Check if user is active when session changes
+  // Check if user is active when session changes - only if invite codes are enabled
   useEffect(() => {
+    console.log('🔍 AuthGuard: Checking activation status', {
+      hasUser: !!user,
+      inviteCodesEnabled,
+      userEmail: user?.email
+    });
+
     const checkActiveStatus = async () => {
       if (!user) {
         setIsActive(null)
@@ -24,6 +32,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         return
       }
 
+      // If invite codes are disabled, all users are considered active
+      if (!inviteCodesEnabled) {
+        console.log('✅ AuthGuard: Invite codes disabled, user automatically active');
+        setIsActive(true)
+        setNeedsInviteCode(false)
+        setCheckingActive(false)
+        return
+      }
+
+      console.log('🔍 AuthGuard: Checking activation status for', user.email);
       setCheckingActive(true)
       try {
         const { data: { session } } = await supabase.auth.getSession()
@@ -41,14 +59,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
         if (response.ok) {
           const data = await response.json()
+          console.log('✅ AuthGuard: Activation check result', data);
           setIsActive(data.isActive)
           setNeedsInviteCode(!data.isActive)
         } else {
+          console.log('❌ AuthGuard: Activation check failed');
           setIsActive(false)
           setNeedsInviteCode(true)
         }
       } catch (error) {
-        console.error('Error checking user active status:', error)
+        console.error('❌ AuthGuard: Error checking user active status:', error)
         setIsActive(false)
         setNeedsInviteCode(true)
       }
@@ -56,7 +76,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
 
     checkActiveStatus()
-  }, [user])
+  }, [user, inviteCodesEnabled])
 
   const handleInviteCodeValidated = async (code: string) => {
     try {

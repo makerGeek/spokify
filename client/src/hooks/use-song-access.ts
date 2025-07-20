@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
 import { type Song } from '@shared/schema';
+import { useFeatureFlag } from '@/hooks/use-feature-flags';
 
 export interface SongAccessResult {
   canAccess: boolean;
@@ -14,12 +15,20 @@ export function useSongAccess() {
   const { user, databaseUser } = useAuth();
   const [isActive, setIsActive] = useState<boolean | null>(null);
   const [checkingActive, setCheckingActive] = useState(false);
+  const { isEnabled: inviteCodesEnabled } = useFeatureFlag('ENABLE_INVITE_CODES');
 
-  // Check activation status when user changes
+  // Check activation status when user changes - only if invite codes are enabled
   useEffect(() => {
     const checkActiveStatus = async () => {
       if (!user) {
         setIsActive(null);
+        return;
+      }
+
+      // If invite codes are disabled, all users are considered active
+      if (!inviteCodesEnabled) {
+        setIsActive(true);
+        setCheckingActive(false);
         return;
       }
 
@@ -58,7 +67,7 @@ export function useSongAccess() {
     };
 
     checkActiveStatus();
-  }, [user, databaseUser]);
+  }, [user, databaseUser, inviteCodesEnabled]);
 
   const checkSongAccess = useCallback((song: Song): SongAccessResult => {
     // Free songs are always accessible
