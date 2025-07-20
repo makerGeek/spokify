@@ -43,4 +43,9 @@ function initializeYouTubeAPI() {
 // Initialize YouTube API immediately
 initializeYouTubeAPI();
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Ensure root element has proper styling to prevent black screen
+const rootElement = document.getElementById("root")!;
+rootElement.style.backgroundColor = '#121212';
+rootElement.style.minHeight = '100vh';
+
+createRoot(rootElement).render(<App />);

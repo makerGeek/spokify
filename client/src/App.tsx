@@ -126,9 +126,39 @@ function Router() {
 }
 
 function App() {
+  const [isAppReady, setIsAppReady] = useState(false);
+
   useEffect(() => {
-    initializePWA();
+    const initializeApp = async () => {
+      try {
+        // Initialize PWA functionality
+        initializePWA();
+        
+        // Add small delay to ensure proper initialization in PWA mode
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        setIsAppReady(true);
+      } catch (error) {
+        console.error('App initialization error:', error);
+        // Still set ready to true to prevent permanent black screen
+        setIsAppReady(true);
+      }
+    };
+
+    initializeApp();
   }, []);
+
+  // Show loading screen while app initializes
+  if (!isAppReady) {
+    return (
+      <div className="min-h-screen bg-spotify-bg text-spotify-text flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4 mx-auto"></div>
+          <p className="text-spotify-muted">Initializing Spokify...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

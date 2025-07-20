@@ -131,74 +131,127 @@ self.addEventListener('fetch', (event) => {
         try {
           console.log('SW: Navigation request for:', url.pathname);
           
-          // Always try network first for navigation in production to avoid stale content
+          // For PWA mode, try cache first for faster startup
+          const isStandalone = self.clients.matchAll({ type: 'window' }).then(clients => {
+            return clients.some(client => client.url.includes('display-mode=standalone'));
+          });
+          
+          let networkFirst = true;
           try {
-            const networkResponse = await fetch(event.request, { 
-              cache: 'no-cache',
-              headers: { 'Cache-Control': 'no-cache' }
-            });
-            
-            if (networkResponse.ok) {
-              // Cache the fresh response
-              const staticCache = await caches.open(STATIC_CACHE);
-              await staticCache.put('/', networkResponse.clone());
-              console.log('SW: Fetched and cached fresh main page');
-              return networkResponse;
+            const standaloneMode = await isStandalone;
+            if (standaloneMode) {
+              console.log('SW: PWA mode detected, checking cache first');
+              networkFirst = false;
             }
-          } catch (networkError) {
-            console.log('SW: Network failed, trying cache:', networkError);
+          } catch (e) {
+            console.log('SW: Could not detect PWA mode, using network first');
           }
           
-          // Fallback to cache if network fails
+          if (networkFirst) {
+            // Try network first for regular browsing
+            try {
+              const networkResponse = await fetch(event.request, { 
+                cache: 'no-cache',
+                headers: { 'Cache-Control': 'no-cache' }
+              });
+              
+              if (networkResponse.ok) {
+                // Cache the fresh response
+                const staticCache = await caches.open(STATIC_CACHE);
+                await staticCache.put('/', networkResponse.clone());
+                console.log('SW: Fetched and cached fresh main page');
+                return networkResponse;
+              }
+            } catch (networkError) {
+              console.log('SW: Network failed, trying cache:', networkError);
+            }
+          }
+          
+          // Try cache (for PWA mode or network failure)
           const staticCache = await caches.open(STATIC_CACHE);
           let cachedResponse = await staticCache.match('/');
           
           if (cachedResponse) {
-            console.log('SW: Serving main page from cache (network failed)');
+            console.log('SW: Serving main page from cache');
+            // If we used cache first, try to update in background
+            if (!networkFirst) {
+              fetch(event.request).then(networkResponse => {
+                if (networkResponse.ok) {
+                  staticCache.put('/', networkResponse.clone());
+                  console.log('SW: Background update of cached page completed');
+                }
+              }).catch(() => console.log('SW: Background update failed'));
+            }
             return cachedResponse;
+          }
+          
+          // Last resort - try network if cache failed
+          if (!networkFirst) {
+            try {
+              const networkResponse = await fetch(event.request);
+              if (networkResponse.ok) {
+                await staticCache.put('/', networkResponse.clone());
+                return networkResponse;
+              }
+            } catch (networkError) {
+              console.log('SW: Final network attempt failed:', networkError);
+            }
           }
           
           throw new Error('No network and no cache available');
         } catch (error) {
           console.log('SW: Complete failure, serving connection error page:', error);
-          // Create a basic connection error page
+          // Create a basic connection error page with proper PWA styling
           return new Response(`
             <!DOCTYPE html>
             <html>
             <head>
               <title>Spokify - Connection Error</title>
               <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta name="theme-color" content="#1DB954">
               <style>
-                body { 
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                html, body { 
                   font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
                   background: #121212; 
                   color: #fff; 
+                  height: 100%; 
+                  min-height: 100vh;
+                  min-height: 100dvh;
+                }
+                .container { 
                   display: flex; 
                   align-items: center; 
                   justify-content: center; 
                   min-height: 100vh; 
-                  margin: 0; 
+                  min-height: 100dvh;
+                  padding: 20px; 
                   text-align: center; 
                 }
-                .container { max-width: 400px; padding: 20px; }
-                h1 { color: #1DB954; margin-bottom: 20px; }
-                p { color: #b3b3b3; line-height: 1.5; }
+                .content { max-width: 400px; }
+                h1 { color: #1DB954; margin-bottom: 20px; font-size: 2rem; }
+                p { color: #b3b3b3; line-height: 1.5; margin-bottom: 24px; }
                 button { 
                   background: #1DB954; 
                   color: white; 
                   border: none; 
                   padding: 12px 24px; 
                   border-radius: 24px; 
-                  margin-top: 20px;
                   cursor: pointer;
+                  font-size: 16px;
+                  font-weight: 600;
+                  transition: background 0.2s;
                 }
+                button:hover { background: #1ed760; }
               </style>
             </head>
             <body>
               <div class="container">
-                <h1>Connection Error</h1>
-                <p>Spokify needs an internet connection to work properly. Please check your connection and try again.</p>
-                <button onclick="window.location.reload()">Try Again</button>
+                <div class="content">
+                  <h1>Connection Error</h1>
+                  <p>Spokify needs an internet connection to work properly. Please check your connection and try again.</p>
+                  <button onclick="window.location.reload()">Try Again</button>
+                </div>
               </div>
             </body>
             </html>

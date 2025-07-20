@@ -67,6 +67,26 @@
     background-color: var(--spotify-bg);
     color: var(--spotify-text);
   }
+
+  /* PWA specific styles */
+  html.pwa-mode {
+    /* Ensure proper background in PWA mode */
+    background-color: var(--spotify-bg);
+  }
+
+  html.pwa-mode body {
+    /* Fix potential PWA display issues */
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    background-color: var(--spotify-bg);
+  }
+
+  /* Prevent flash of white/unstyled content in PWA */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--spotify-bg);
+  }
 }
 
 @layer components {

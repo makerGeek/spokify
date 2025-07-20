@@ -1,4 +1,15 @@
 export function initializePWA() {
+  // Detect if running as installed PWA
+  const isPWAMode = window.matchMedia('(display-mode: standalone)').matches || 
+                   (window.navigator as any).standalone === true ||
+                   document.referrer.includes('android-app://');
+  
+  if (isPWAMode) {
+    console.log('PWA: Running in standalone mode');
+    // Add PWA-specific handling if needed
+    document.documentElement.classList.add('pwa-mode');
+  }
+
   // Service Worker registration - skip in development to avoid caching issues
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     // Check if SW was previously disabled due to errors

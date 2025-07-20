@@ -23,10 +23,10 @@ export default function SmartRedirect() {
 
   // Show loading while redirecting
   return (
-    <div className="spotify-bg min-h-screen flex items-center justify-center">
+    <div className="bg-spotify-bg min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4 mx-auto"></div>
-        <p className="spotify-text-secondary">Loading Spokify...</p>
+        <p className="text-spotify-muted">Loading Spokify...</p>
       </div>
     </div>
   );
