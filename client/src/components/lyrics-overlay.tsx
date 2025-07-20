@@ -123,9 +123,12 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
   }, [currentTime, song?.lyrics, autoScroll]);
 
   const handleCloseLyrics = () => {
-    setIsAnimating(true);
+    // Start slide down animation
     setShouldSlideUp(false);
+    
+    // Wait for animation to complete before closing
     setTimeout(() => {
+      setIsAnimating(true);
       onClose();
     }, 300);
   };
@@ -202,7 +205,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
 
   return (
     <div className={`fixed inset-0 z-50 bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
-      isVisible && shouldSlideUp && !isAnimating ? 'translate-y-0' : 'translate-y-full'
+      isVisible && shouldSlideUp ? 'translate-y-0' : 'translate-y-full'
     }`}>
       {/* Header with controls */}
       <div className="p-3 w-full max-w-full">
