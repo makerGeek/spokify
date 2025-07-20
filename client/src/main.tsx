@@ -2,6 +2,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import "./styles/spotify.css";
+import { initializeSentry } from "./lib/sentry";
+import { initializeClarity } from "./lib/clarity";
+import { AppErrorBoundary } from "./components/error-boundary";
 
 // Initialize YouTube Player API
 declare global {
@@ -40,7 +43,15 @@ function initializeYouTubeAPI() {
   };
 }
 
+// Initialize error tracking and analytics
+initializeSentry();
+initializeClarity();
+
 // Initialize YouTube API immediately
 initializeYouTubeAPI();
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <AppErrorBoundary>
+    <App />
+  </AppErrorBoundary>
+);
