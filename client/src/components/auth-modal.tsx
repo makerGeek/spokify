@@ -96,7 +96,7 @@ export function AuthModal({
           )}
 
           {/* Compact header */}
-          <div className="text-center mb-6 pr-8">
+          <div className="text-center mb-6 px-8">
             <h2 className="spotify-heading-sm text-white mb-2">
               {customMessage || "Sign in to save words"}
             </h2>

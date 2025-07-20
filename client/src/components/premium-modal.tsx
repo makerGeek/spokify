@@ -64,7 +64,7 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
         </button>
 
         {/* Compact header */}
-        <div className="text-center mb-6 pr-8">
+        <div className="text-center mb-6 px-8">
           <div className="flex items-center justify-center mb-3">
             <div className="p-2 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600">
               <Crown className="h-5 w-5 text-black" />

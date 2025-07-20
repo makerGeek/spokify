@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 import { InviteCodeInput } from "@/components/invite-code-input";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
@@ -82,8 +83,17 @@ export default function ActivationModal({
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="spotify-card max-w-md w-full p-8">
-        <div className="text-center mb-8">
+      <div className="spotify-card max-w-md w-full p-8 relative">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-spotify-muted hover:text-white transition-colors"
+          aria-label="Close modal"
+        >
+          <X size={20} />
+        </button>
+
+        <div className="text-center mb-8 px-8">
           <h1 className="spotify-heading-lg mb-2">Activate Your Account</h1>
           <p className="spotify-text-secondary">
             {contextMessage}
