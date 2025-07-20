@@ -175,28 +175,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/songs/:id", optionalAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
-      const song = await storage.getSong(id);
-      if (!song) {
+      const accessResult = await canAccessSong(req.user, id);
+      
+      if (!accessResult.song) {
         return res.status(404).json({ message: "Song not found" });
       }
 
-      // Check if song is premium and user has access
-      let canAccess = true;
-      let requiresPremium = false;
+      const song = accessResult.song;
 
-      if (song.isFree) {
-        canAccess = true;
-      } else {
-        requiresPremium = true;
-        if (req.user?.subscriptionStatus === 'active') {
-          canAccess = true;
-        } else {
-          canAccess = false;
-        }
-      }
+      // Debug logging
+      console.log('Song access check:', {
+        songId: id,
+        songTitle: song.title,
+        isFree: song.isFree,
+        hasUser: !!req.user,
+        userSubscriptionStatus: req.user?.subscriptionStatus,
+        userEmail: req.user?.email,
+        canAccess: accessResult.canAccess,
+        requiresPremium: accessResult.requiresPremium
+      });
 
       // Security: If user cannot access premium song, return limited data without lyrics
-      if (!canAccess && requiresPremium) {
+      if (!accessResult.canAccess && accessResult.requiresPremium) {
         return res.json({
           id: song.id,
           title: song.title,
@@ -215,8 +215,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         ...song,
-        canAccess,
-        requiresPremium
+        canAccess: accessResult.canAccess,
+        requiresPremium: accessResult.requiresPremium
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch song" });
