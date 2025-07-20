@@ -5,7 +5,6 @@ import { useLocation } from 'wouter'
 
 import { type Song, type Vocabulary } from '@shared/schema'
 import { useAudio } from '@/hooks/use-audio'
-import { useMarquee } from '@/hooks/use-marquee'
 import { useAuth } from '@/contexts/auth-context'
 import { useBookmarks } from '@/hooks/use-bookmarks'
 import { api } from '@/lib/api-client'
@@ -64,12 +63,8 @@ export default function Library() {
     })
   }
 
-  // VocabularyItem component with marquee animation for context
+  // VocabularyItem component
   function VocabularyItem({ word, index }: { word: Vocabulary; index: number }) {
-    const { textRef: contextRef, containerRef: contextContainerRef } = useMarquee({ 
-      text: word.context || '', 
-      enabled: !!word.context 
-    });
 
     return (
       <div className="spotify-card p-4 hover:bg-[var(--spotify-light-gray)] transition-colors duration-200">
@@ -93,8 +88,8 @@ export default function Library() {
               </p>
             )}
             {word.context && (
-              <div ref={contextContainerRef} className="max-w-xs overflow-hidden whitespace-nowrap relative">
-                <p ref={contextRef} className="spotify-text-muted text-sm italic inline-block marquee-text">
+              <div className="max-w-xs">
+                <p className="spotify-text-muted text-sm italic break-words">
                   "{word.context}"
                 </p>
               </div>
