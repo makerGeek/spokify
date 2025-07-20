@@ -36,7 +36,7 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-300 ${
+      className={`fixed inset-0 z-[10000] flex items-center justify-center transition-all duration-300 ${
         isVisible ? "bg-black/60 backdrop-blur-sm opacity-100" : "opacity-0"
       }`}
       style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
