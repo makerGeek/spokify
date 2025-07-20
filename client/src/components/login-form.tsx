@@ -181,6 +181,16 @@ export default function LoginForm({
         </button>
       </form>
 
+      {/* Forgot Password Link */}
+      <div className="text-center mt-4">
+        <a 
+          href="/forgot-password"
+          className="spotify-text-muted hover:text-white text-sm transition-colors inline-block"
+        >
+          Forgot your password?
+        </a>
+      </div>
+
       {/* Terms and Privacy Agreement */}
       <div className="text-center mt-4 mb-3">
         <p className="spotify-text-muted text-xs leading-relaxed">

@@ -13,6 +13,8 @@ import Home from "@/pages/home";
 import { SearchPage } from "@/pages/search";
 import Profile from "@/pages/profile";
 import Login from "@/pages/login";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import Library from "@/pages/library";
 import Review from "@/pages/review";
 
@@ -66,6 +68,8 @@ function Router() {
         <Route path="/" component={SmartRedirect} />
         <Route path="/language-selection" component={LanguageSelection} />
         <Route path="/login" component={Login} />
+        <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/reset-password" component={ResetPassword} />
         <Route path="/home" component={Home} />
         <Route path="/search" component={SearchPage} />
         <Route path="/lyrics/:id" component={Home} />
@@ -113,7 +117,8 @@ function Router() {
       )}
       
       {/* Bottom Navigation - visible on main app pages */}
-      {location !== '/' && location !== '/language-selection' && location !== '/song-offset' && (
+      {location !== '/' && location !== '/language-selection' && location !== '/song-offset' && 
+       location !== '/login' && location !== '/forgot-password' && location !== '/reset-password' && (
         <BottomNavigation currentPage={getCurrentPage()} />
       )}
     </div>
