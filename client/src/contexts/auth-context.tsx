@@ -65,21 +65,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Load database user when session changes - with better conditions to prevent unnecessary calls
   useEffect(() => {
+    console.log('🔍 Auth Effect: Checking database user load', {
+      hasSession: !!session?.user,
+      userId: session?.user?.id,
+      hasDatabaseUser: !!databaseUser,
+      databaseUserId: databaseUser?.id
+    });
+    
     let isMounted = true; // Prevent state updates if component unmounts
     
     if (session?.user && !databaseUser) {
-      // Only load if we don't already have database user data
+      console.log('📥 Auth: Loading database user for', session.user.email);
       api.auth.getUser().then(response => {
         if (isMounted && response?.user) {
+          console.log('✅ Auth: Database user loaded', response.user.email);
           setDatabaseUser(response.user);
         }
       }).catch(error => {
         if (isMounted) {
-          console.error('Failed to load database user:', error);
+          console.error('❌ Auth: Failed to load database user:', error);
         }
       });
     } else if (!session?.user) {
+      console.log('🚪 Auth: User logged out, clearing database user');
       setDatabaseUser(null);
+    } else if (session?.user && databaseUser) {
+      console.log('✅ Auth: Database user already loaded, skipping');
     }
     
     return () => {

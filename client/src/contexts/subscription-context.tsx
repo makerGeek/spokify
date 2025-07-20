@@ -66,20 +66,34 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   // Update subscription info when database user changes - optimize to prevent unnecessary updates
   useEffect(() => {
+    console.log('🔍 Subscription Effect: Checking subscription update', {
+      hasDatabaseUser: !!databaseUser,
+      userId: databaseUser?.id,
+      subscriptionStatus: databaseUser?.subscriptionStatus,
+      hasSession: !!session
+    });
+    
     if (databaseUser) {
       const newSubscription = calculateSubscriptionInfo(databaseUser)
+      console.log('📊 Subscription: Calculated subscription info', newSubscription);
+      
       // Only update if subscription data actually changed
       setSubscription(prevSub => {
         if (prevSub.status !== newSubscription.status || 
             prevSub.stripeCustomerId !== newSubscription.stripeCustomerId ||
             prevSub.stripeSubscriptionId !== newSubscription.stripeSubscriptionId) {
+          console.log('🔄 Subscription: Updating subscription data', { 
+            oldStatus: prevSub.status, 
+            newStatus: newSubscription.status 
+          });
           return newSubscription
         }
+        console.log('✅ Subscription: No changes needed, keeping existing');
         return prevSub
       })
       setLoading(false)
     } else if (!session) {
-      // User logged out
+      console.log('🚪 Subscription: User logged out, resetting to default');
       setSubscription(defaultSubscription)
       setLoading(false)
     }
