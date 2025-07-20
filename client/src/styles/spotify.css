@@ -303,6 +303,11 @@
   height: 1px !important;
 }
 
+/* Override all Shadcn slider default styles */
+.spotify-progress-slider * {
+  height: auto !important;
+}
+
 .spotify-progress-slider [data-radix-slider-track] {
   background: rgba(255, 255, 255, 0.15) !important;
   height: 1px !important;
@@ -332,6 +337,7 @@
   z-index: 80 !important;
   position: relative !important;
   overflow: visible !important;
+  border-radius: 50% !important;
 }
 
 .spotify-progress-slider:hover [data-radix-slider-thumb] {

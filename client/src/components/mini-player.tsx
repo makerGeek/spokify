@@ -46,13 +46,16 @@ export default function MiniPlayer() {
       {/* Compact Progress Bar - Spotify style */}
       <div className="bg-spotify-card/95 backdrop-blur-md relative overflow-visible">
         <div className="relative group py-1 px-0 overflow-visible">
-          <Slider
-            value={[currentTime]}
-            onValueChange={handleSeek}
-            max={duration || 100}
-            step={1}
-            className="h-[1px] cursor-pointer spotify-progress-slider relative overflow-visible"
-          />
+          <div style={{ height: '1px' }}>
+            <Slider
+              value={[currentTime]}
+              onValueChange={handleSeek}
+              max={duration || 100}
+              step={1}
+              className="!h-[1px] cursor-pointer spotify-progress-slider relative overflow-visible [&>*]:!h-[1px] [&_[data-radix-slider-track]]:!h-[1px] [&_[data-radix-slider-range]]:!h-[1px] [&_[data-radix-slider-thumb]]:!w-[6px] [&_[data-radix-slider-thumb]]:!h-[6px]"
+              style={{ height: '1px' }}
+            />
+          </div>
           {/* Time indicators on hover */}
           <div className="absolute inset-x-0 -top-8 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[80]">
             <span className="text-xs text-spotify-text bg-spotify-bg px-2 py-1 rounded shadow-lg">
