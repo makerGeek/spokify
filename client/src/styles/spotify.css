@@ -300,6 +300,7 @@
   z-index: 60 !important;
   position: relative !important;
   overflow: visible !important;
+  height: 4px !important;
 }
 
 .spotify-progress-slider [data-radix-slider-track] {
