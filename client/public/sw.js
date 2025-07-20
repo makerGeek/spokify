@@ -160,13 +160,13 @@ self.addEventListener('fetch', (event) => {
           
           throw new Error('No network and no cache available');
         } catch (error) {
-          console.log('SW: Complete failure, serving offline page:', error);
-          // Create a basic offline page
+          console.log('SW: Complete failure, serving connection error page:', error);
+          // Create a basic connection error page
           return new Response(`
             <!DOCTYPE html>
             <html>
             <head>
-              <title>Spokify - Offline</title>
+              <title>Spokify - Connection Error</title>
               <meta name="viewport" content="width=device-width, initial-scale=1">
               <style>
                 body { 
@@ -196,7 +196,7 @@ self.addEventListener('fetch', (event) => {
             </head>
             <body>
               <div class="container">
-                <h1>You're Offline</h1>
+                <h1>Connection Error</h1>
                 <p>Spokify needs an internet connection to work properly. Please check your connection and try again.</p>
                 <button onclick="window.location.reload()">Try Again</button>
               </div>
