@@ -20,10 +20,12 @@ export default function MiniPlayer() {
 
   const handleToggleLyrics = () => {
     if (isLyricsShown) {
-      // Hide lyrics - go back to home
+      // Hide lyrics - trigger slide down animation in lyrics player
+      // The lyrics player will handle the animation and navigation
       setLocation('/home');
     } else {
-      // Show lyrics - go to lyrics page
+      // Show lyrics - mark as mini-player navigation and go to lyrics page
+      sessionStorage.setItem('lyricsNavigationSource', 'mini-player');
       setLocation(`/lyrics/${currentSong.id}`);
     }
   };

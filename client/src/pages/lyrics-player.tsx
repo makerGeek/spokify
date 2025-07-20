@@ -23,6 +23,8 @@ export default function LyricsPlayer() {
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [showTranslationMode, setShowTranslationMode] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
   const { user } = useAuth();
@@ -66,8 +68,40 @@ export default function LyricsPlayer() {
     }
   }, [song, currentSong, setCurrentSong]);
 
+  // Handle slide animation on mount/unmount
+  useEffect(() => {
+    // Check if this is a direct navigation or from mini-player
+    const navigationSource = sessionStorage.getItem('lyricsNavigationSource');
+    
+    if (navigationSource === 'mini-player' || !navigationSource) {
+      // Animate in from bottom for mini-player or first visit
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 50); // Small delay for smooth animation
+      
+      // Clean up the navigation source
+      sessionStorage.removeItem('lyricsNavigationSource');
+      
+      return () => clearTimeout(timer);
+    } else {
+      // Direct navigation - show immediately
+      setIsVisible(true);
+    }
+  }, []);
+
+  // Slide animation exit handler
+  const handleSlideExit = () => {
+    setIsAnimating(true);
+    setIsVisible(false);
+    
+    // Wait for animation to complete before navigating
+    setTimeout(() => {
+      setLocation("/home");
+    }, 300); // Match animation duration
+  };
+
   const handleCloseLyrics = () => {
-    setLocation("/home");
+    handleSlideExit();
   };
 
   const handleLineClick = (line: any) => {
@@ -147,7 +181,9 @@ export default function LyricsPlayer() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-50 transition-transform duration-300 ease-out ${
+        isVisible ? 'translate-y-0' : 'translate-y-full'
+      }`}>
         <div className="text-center">
           <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
           <p className="text-spotify-muted">Loading song...</p>
@@ -158,7 +194,9 @@ export default function LyricsPlayer() {
 
   if (!song) {
     return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
+      <div className={`min-h-screen bg-spotify-bg flex items-center justify-center fixed inset-0 z-50 transition-transform duration-300 ease-out ${
+        isVisible ? 'translate-y-0' : 'translate-y-full'
+      }`}>
         <div className="text-center">
           <p className="text-spotify-muted">Song not found</p>
           <Button onClick={handleCloseLyrics} className="mt-4">
@@ -170,7 +208,9 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className="min-h-screen bg-spotify-bg pb-32 overflow-x-hidden">
+    <div className={`min-h-screen bg-spotify-bg pb-32 overflow-x-hidden fixed inset-0 z-50 transition-transform duration-300 ease-out ${
+      isVisible ? 'translate-y-0' : 'translate-y-full'
+    }`}>
       {/* Fixed Header - Always Visible */}
       <div className="sticky top-0 z-10 bg-spotify-bg/95 backdrop-blur-sm p-4 w-full">
         <div className="flex items-center justify-between">
