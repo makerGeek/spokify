@@ -265,7 +265,7 @@ export default function Review() {
                 )}
               </div>
               <div>
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
                   {currentQuestion.options.map((option, index) => {
                     const isSelected = selectedAnswer === option;
                     const isCorrect = option === currentQuestion.correctAnswer;
@@ -289,13 +289,13 @@ export default function Review() {
                         onClick={() => handleAnswerSelect(option)}
                         disabled={isAnswered}
                       >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="text-base">{option}</span>
+                        <div className="flex flex-col items-start w-full">
+                          <span className="text-sm leading-tight">{option}</span>
                           {showResult && (
-                            <>
-                              {isCorrect && <CheckCircle size={20} className="text-green-400" />}
-                              {showWrongAnswer && <XCircle size={20} className="text-red-400" />}
-                            </>
+                            <div className="mt-2 self-end">
+                              {isCorrect && <CheckCircle size={16} className="text-green-400" />}
+                              {showWrongAnswer && <XCircle size={16} className="text-red-400" />}
+                            </div>
                           )}
                         </div>
                       </button>

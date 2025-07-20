@@ -12,6 +12,7 @@ import {
   Crown,
   Users,
   Copy,
+  Settings,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -374,7 +375,7 @@ export default function Profile() {
         <div className="spotify-card p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <Target className="h-6 w-6 text-[var(--spotify-green)]" />
+              <Settings className="h-6 w-6 text-[var(--spotify-green)]" />
               <div>
                 <h3 className="spotify-heading-md">Settings</h3>
                 <p className="spotify-text-secondary text-sm">
