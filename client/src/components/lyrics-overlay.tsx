@@ -178,8 +178,8 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
       isVisible && !isAnimating ? 'translate-y-0' : 'translate-y-full'
     }`}>
       {/* Header with controls */}
-      <div className="p-4 w-full max-w-full">
-        <div className="flex items-center justify-between mb-6">
+      <div className="p-3 w-full max-w-full">
+        <div className="flex items-center justify-between mb-3">
           <Button
             variant="ghost"
             size="sm"
