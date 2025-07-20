@@ -171,9 +171,9 @@ export default function LyricsPlayer() {
 
   return (
     <div className="min-h-screen bg-spotify-bg pb-32 overflow-x-hidden">
-      {/* Main Content - Full Height Lyrics */}
-      <div className="p-4 w-full max-w-full">
-        <div className="flex items-center justify-between mb-6">
+      {/* Fixed Header - Always Visible */}
+      <div className="sticky top-0 z-10 bg-spotify-bg/95 backdrop-blur-sm border-b border-spotify-card/20 p-4 w-full">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -249,11 +249,14 @@ export default function LyricsPlayer() {
             </Button>
           </div>
         </div>
-        
+      </div>
+
+      {/* Main Content - Scrollable Lyrics */}
+      <div className="px-4 w-full max-w-full">
         <div className="space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain" 
              id="lyrics-container"
              style={{ 
-               height: 'calc(100vh - 240px)', // Screen minus header, controls, and bottom sections
+               height: 'calc(100vh - 200px)', // Screen minus fixed header and bottom sections
                WebkitOverflowScrolling: 'touch',
                scrollBehavior: 'smooth',
                touchAction: 'pan-y',
