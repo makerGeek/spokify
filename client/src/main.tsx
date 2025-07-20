@@ -2,9 +2,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import "./styles/spotify.css";
-import { initializeSentry } from "./lib/sentry";
-import { initializeClarity } from "./lib/clarity";
-import { AppErrorBoundary } from "./components/error-boundary";
 
 // Initialize YouTube Player API
 declare global {
@@ -43,24 +40,7 @@ function initializeYouTubeAPI() {
   };
 }
 
-// Initialize error tracking and analytics
-initializeSentry();
-initializeClarity();
-
-// Global error handler for unhandled errors
-window.addEventListener('error', (event) => {
-  console.error('Global error:', event.error);
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
-});
-
 // Initialize YouTube API immediately
 initializeYouTubeAPI();
 
-createRoot(document.getElementById("root")!).render(
-  <AppErrorBoundary>
-    <App />
-  </AppErrorBoundary>
-);
+createRoot(document.getElementById("root")!).render(<App />);

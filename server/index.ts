@@ -1,10 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { initializeSentry, captureAPIError } from "./lib/sentry";
-
-// Initialize Sentry before everything else
-initializeSentry();
 
 const app = express();
 app.use(express.json());
@@ -43,34 +39,12 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  // Enhanced error handling middleware with Sentry integration
-  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    // Log to Sentry for production error tracking
-    if (process.env.NODE_ENV === "production" || status >= 500) {
-      captureAPIError(err, req, {
-        statusCode: status,
-        userAgent: req.get("User-Agent"),
-        userId: (req as any).user?.id,
-      });
-    }
-
-    // Log to console in development
-    if (process.env.NODE_ENV === "development") {
-      console.error(`[${req.method} ${req.path}] ${status}: ${message}`);
-      if (err.stack) {
-        console.error(err.stack);
-      }
-    }
-
-    // Send user-friendly error response
-    const isProduction = process.env.NODE_ENV === "production";
-    res.status(status).json({
-      message: isProduction && status >= 500 ? "Something went wrong. Please try again." : message,
-      ...(isProduction ? {} : { stack: err.stack }),
-    });
+    res.status(status).json({ message });
+    throw err;
   });
 
   // importantly only setup vite in development and after

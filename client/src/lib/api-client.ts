@@ -1,124 +1,103 @@
-import { captureAPIError } from './sentry';
+import axios from 'axios';
+import { supabase } from '@/lib/supabase';
 
-// Enhanced API client with error handling and retry logic
-export class APIError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public endpoint: string,
-    public response?: any
-  ) {
-    super(message);
-    this.name = 'APIError';
-  }
-}
+// Create the main API client
+const apiClient = axios.create({
+  baseURL: '/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-interface RequestOptions {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: any;
-  retries?: number;
-  timeout?: number;
-}
-
-export async function apiRequest(
-  endpoint: string,
-  options: RequestOptions = {}
-): Promise<any> {
-  const {
-    method = 'GET',
-    headers = {},
-    body,
-    retries = 3,
-    timeout = 10000
-  } = options;
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
+// Request interceptor to add auth token
+apiClient.interceptors.request.use(
+  async (config) => {
     try {
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers,
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const error = new APIError(
-          errorData.message || `HTTP ${response.status}`,
-          response.status,
-          endpoint,
-          errorData
-        );
-
-        // Don't retry client errors (4xx), only server errors (5xx)
-        if (response.status < 500 || attempt === retries) {
-          captureAPIError(error, endpoint, {
-            attempt: attempt + 1,
-            status: response.status,
-            method,
-          });
-          throw error;
-        }
-
-        // Wait before retry with exponential backoff
-        await new Promise(resolve => 
-          setTimeout(resolve, Math.pow(2, attempt) * 1000)
-        );
-        continue;
+      // Get current session from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.access_token) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
       }
-
-      return await response.json();
     } catch (error) {
-      clearTimeout(timeoutId);
-
-      if (attempt === retries) {
-        if (error instanceof APIError) {
-          throw error;
-        }
-
-        const apiError = new APIError(
-          error instanceof Error ? error.message : 'Network error',
-          0,
-          endpoint
-        );
-        
-        captureAPIError(apiError, endpoint, {
-          attempt: attempt + 1,
-          originalError: error,
-          method,
-        });
-        
-        throw apiError;
-      }
-
-      // Wait before retry for network errors
-      await new Promise(resolve => 
-        setTimeout(resolve, Math.pow(2, attempt) * 1000)
-      );
+      console.warn('Failed to get auth token:', error);
     }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-}
+);
 
-// Specialized methods for common operations
+// Response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.warn('Unauthorized request:', error.config?.url);
+      // Could trigger logout or token refresh here if needed
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Helper functions for common operations
 export const api = {
-  get: (endpoint: string, options?: Omit<RequestOptions, 'method'>) =>
-    apiRequest(endpoint, { ...options, method: 'GET' }),
+  // Generic methods
+  get: <T = any>(url: string, config?: any) => 
+    apiClient.get<T>(url, config).then(res => res.data),
+    
+  post: <T = any>(url: string, data?: any, config?: any) => 
+    apiClient.post<T>(url, data, config).then(res => res.data),
+    
+  put: <T = any>(url: string, data?: any, config?: any) => 
+    apiClient.put<T>(url, data, config).then(res => res.data),
+    
+  delete: <T = any>(url: string, config?: any) => 
+    apiClient.delete<T>(url, config).then(res => res.data),
+    
+  patch: <T = any>(url: string, data?: any, config?: any) => 
+    apiClient.patch<T>(url, data, config).then(res => res.data),
 
-  post: (endpoint: string, data?: any, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    apiRequest(endpoint, { ...options, method: 'POST', body: data }),
+  // Specific API methods
+  auth: {
+    getUser: () => api.get('/auth/user'),
+    syncUser: (userData: any) => api.post('/auth/sync', userData),
+    validateInvite: (code: string) => api.post('/auth/validate-invite', { code }),
+    generateInvite: (userId: number, maxUses: number, expiresAt?: string) => 
+      api.post('/invite-codes/generate', { userId, maxUses, expiresAt }),
+  },
 
-  put: (endpoint: string, data?: any, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    apiRequest(endpoint, { ...options, method: 'PUT', body: data }),
+  users: {
+    getVocabulary: (userId: number) => api.get(`/users/${userId}/vocabulary`),
+    getProgress: (userId: number) => api.get(`/users/${userId}/progress`),
+    getInviteCodes: (userId: number) => api.get(`/users/${userId}/invite-codes`),
+    getBookmarks: (userId: number) => api.get(`/users/${userId}/bookmarks`),
+  },
 
-  delete: (endpoint: string, options?: Omit<RequestOptions, 'method'>) =>
-    apiRequest(endpoint, { ...options, method: 'DELETE' }),
+  songs: {
+    getAll: () => api.get('/songs'),
+    getById: (id: number) => api.get(`/songs/${id}`),
+    getBookmarkStatus: (songId: number) => api.get(`/songs/${songId}/bookmark`),
+  },
+
+  vocabulary: {
+    save: (vocabulary: any) => api.post('/vocabulary', vocabulary),
+  },
+
+  bookmarks: {
+    create: (userId: number, songId: number) => api.post('/bookmarks', { userId, songId }),
+    delete: (userId: number, songId: number) => api.delete(`/bookmarks/${userId}/${songId}`),
+  },
+
+  featureFlags: {
+    get: (name: string) => api.get(`/feature-flags/${name}`),
+    getAll: () => api.get('/feature-flags'),
+  },
+
+  translate: (text: string, targetLanguage: string, fromLanguage: string = "es", songId?: number) => 
+    api.post('/translate', { text, fromLanguage, toLanguage: targetLanguage, songId }),
 };
+
+export default apiClient;

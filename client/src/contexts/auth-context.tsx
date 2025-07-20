@@ -4,8 +4,6 @@ import { supabase } from '@/lib/supabase'
 import { useFeatureFlag } from '@/hooks/use-feature-flags'
 import { api } from '@/lib/api-client'
 import { type DatabaseUser } from '@/lib/auth'
-import { setUserContext, clearUserContext } from '@/lib/sentry'
-import { setUserIdentity, trackUserAction } from '@/lib/clarity'
 
 interface AuthContextType {
   session: Session | null
