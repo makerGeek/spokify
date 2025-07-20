@@ -13,6 +13,7 @@ import {
   Users,
   Copy,
   Settings,
+  Gift,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
