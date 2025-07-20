@@ -63,8 +63,9 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
       return;
     }
     
-    // User has access - proceed with original click handler (opens lyrics overlay)
-    onClick();
+    // User has access - set current song and play it, then open lyrics
+    setCurrentSong(song, true); // Auto-play the song
+    onClick(); // Open lyrics overlay
   };
 
 
