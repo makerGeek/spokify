@@ -73,7 +73,18 @@ export function useSongAccess() {
   }, [user, databaseUser, inviteCodesEnabled]);
 
   const checkSongAccess = useCallback((song: Song): SongAccessResult => {
-    // All songs require authentication first
+    // Free songs are always accessible
+    if (song.isFree) {
+      return {
+        canAccess: true,
+        reason: 'free_song',
+        requiresAuth: false,
+        requiresActivation: false,
+        requiresPremium: false,
+      };
+    }
+
+    // Premium songs require authentication
     if (!user) {
       return {
         canAccess: false,
@@ -82,31 +93,6 @@ export function useSongAccess() {
         requiresActivation: false,
         requiresPremium: false,
       };
-    }
-
-    // Free songs are accessible once authenticated and activated
-    if (song.isFree) {
-      // Check if user needs activation (only if invite codes are enabled)
-      if (isActive === false) {
-        return {
-          canAccess: false,
-          reason: 'not_active',
-          requiresAuth: false,
-          requiresActivation: true,
-          requiresPremium: false,
-        };
-      }
-
-      // User is authenticated and (activated or invite codes disabled)
-      if (isActive === true || isActive === null) {
-        return {
-          canAccess: true,
-          reason: 'free_song',
-          requiresAuth: false,
-          requiresActivation: false,
-          requiresPremium: false,
-        };
-      }
     }
 
     // Premium songs require activation (if invite codes are enabled)

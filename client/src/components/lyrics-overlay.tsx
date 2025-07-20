@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { ArrowDown, Bookmark, BookmarkCheck, Languages, RotateCcw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,26 +6,25 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import TranslationOverlay from "@/components/translation-overlay";
 
-import MiniPlayer from "@/components/mini-player";
 import { useAudio } from "@/hooks/use-audio";
-import { useAuth } from "@/contexts/auth-context";
-import { useSongAccess } from "@/hooks/use-song-access";
 import { useBookmarks, useBookmarkStatus } from "@/hooks/use-bookmarks";
 import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
-export default function LyricsPlayer() {
-  const params = useParams();
-  const [, setLocation] = useLocation();
-  const songId = parseInt(params.id || "0");
+interface LyricsOverlayProps {
+  songId: number;
+  onClose: () => void;
+  isVisible: boolean;
+}
+
+export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOverlayProps) {
   const [showTranslation, setShowTranslation] = useState(false);
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [showTranslationMode, setShowTranslationMode] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const { currentSong, setCurrentSong, currentTime, duration, seekTo } = useAudio();
-  const { user } = useAuth();
-  const { checkSongAccess } = useSongAccess();
   const { toggleBookmark, isToggling } = useBookmarks();
   const { data: bookmarkStatus } = useBookmarkStatus(songId);
 
@@ -34,34 +32,17 @@ export default function LyricsPlayer() {
     queryKey: ["/api/songs", songId],
     queryFn: async () => {
       return api.songs.getById(songId);
-    }
+    },
+    enabled: isVisible && songId > 0
   });
-
-  // Check song access and redirect if needed
-  useEffect(() => {
-    if (song) {
-      const accessResult = checkSongAccess(song);
-      
-      if (!accessResult.canAccess) {
-        // User doesn't have access - redirect to home
-        // The home component will handle showing appropriate modals
-        setLocation("/home");
-        return;
-      }
-    }
-  }, [song, checkSongAccess, setLocation]);
 
   // Initialize YouTube player for this song when it loads
   useEffect(() => {
     if (song && (!currentSong || currentSong.id !== song.id)) {
-      console.log("Lyrics page: Setting current song to", song.title);
-      setCurrentSong(song, false); // Don't auto-play from lyrics page
+      console.log("Lyrics overlay: Setting current song to", song.title);
+      setCurrentSong(song, false); // Don't auto-play from lyrics overlay
     }
   }, [song, currentSong, setCurrentSong]);
-
-  const handleCloseLyrics = () => {
-    setLocation("/home");
-  };
 
   const handleLineClick = (line: any) => {
     // Seek to the timestamp of the clicked line
@@ -102,6 +83,20 @@ export default function LyricsPlayer() {
     return currentTime >= lineTime && currentTime < nextLineTime;
   };
 
+  // Handle animation state changes
+  useEffect(() => {
+    if (isVisible) {
+      // Small delay to ensure the component is rendered in hidden state first
+      const timer = setTimeout(() => {
+        setIsAnimating(true);
+      }, 10);
+      return () => clearTimeout(timer);
+    } else {
+      // Start closing animation
+      setIsAnimating(false);
+    }
+  }, [isVisible]);
+
   // Auto-scroll to keep active lyric line centered
   useEffect(() => {
     if (!autoScroll || !song?.lyrics || !Array.isArray(song.lyrics)) return;
@@ -130,17 +125,23 @@ export default function LyricsPlayer() {
     }
   }, [currentTime, song?.lyrics, autoScroll]);
 
-  const formatTime = (seconds: number) => {
-    if (!seconds || isNaN(seconds)) return "0:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const handleClose = () => {
+    setIsAnimating(false);
+    // Delay the actual close to allow animation to complete
+    setTimeout(() => {
+      onClose();
+    }, 300);
   };
 
+  if (!isVisible && !isAnimating) {
+    return null;
+  }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
+      <div className={`fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
+        isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
+      }`}>
         <div className="text-center">
           <div className="w-16 h-16 bg-spotify-green rounded-full animate-pulse mb-4"></div>
           <p className="text-spotify-muted">Loading song...</p>
@@ -151,10 +152,12 @@ export default function LyricsPlayer() {
 
   if (!song) {
     return (
-      <div className="min-h-screen bg-spotify-bg flex items-center justify-center">
+      <div className={`fixed inset-0 z-50 bg-spotify-bg flex items-center justify-center transition-transform duration-300 ease-out ${
+        isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
+      }`}>
         <div className="text-center">
           <p className="text-spotify-muted">Song not found</p>
-          <Button onClick={handleCloseLyrics} className="mt-4">
+          <Button onClick={handleClose} className="mt-4">
             Go Back
           </Button>
         </div>
@@ -163,7 +166,9 @@ export default function LyricsPlayer() {
   }
 
   return (
-    <div className="min-h-screen bg-spotify-bg pb-32 overflow-x-hidden">
+    <div className={`fixed inset-0 z-50 bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
+      isVisible && isAnimating ? 'translate-y-0' : 'translate-y-full'
+    }`}>
       {/* Main Content - Full Height Lyrics */}
       <div className="p-4 w-full max-w-full">
         <div className="flex items-center justify-between mb-6">
@@ -171,7 +176,7 @@ export default function LyricsPlayer() {
             variant="ghost"
             size="sm"
             className="w-10 h-10 bg-spotify-card rounded-full p-0"
-            onClick={handleCloseLyrics}
+            onClick={handleClose}
           >
             <ArrowDown className="text-spotify-muted" size={20} />
           </Button>
@@ -283,9 +288,6 @@ export default function LyricsPlayer() {
           )}
         </div>
       </div>
-
-      {/* Mini Player Component */}
-      <MiniPlayer />
 
       {/* Translation Overlay */}
       {showTranslation && selectedLine && (

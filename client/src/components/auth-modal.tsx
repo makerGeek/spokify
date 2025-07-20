@@ -8,14 +8,12 @@ interface AuthModalProps {
   children: ReactNode;
   onClose?: () => void;
   customMessage?: string;
-  undismissible?: boolean;
 }
 
 export function AuthModal({
   children,
   onClose,
   customMessage,
-  undismissible = false,
 }: AuthModalProps) {
   const { user, loading } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
@@ -25,13 +23,13 @@ export function AuthModal({
   }, []);
 
   const handleClose = () => {
-    if (!undismissible && onClose) {
+    if (onClose) {
       onClose();
     }
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
-    if (!undismissible && e.target === e.currentTarget) {
+    if (e.target === e.currentTarget) {
       handleClose();
     }
   };
@@ -85,7 +83,7 @@ export function AuthModal({
           }}
         >
           {/* Close button */}
-          {onClose && !undismissible && (
+          {onClose && (
             <button
               onClick={handleClose}
               className="absolute top-4 right-4 text-spotify-muted hover:text-white transition-colors"

@@ -20,12 +20,10 @@ export default function MiniPlayer() {
 
   const handleToggleLyrics = () => {
     if (isLyricsShown) {
-      // Hide lyrics - trigger slide down animation in lyrics player
-      // The lyrics player will handle the animation and navigation
+      // Hide lyrics - go back to home
       setLocation('/home');
     } else {
-      // Show lyrics - mark as mini-player navigation and go to lyrics page
-      sessionStorage.setItem('lyricsNavigationSource', 'mini-player');
+      // Show lyrics - go to lyrics page
       setLocation(`/lyrics/${currentSong.id}`);
     }
   };
@@ -42,19 +40,19 @@ export default function MiniPlayer() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[9999]" style={{ paddingBottom: '64px' }}>
+    <div className="fixed bottom-16 left-0 right-0 z-60">
       {/* Compact Progress Bar - Spotify style */}
-      <div className="bg-spotify-card/95 backdrop-blur-md relative overflow-visible">
-        <div className="relative group py-2 px-0 overflow-visible">
+      <div className="bg-spotify-card/95 backdrop-blur-md relative">
+        <div className="relative group">
           <Slider
             value={[currentTime]}
             onValueChange={handleSeek}
             max={duration || 100}
             step={1}
-            className="h-1 cursor-pointer spotify-progress-slider relative overflow-visible"
+            className="h-1 cursor-pointer spotify-progress-slider relative"
           />
           {/* Time indicators on hover */}
-          <div className="absolute inset-x-0 -top-8 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[80]">
+          <div className="absolute inset-x-0 -top-6 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
             <span className="text-xs text-spotify-text bg-spotify-bg px-2 py-1 rounded shadow-lg">
               {formatTime(currentTime)}
             </span>
