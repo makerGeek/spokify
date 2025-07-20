@@ -81,7 +81,7 @@ export default function ActivationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="spotify-card max-w-md w-full p-8">
         <div className="text-center mb-8">
           <h1 className="spotify-heading-lg mb-2">Activate Your Account</h1>
