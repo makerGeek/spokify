@@ -125,15 +125,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     if (!session?.user) return false
 
     try {
-      const response = await fetch('/api/verify-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      })
-
-      const data = await response.json()
+      const data = await api.post('/verify-subscription')
       
       if (data.subscriptionActive) {
         // Refresh subscription data after verification
@@ -159,19 +151,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await fetch('/api/stripe-portal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          customerId: subscription.stripeCustomerId,
-          returnUrl: `${window.location.origin}/subscription-confirmation`
-        })
+      const data = await api.post('/stripe-portal', {
+        customerId: subscription.stripeCustomerId,
+        returnUrl: `${window.location.origin}/subscription-confirmation`
       })
-
-      const data = await response.json()
       
       if (data.url) {
         window.location.href = data.url
@@ -199,19 +182,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await fetch('/api/stripe-portal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          customerId: subscription.stripeCustomerId,
-          returnUrl: `${window.location.origin}/profile`
-        })
+      const data = await api.post('/stripe-portal', {
+        customerId: subscription.stripeCustomerId,
+        returnUrl: `${window.location.origin}/profile`
       })
-
-      const data = await response.json()
       
       if (data.url) {
         window.location.href = data.url

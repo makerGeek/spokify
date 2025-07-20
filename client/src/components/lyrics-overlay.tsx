@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import TranslationOverlay from "@/components/translation-overlay";
 
 import { useAudio } from "@/hooks/use-audio";
+import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
 interface LyricsOverlayProps {
@@ -28,9 +29,7 @@ export default function LyricsOverlay({ songId, onClose, isVisible }: LyricsOver
   const { data: song, isLoading } = useQuery<Song>({
     queryKey: ["/api/songs", songId],
     queryFn: async () => {
-      const response = await fetch(`/api/songs/${songId}`);
-      if (!response.ok) throw new Error("Failed to fetch song");
-      return response.json();
+      return api.songs.getById(songId);
     },
     enabled: isVisible && songId > 0
   });

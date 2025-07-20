@@ -11,6 +11,7 @@ import MiniPlayer from "@/components/mini-player";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
+import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
 export default function LyricsPlayer() {
@@ -30,9 +31,7 @@ export default function LyricsPlayer() {
   const { data: song, isLoading } = useQuery<Song>({
     queryKey: ["/api/songs", songId],
     queryFn: async () => {
-      const response = await fetch(`/api/songs/${songId}`);
-      if (!response.ok) throw new Error("Failed to fetch song");
-      return response.json();
+      return api.songs.getById(songId);
     }
   });
 
