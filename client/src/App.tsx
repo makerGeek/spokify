@@ -26,10 +26,12 @@ import Checkout from "@/pages/checkout";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
+import MiniPlayer from "@/components/mini-player";
 import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
 import { useSubscription } from "@/contexts/subscription-context";
 import { getAuthToken } from "@/lib/auth";
+import { useAudio } from "@/hooks/use-audio";
 
 // Admin route component - authorization is handled by the APIs themselves
 function AdminRoute() {
@@ -38,6 +40,7 @@ function AdminRoute() {
 
 function Router() {
   const [location] = useLocation();
+  const { currentSong } = useAudio();
   
   // Determine current page for bottom navigation
   const getCurrentPage = () => {
@@ -94,6 +97,11 @@ function Router() {
         <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
         <Route component={NotFound} />
       </Switch>
+      
+      {/* Mini Player - Global component outside all route stacking contexts */}
+      {currentSong && (
+        <MiniPlayer />
+      )}
       
       {/* Bottom Navigation - visible on main app pages */}
       {location !== '/' && location !== '/language-selection' && location !== '/song-offset' && (

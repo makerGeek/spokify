@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
-import MiniPlayer from "@/components/mini-player";
 import { AuthModal } from "@/components/auth-modal";
 import ActivationModal from "@/components/activation-modal";
 import { PremiumModal } from "@/components/premium-modal";
@@ -234,8 +233,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Mini Player */}
-      {currentSong && <MiniPlayer />}
+
 
       {/* Auth Modal for Premium Songs */}
       {showAuthModal && selectedSong && (
