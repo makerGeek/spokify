@@ -88,6 +88,7 @@ export const api = {
     save: (vocabulary: any) => api.post('/vocabulary', vocabulary),
     submitReview: (vocabularyId: number, quality: number) => 
       api.post(`/vocabulary/${vocabularyId}/review`, { quality }),
+    delete: (vocabularyId: number) => api.delete(`/vocabulary/${vocabularyId}`),
   },
 
   bookmarks: {

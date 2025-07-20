@@ -377,6 +377,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/vocabulary/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const vocabularyId = parseInt(req.params.id);
+      
+      // Get user
+      const user = await storage.getUserByUsername(req.user!.email);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Verify user owns this vocabulary record
+      const allUserVocab = await storage.getUserVocabulary(user.id);
+      const vocabItem = allUserVocab.find(v => v.id === vocabularyId);
+      if (!vocabItem) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      await storage.deleteVocabulary(vocabularyId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete vocabulary item" });
+    }
+  });
+
   // Bookmark routes - protected
   app.get("/api/users/:userId/bookmarks", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {

@@ -29,6 +29,7 @@ export interface IStorage {
   getUserVocabulary(userId: number): Promise<Vocabulary[]>;
   createVocabulary(vocabulary: InsertVocabulary): Promise<Vocabulary>;
   updateVocabulary(id: number, updates: Partial<Vocabulary>): Promise<Vocabulary>;
+  deleteVocabulary(id: number): Promise<void>;
   
   // Spaced repetition methods
   getDueVocabulary(userId: number): Promise<Vocabulary[]>;
@@ -221,6 +222,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(vocabulary.id, id))
       .returning();
     return vocab;
+  }
+
+  async deleteVocabulary(id: number): Promise<void> {
+    await db.delete(vocabulary).where(eq(vocabulary.id, id));
   }
 
   // Spaced repetition implementation
