@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { translateText } from "./services/gemini";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertInviteCodeSchema, insertBookmarkSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, requireAdmin, AuthenticatedRequest } from "./middleware/auth";
+import { asyncHandler, handleDBError, handleExternalAPIError, handleValidationError, createNotFoundError } from "./middleware/error-handling";
 import authRoutes from "./routes/auth";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -172,13 +173,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/songs/:id", optionalAuth, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/songs/:id", optionalAuth, asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid song ID" });
+    }
+
     try {
-      const id = parseInt(req.params.id);
       const accessResult = await canAccessSong(req.user, id);
       
       if (!accessResult.song) {
-        return res.status(404).json({ message: "Song not found" });
+        throw createNotFoundError("Song");
       }
 
       const song = accessResult.song;
@@ -219,9 +224,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requiresPremium: accessResult.requiresPremium
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch song" });
+      handleDBError(error as Error, 'getSong', 'songs', { songId: id });
+      throw error;
     }
-  });
+  }));
 
 
 

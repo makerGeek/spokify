@@ -6,8 +6,6 @@ import { api } from '@/lib/api-client'
 import { type DatabaseUser } from '@/lib/auth'
 import { setUserContext, clearUserContext } from '@/lib/sentry'
 import { setUserIdentity, trackUserAction } from '@/lib/clarity'
-import { setUserContext, clearUserContext } from '@/lib/sentry'
-import { setUserIdentity, trackUserAction } from '@/lib/clarity'
 
 interface AuthContextType {
   session: Session | null
@@ -84,25 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (isMounted && response?.user) {
           console.log('✅ Auth: Database user loaded', response.user.email);
           setDatabaseUser(response.user);
-          
-          // Set user context for error tracking and analytics
-          setUserContext({
-            id: response.user.id.toString(),
-            email: response.user.email,
-            subscription: response.user.subscriptionStatus
-          });
-          
-          setUserIdentity(response.user.id.toString(), {
-            email: response.user.email,
-            subscription_status: response.user.subscriptionStatus,
-            target_language: response.user.targetLanguage,
-            native_language: response.user.nativeLanguage
-          });
-          
-          trackUserAction('user_login', {
-            method: 'session_restored',
-            subscription_status: response.user.subscriptionStatus
-          });
         }
       }).catch(error => {
         if (isMounted) {
@@ -112,8 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else if (!session?.user) {
       console.log('🚪 Auth: User logged out, clearing database user');
       setDatabaseUser(null);
-      clearUserContext();
-      trackUserAction('user_logout');
     } else if (session?.user && databaseUser) {
       console.log('✅ Auth: Database user already loaded, skipping');
     }
@@ -124,10 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user?.id]); // Use session.user.id instead of session.user to prevent unnecessary calls
 
   const signOut = async () => {
-    trackUserAction('user_logout', { initiated_by: 'user' });
     await supabase.auth.signOut()
     setDatabaseUser(null)
-    clearUserContext()
   }
 
   const refreshUserData = async () => {
