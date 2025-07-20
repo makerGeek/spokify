@@ -95,16 +95,6 @@ export function AuthModal({
             </button>
           )}
 
-          {/* Compact header */}
-          <div className="text-center mb-6 px-8">
-            <h2 className="spotify-heading-sm text-white mb-2">
-              Sign in to save words
-            </h2>
-            <p className="spotify-text-muted text-sm">
-              Create an account to build your vocabulary
-            </p>
-          </div>
-
           {/* Compact login form */}
           <div className="space-y-4">
             <LoginForm redirectTo="/home" contextMessage={customMessage} />
