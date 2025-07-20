@@ -179,7 +179,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
     }`}>
       {/* Header with controls */}
       <div className="p-3 w-full max-w-full">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -259,7 +259,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
         <div className="space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain" 
              id="lyrics-container"
              style={{ 
-               height: 'calc(100vh - 200px)', // Screen minus fixed header and bottom sections
+               height: 'calc(100vh - 160px)', // Screen minus fixed header and bottom sections
                WebkitOverflowScrolling: 'touch',
                scrollBehavior: 'smooth',
                touchAction: 'pan-y',
