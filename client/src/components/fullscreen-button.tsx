@@ -5,17 +5,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 
 export default function FullscreenButton() {
+  // ALL HOOKS MUST BE CALLED FIRST - NEVER BEFORE CONDITIONAL RETURNS
   const { isInstalled, requestFullscreen } = usePWADetection();
   const { toast } = useToast();
   const [isCurrentlyFullscreen, setIsCurrentlyFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Only show if PWA is not installed (running in mobile browser)
-  if (isInstalled) {
-    return null;
-  }
-
-  // Listen for fullscreen changes
+  // Listen for fullscreen changes - HOOK MUST BE CALLED BEFORE ANY RETURNS
   useEffect(() => {
     const handleFullscreenChange = () => {
       const isFullscreen = !!(
@@ -81,6 +77,12 @@ export default function FullscreenButton() {
       setIsLoading(false);
     }
   };
+
+  // Only show if PWA is not installed (running in mobile browser)
+  // CONDITIONAL RENDERING MUST COME AFTER ALL HOOKS
+  if (isInstalled) {
+    return null;
+  }
 
   return (
     <Button

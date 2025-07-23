@@ -1,0 +1,86 @@
+pwa-error-handler.ts:66  PWA Global Error: Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+    at renderWithHooks (react-dom.development.js:15562:11)
+    at updateFunctionComponent (react-dom.development.js:19617:20)
+    at beginWork (react-dom.development.js:21640:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7) Object
+console.error @ pwa-error-handler.ts:66
+react-dom.development.js:15562  Uncaught Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+    at renderWithHooks (react-dom.development.js:15562:11)
+    at updateFunctionComponent (react-dom.development.js:19617:20)
+    at beginWork (react-dom.development.js:21640:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7)
+pwa-error-handler.ts:66  PWA Global Error: Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+    at renderWithHooks (react-dom.development.js:15562:11)
+    at updateFunctionComponent (react-dom.development.js:19617:20)
+    at beginWork (react-dom.development.js:21640:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7) Object
+console.error @ pwa-error-handler.ts:66
+react-dom.development.js:15562  Uncaught Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+    at renderWithHooks (react-dom.development.js:15562:11)
+    at updateFunctionComponent (react-dom.development.js:19617:20)
+    at beginWork (react-dom.development.js:21640:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7)
+pwa-error-handler.ts:66  The above error occurred in the <FullscreenButton> component:
+
+    at FullscreenButton (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/components/fullscreen-button.tsx:25:46)
+    at div
+    at div
+    at header
+    at div
+    at Home (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/pages/home.tsx:43:35)
+    at Route (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=061fbcab:323:16)
+    at Switch (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=061fbcab:379:17)
+    at div
+    at Router (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/App.tsx?v=BPOL_bXL_b6OyDe0OFAoI:64:22)
+    at div
+    at AppContent (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/App.tsx?v=BPOL_bXL_b6OyDe0OFAoI:267:39)
+    at AudioProvider (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/hooks/use-audio.tsx:20:33)
+    at ErrorBoundary (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/components/error-boundary.tsx:22:5)
+    at SubscriptionProvider (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/contexts/subscription-context.tsx:39:40)
+    at AuthProvider (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/contexts/auth-context.tsx:37:32)
+    at AppStateProvider (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/contexts/app-state-provider.tsx:19:36)
+    at Provider (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T2Y55DJC.js?v=061fbcab:22:15)
+    at TooltipProvider (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=061fbcab:58:5)
+    at QueryClientProvider (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=061fbcab:2805:3)
+    at ErrorBoundary (https://e3d7c2a5-9ceb-4a52-8be1-4f96f721666b-00-17pdmcqj4ppnj.janeway.replit.dev/src/components/error-boundary.tsx:22:5)
+    at App
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+console.error @ pwa-error-handler.ts:66
+pwa-error-handler.ts:66  🚨 ErrorBoundary caught an error: Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+    at renderWithHooks (react-dom.development.js:15562:11)
+    at updateFunctionComponent (react-dom.development.js:19617:20)
+    at beginWork (react-dom.development.js:21640:16)
+    at beginWork$1 (react-dom.development.js:27465:14)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (react-dom.development.js:25889:20)
+    at performConcurrentWorkOnRoot (react-dom.development.js:25789:22)
+    at workLoop (scheduler.development.js:266:34) Object
+console.error @ pwa-error-handler.ts:66
+pwa-error-handler.ts:66  🪝 React Hooks Order Error detected - this typically occurs when hooks are called conditionally
