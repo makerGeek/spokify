@@ -1,0 +1,40 @@
+SW: Navigation request for: /
+sw.js:162 SW: Fetched and cached fresh main page
+sw.js:279 SW: Fresh asset cached: /assets/index-CfAGIFoj.css
+sw.js:279 SW: Fresh asset cached: /assets/index-DBwg3nVM.js
+index-DBwg3nVM.js:394 YouTube API script already present, waiting for load...
+index-DBwg3nVM.js:335 PWA: Running in standalone mode
+index-DBwg3nVM.js:348 YouTube not ready or no song: Object
+index-DBwg3nVM.js:353 🔍 Subscription Effect: Checking subscription update Object
+index-DBwg3nVM.js:353 🚪 Subscription: User logged out, resetting to default
+index-DBwg3nVM.js:353 🔍 Auth Effect: Checking database user load Object
+index-DBwg3nVM.js:353 🚪 Auth: User logged out, clearing database user
+sw.js:301 SW: Serving from dynamic cache: /gtag/js
+index-DBwg3nVM.js:335 SW registered:  ServiceWorkerRegistration
+sw.js:123 SW: Bypassing cache for development/API request: /api/feature-flags/ENABLE_INVITE_CODES
+sw.js:123 SW: Bypassing cache for development/API request: /api/feature-flags/SHOW_GENRES_FILTERS
+sw.js:123 SW: Bypassing cache for development/API request: /api/songs
+sw.js:292 SW: Serving from static cache: /flags/de.png
+index-DBwg3nVM.js:40  Error: Minified React error #300; visit https://reactjs.org/docs/error-decoder.html?invariant=300 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at Rh (index-DBwg3nVM.js:38:17202)
+    at Ad (index-DBwg3nVM.js:40:3139)
+    at Wx (index-DBwg3nVM.js:40:44737)
+    at Ux (index-DBwg3nVM.js:40:39727)
+    at Zj (index-DBwg3nVM.js:40:39655)
+    at zl (index-DBwg3nVM.js:40:39508)
+    at Wd (index-DBwg3nVM.js:40:35875)
+    at Dx (index-DBwg3nVM.js:40:34826)
+    at k (index-DBwg3nVM.js:25:1562)
+    at MessagePort.O (index-DBwg3nVM.js:25:1929)
+Rd @ index-DBwg3nVM.js:40
+index-DBwg3nVM.js:40  Uncaught Error: Minified React error #300; visit https://reactjs.org/docs/error-decoder.html?invariant=300 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at Rh (index-DBwg3nVM.js:38:17202)
+    at Ad (index-DBwg3nVM.js:40:3139)
+    at Wx (index-DBwg3nVM.js:40:44737)
+    at Ux (index-DBwg3nVM.js:40:39727)
+    at Zj (index-DBwg3nVM.js:40:39655)
+    at zl (index-DBwg3nVM.js:40:39508)
+    at Wd (index-DBwg3nVM.js:40:35875)
+    at Dx (index-DBwg3nVM.js:40:34826)
+    at k (index-DBwg3nVM.js:25:1562)
+    at MessagePort.O (index-DBwg3nVM.js:25:1929)
