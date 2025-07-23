@@ -25,6 +25,7 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export function AudioProvider({ children }: { children: ReactNode }) {
+  // All state hooks must be declared first to prevent React Error #300
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +34,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [isYouTubeReady, setIsYouTubeReady] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+  
+  // All ref hooks must be declared after state hooks, in consistent order
   const playerRef = useRef<any>(null);
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const playerContainerId = useRef(`youtube-player-${Math.random().toString(36).substr(2, 9)}`);

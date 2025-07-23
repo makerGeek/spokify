@@ -9,6 +9,7 @@ import { initGA } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { AudioProvider } from "@/hooks/use-audio";
 import { AppStateProvider } from "@/contexts/app-state-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 import SmartRedirect from "@/components/smart-redirect";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
@@ -25,6 +26,7 @@ import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
 
 import ServiceWorkerAdmin from "@/pages/service-worker-admin";
+import PWADebug from "@/pages/pwa-debug";
 import Subscribe from "@/pages/subscribe";
 import SubscriptionConfirmation from "@/pages/subscription-confirmation";
 import Checkout from "@/pages/checkout";
@@ -117,6 +119,7 @@ function Router() {
         <Route path="/song-offset" component={AdminRoute} />
 
         <Route path="/service-worker-admin" component={ServiceWorkerAdmin} />
+        <Route path="/pwa-debug" component={PWADebug} />
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route component={NotFound} />
@@ -188,15 +191,19 @@ function AppContent() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AppStateProvider>
-          <AudioProvider>
-            <AppContent />
-          </AudioProvider>
-        </AppStateProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AppStateProvider>
+            <ErrorBoundary>
+              <AudioProvider>
+                <AppContent />
+              </AudioProvider>
+            </ErrorBoundary>
+          </AppStateProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

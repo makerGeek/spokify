@@ -1,4 +1,10 @@
+import { PWAErrorHandler } from './pwa-error-handler';
+
 export function initializePWA() {
+  // Initialize error handling first
+  PWAErrorHandler.initialize();
+  PWAErrorHandler.checkRecoveryStatus();
+
   // Detect if running as installed PWA
   const isPWAMode = window.matchMedia('(display-mode: standalone)').matches || 
                    (window.navigator as any).standalone === true ||
@@ -8,6 +14,11 @@ export function initializePWA() {
     console.log('PWA: Running in standalone mode');
     // Add PWA-specific handling if needed
     document.documentElement.classList.add('pwa-mode');
+    
+    // Add error recovery listener
+    window.addEventListener('pwaRecovery', () => {
+      console.log('PWA recovery event received');
+    });
   }
 
   // Service Worker registration - skip in development to avoid caching issues
@@ -56,7 +67,8 @@ export function initializePWA() {
     navigator.serviceWorker.addEventListener('error', (error) => {
       console.error('SW runtime error:', error);
       // If SW is causing critical errors, provide bypass mechanism
-      if (error.message && error.message.includes('503')) {
+      const errorMessage = (error as any)?.message || 'Service Worker Error';
+      if (errorMessage.includes('503')) {
         console.log('SW causing 503 errors, temporarily disabling');
         navigator.serviceWorker.getRegistrations().then(registrations => {
           registrations.forEach(registration => registration.unregister());

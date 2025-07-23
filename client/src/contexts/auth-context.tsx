@@ -30,12 +30,15 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // All hooks must be declared at the top level, before any conditional logic
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [databaseUser, setDatabaseUser] = useState<DatabaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [requiresInviteCode, setRequiresInviteCode] = useState(false)
   const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(null)
+  
+  // Ensure this hook is always called - critical for React Error #300 prevention
   const { isEnabled: inviteCodeEnabled } = useFeatureFlag('ENABLE_INVITE_CODES')
 
   useEffect(() => {

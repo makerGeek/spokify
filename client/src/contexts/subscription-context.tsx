@@ -39,8 +39,11 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
 })
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
+  // All hooks must be declared at the top level to prevent React Error #300
   const [subscription, setSubscription] = useState<SubscriptionInfo>(defaultSubscription)
   const [loading, setLoading] = useState(true)
+  
+  // Critical: These hooks must ALWAYS be called in the same order
   const { databaseUser, session } = useAuth()
   const { toast } = useToast()
 

@@ -17,6 +17,7 @@ export interface DatabaseUser {
   subscriptionStatus?: string;
   subscriptionEndsAt?: string;
   stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
 }
 
 export interface UserSyncResult {
