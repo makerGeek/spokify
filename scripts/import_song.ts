@@ -1,8 +1,23 @@
+// Load environment variables from .env file FIRST, before any other imports
+import 'dotenv/config';
+
 import axios from 'axios';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { translateLyrics, assessLyricsDifficulty } from '../server/services/gemini.js';
 import { db } from '../server/db.js';
 import { songs } from '../shared/schema.js';
 import { eq, and, or } from 'drizzle-orm';
+
+// Initialize S3-compatible client
+const s3Client = new S3Client({
+  region: process.env.S3_REGION || 'us-east-1',
+  endpoint: process.env.S3_ENDPOINT, // e.g., 'https://s3.example.com'
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || ''
+  },
+  forcePathStyle: true // Required for some S3-compatible services
+});
 
 interface TrackInfo {
   spotifyId: string | null;
@@ -160,6 +175,114 @@ async function fetchSpotifyLyrics(trackId: string): Promise<LyricsLine[] | null>
   }
 }
 
+async function uploadAudioToS3(audioUrl: string, title: string, artist: string): Promise<string | null> {
+  try {
+    console.log(`Downloading audio from: ${audioUrl.substring(0, 50)}...`);
+    
+    // Download the audio file
+    const response = await axios({
+      method: 'GET',
+      url: audioUrl,
+      responseType: 'stream'
+    });
+
+    // Create a buffer from the stream
+    const chunks: Buffer[] = [];
+    for await (const chunk of response.data) {
+      chunks.push(chunk);
+    }
+    const audioBuffer = Buffer.concat(chunks);
+
+    // Generate a unique filename
+    const sanitizedTitle = title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    const sanitizedArtist = artist.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    const timestamp = Date.now();
+    const fileName = `audio/${sanitizedArtist}/${sanitizedTitle}_${timestamp}.mp3`;
+
+    console.log(`Uploading to S3: ${fileName}`);
+
+    // Upload to S3-compatible storage
+    const command = new PutObjectCommand({
+      Bucket: process.env.S3_BUCKET || '',
+      Key: fileName,
+      Body: audioBuffer,
+      ContentType: 'audio/mpeg',
+      ContentDisposition: `attachment; filename="${sanitizedTitle}.mp3"`
+    });
+
+    await s3Client.send(command);
+
+    // Generate the public URL based on endpoint configuration
+    const endpoint = process.env.S3_ENDPOINT || '';
+    const bucket = process.env.S3_BUCKET || '';
+    
+    // Remove protocol from endpoint for URL construction
+    const cleanEndpoint = endpoint.replace(/^https?:\/\//, '');
+    const s3Url = `https://${cleanEndpoint}/${bucket}/${fileName}`;
+    
+    console.log(`✓ Audio uploaded to S3-compatible storage: ${s3Url}`);
+    return s3Url;
+
+  } catch (error) {
+    console.error('Error uploading audio to S3:', error);
+    return null;
+  }
+}
+
+async function fetchSoundCloudTrack(title: string, artist: string): Promise<{ audioUrl: string; duration: number } | null> {
+  const searchTerm = `${title} ${artist}`;
+  
+  const options = {
+    method: 'GET',
+    url: 'https://spotify-scraper.p.rapidapi.com/v1/track/download/soundcloud',
+    params: {
+      track: searchTerm,
+      quality: 'sq'
+    },
+    headers: {
+      'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
+      'x-rapidapi-host': 'spotify-scraper.p.rapidapi.com'
+    }
+  };
+
+  try {
+    console.log(`Searching SoundCloud for: "${searchTerm}"`);
+    const response = await axios.request(options);
+    const data = response.data;
+    
+    if (data?.status && data?.soundcloudTrack?.audio) {
+      const audio = data.soundcloudTrack.audio;
+      
+      // Find the SQ MP3 audio
+      const mp3Audio = audio.find((item: any) => 
+        item.quality === 'sq' && 
+        item.format === 'mp3' && 
+        item.mimeType === 'audio/mpeg'
+      );
+      
+      if (mp3Audio) {
+        console.log(`✓ Found SoundCloud MP3: ${data.soundcloudTrack.title}`);
+        console.log(`  Duration: ${mp3Audio.durationText} (${mp3Audio.durationMs}ms)`);
+        console.log(`  URL: ${mp3Audio.url.substring(0, 50)}...`);
+        
+        return {
+          audioUrl: mp3Audio.url,
+          duration: Math.round(mp3Audio.durationMs / 1000) // Convert to seconds
+        };
+      } else {
+        console.log('No SQ MP3 audio found in SoundCloud response');
+        return null;
+      }
+    } else {
+      console.log('No SoundCloud track found or invalid response');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching SoundCloud track:', error);
+    return null;
+  }
+}
+
 async function saveSongToDatabase(songData: {
   title: string;
   artist: string;
@@ -168,6 +291,8 @@ async function saveSongToDatabase(songData: {
   lyrics: LyricsLine[];
   translatedLyrics: any[] | null;
   difficultyResult: any | null;
+  soundcloudData?: { audioUrl: string; duration: number } | null;
+  s3AudioUrl?: string | null;
 }) {
   try {
     // Convert lyrics with translations to the format expected by the database
@@ -189,8 +314,9 @@ async function saveSongToDatabase(songData: {
       difficulty: songData.difficultyResult?.difficulty || "A1",
       rating: 0,
       albumCover: null,
-      audioUrl: songData.youtubeId || null,
-      duration: 0, // Could be calculated from lyrics
+      audioUrl: songData.s3AudioUrl || null, // S3 bucket URL
+      sdcldAudioUrl: songData.soundcloudData?.audioUrl || null, // Original SoundCloud URL
+      duration: songData.soundcloudData?.duration || 0,
       lyrics: formattedLyrics,
       spotifyId: songData.spotifyId,
       youtubeId: songData.youtubeId,
@@ -262,6 +388,17 @@ async function main() {
   console.log(`\nFetching lyrics for Spotify track: ${spotifyResult.spotifyId}`);
   const lyrics = await fetchSpotifyLyrics(spotifyResult.spotifyId);
   
+  // Fetch SoundCloud audio URL and duration
+  console.log(`\nFetching SoundCloud audio for: ${spotifyResult.title} by ${spotifyResult.artist}`);
+  const soundcloudData = await fetchSoundCloudTrack(spotifyResult.title, spotifyResult.artist);
+  
+  // Upload audio to S3 if SoundCloud data is available
+  let s3AudioUrl = null;
+  if (soundcloudData) {
+    console.log(`\nUploading audio to S3...`);
+    s3AudioUrl = await uploadAudioToS3(soundcloudData.audioUrl, spotifyResult.title, spotifyResult.artist);
+  }
+  
   let translatedLyrics = null;
   let difficultyResult = null;
   
@@ -299,7 +436,9 @@ async function main() {
         youtubeId,
         lyrics,
         translatedLyrics,
-        difficultyResult
+        difficultyResult,
+        soundcloudData,
+        s3AudioUrl
       });
     } catch (error) {
       console.error('Failed to save to database:', error);
@@ -312,6 +451,9 @@ async function main() {
   console.log(`Artist: ${spotifyResult.artist}`);
   console.log(`Spotify ID: ${spotifyResult.spotifyId}`);
   console.log(`YouTube ID: ${youtubeId || 'Not found'}`);
+  console.log(`SoundCloud Audio: ${soundcloudData ? 'Yes' : 'Not found'}`);
+  console.log(`S3 Audio URL: ${s3AudioUrl ? 'Yes' : 'Not uploaded'}`);
+  console.log(`Audio Duration: ${soundcloudData ? Math.floor(soundcloudData.duration / 60) + ':' + String(soundcloudData.duration % 60).padStart(2, '0') : 'Unknown'}`);
   console.log(`Lyrics Found: ${lyrics ? 'Yes (' + lyrics.length + ' lines)' : 'No'}`);
   console.log(`Translated Lyrics: ${translatedLyrics ? 'Yes (' + translatedLyrics.length + ' lines)' : 'No'}`);
   console.log(`Language Detected: ${difficultyResult?.language || 'Not detected'}`);
@@ -321,6 +463,14 @@ async function main() {
   
   if (!youtubeId) {
     console.log('\nWarning: No YouTube video found');
+  }
+  
+  if (!soundcloudData) {
+    console.log('Warning: No SoundCloud audio found');
+  }
+  
+  if (!s3AudioUrl && soundcloudData) {
+    console.log('Warning: SoundCloud audio found but S3 upload failed');
   }
   
   if (!lyrics) {
@@ -351,7 +501,13 @@ async function main() {
 }
 
 // Run the script if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from 'url';
+import { resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const currentFile = resolve(process.argv[1]);
+
+if (__filename === currentFile) {
   main().catch(console.error);
 }
 

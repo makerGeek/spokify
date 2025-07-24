@@ -3,6 +3,15 @@ import { YouTubePlayerAdapter } from './players/youtube-player-adapter';
 import { MP3PlayerAdapter } from './players/mp3-player-adapter';
 
 export class PlayerFactory {
+  /**
+   * Detects if the current device is iOS
+   */
+  static isIOS(): boolean {
+    // Check for iOS-specific properties
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
   static createPlayer(config: PlayerConfig): PlayerAdapter {
     switch (config.type) {
       case PlayerType.YOUTUBE:
@@ -15,18 +24,15 @@ export class PlayerFactory {
   }
 
   /**
-   * Determines the appropriate player type based on the current page URL
-   * If current page URL contains ?try=true, use MP3 player, otherwise use YouTube player
+   * Determines the appropriate player type based on device detection
+   * If device is iOS, use MP3 player, otherwise use YouTube player
    */
   static getPlayerTypeFromUrl(audioUrl: string): PlayerType {
-    // Check current page URL for try=true parameter
-    const currentUrl = window.location.href;
-    
-    if (currentUrl.includes('try=true')) {
-      console.log('Using MP3 player due to ?try=true in page URL:', currentUrl);
+    if (this.isIOS()) {
+      console.log('Using MP3 player for iOS device');
       return PlayerType.MP3;
     } else {
-      console.log('Using YouTube player (no ?try=true in page URL):', currentUrl);
+      console.log('Using YouTube player for non-iOS device');
       return PlayerType.YOUTUBE;
     }
   }
@@ -48,20 +54,26 @@ export class PlayerFactory {
   }
 
   /**
-   * Gets the actual audio URL to use based on page URL
-   * If page has ?try=true, use sample MP3, otherwise use original audioUrl
+   * Gets the actual audio URL to use based on device and player type
+   * If device is iOS, use sample MP3, otherwise use appropriate field for player type
    */
-  static getAudioUrlToPlay(originalAudioUrl: string): string {
-    const currentUrl = window.location.href;
-    
-    if (currentUrl.includes('try=true')) {
-      // Use sample MP3 file when try=true is in page URL
+  static getAudioUrlToPlay(song: { audioUrl: string | null; youtubeId: string | null }): string {
+    if (this.isIOS()) {
+      // Use sample MP3 file for iOS devices
       const sampleMp3Url = 'https://scd.dlod.link/?expire=1753399119171&p=Mr_84tbkaADhIblI8rfcgSrQGA5uMTLhwvVNc0DwTTDTPEt7aBq9u0LemAaoZ7zbEI4I8l9q1IhbjbKbQ_vxWJs30G1YVZUf4eF4zb4Lk6iA1wIoh6iZVtnZF34rVxRBPfGiqgGI-J9XcZGzGNqF4w&s=zhqc9PY5p6DOHmgQlQ6mEnOGLA-SArH3rmr0x4NUZ_U';
-      console.log('Using sample MP3 file due to ?try=true in page URL');
+      console.log('Using sample MP3 file for iOS device');
       return sampleMp3Url;
     } else {
-      console.log('Using original audioUrl from database');
-      return originalAudioUrl;
+      // Use appropriate field based on player type
+      const playerType = this.getPlayerTypeFromUrl('');
+      
+      if (playerType === PlayerType.YOUTUBE) {
+        console.log('Using youtubeId for YouTube player');
+        return song.youtubeId || '';
+      } else {
+        console.log('Using audioUrl for MP3 player');
+        return song.audioUrl || '';
+      }
     }
   }
 }

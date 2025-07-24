@@ -40,12 +40,17 @@ The system checks the current browser page URL to determine which player to use:
 ### Examples:
 ```
 Current Page URL                    Player Type     Audio Source
-/home                          →    YouTube         Song's audioUrl from DB
-/lyrics/123                    →    YouTube         Song's audioUrl from DB
+/home                          →    YouTube         Song's youtubeId from DB
+/lyrics/123                    →    YouTube         Song's youtubeId from DB
 /lyrics/123?try=true           →    MP3             Sample MP3 file
 /home?try=true                 →    MP3             Sample MP3 file
 /any-page?other=param&try=true →    MP3             Sample MP3 file
 ```
+
+### Database Fields Used:
+- **YouTube Player**: Uses `songs.youtubeId` field (YouTube video ID)
+- **MP3 Player (normal)**: Uses `songs.audioUrl` field (direct audio file URL)  
+- **MP3 Player (?try=true)**: Uses hardcoded sample MP3 file (ignores database)
 
 ### Sample MP3 File
 When `?try=true` is in the page URL, the system uses this sample MP3:

@@ -37,7 +37,8 @@ export const songs = pgTable("songs", {
   difficulty: text("difficulty").notNull(),
   rating: integer("rating").notNull().default(0),
   albumCover: text("album_cover"),
-  audioUrl: text("audio_url"),
+  audioUrl: text("audio_url"), // S3 bucket URL for downloaded audio
+  sdcldAudioUrl: text("sdcld_audio_url"), // Original SoundCloud URL
   duration: integer("duration").notNull().default(0),
   lyrics: jsonb("lyrics").notNull(), // Array of { text, timestamp, translation }
   spotifyId: text("spotify_id"),

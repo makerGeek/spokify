@@ -1,3 +1,6 @@
+// Load environment variables from .env file FIRST, before any other imports
+import 'dotenv/config';
+
 import axios from 'axios';
 import { db } from '../server/db';
 import { songs } from '../shared/schema';

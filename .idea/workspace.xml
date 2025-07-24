@@ -6,8 +6,25 @@
   <component name="ChangeListManager">
     <list default="true" id="2aa364b4-48fd-41ec-83ac-dba884ecb98b" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/S3_SETUP.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/0000_remarkable_earthquake.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/meta/0000_snapshot.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/meta/_journal.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/relations.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/schema.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PLAYER_ADAPTER_USAGE.md" beforeDir="false" afterPath="$PROJECT_DIR$/PLAYER_ADAPTER_USAGE.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/hooks/use-audio.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/use-audio.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/lib/player-factory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/lib/player-factory.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/fetch-lyrics-simple.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/fetch-lyrics-simple.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/fetch-lyrics.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/fetch-lyrics.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/import_song.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/import_song.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shared/schema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/shared/schema.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,23 +48,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;fix__ios&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Super/PycharmProjects/spokify&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.stylelint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.stylelint&quot;: &quot;&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Super\\PycharmProjects\\spokify\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "fix__ios",
+    "last_opened_file_path": "C:/Users/Super/PycharmProjects/spokify",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.stylelint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.stylelint": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "C:\\Users\\Super\\PycharmProjects\\spokify\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
   }
-}</component>
+}]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -67,7 +90,15 @@
       <option name="project" value="LOCAL" />
       <updated>1753375724126</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="use mp3 file instead of youtube when ?try=true">
+      <option name="closed" value="true" />
+      <created>1753380625091</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1753380625091</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -98,6 +129,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="make it work on windows" />
-    <option name="LAST_COMMIT_MESSAGE" value="make it work on windows" />
+    <MESSAGE value="use mp3 file instead of youtube when ?try=true" />
+    <option name="LAST_COMMIT_MESSAGE" value="use mp3 file instead of youtube when ?try=true" />
   </component>
 </project>
