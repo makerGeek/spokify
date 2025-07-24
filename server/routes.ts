@@ -732,18 +732,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let customerId = user.stripeCustomerId;
 
       if (!customerId) {
-        return res.json({ 
-          subscriptionActive: false, 
-          message: 'No Stripe customer found' 
+        // Try to find customer by email - check ALL customers with this email
+        console.log('No stripeCustomerId found, searching by email:', user.email);
+        const customers = await stripe.customers.list({
+          email: user.email,
+          limit: 10 // Check up to 10 customers with same email
         });
+        
+        console.log('Found customers with email:', customers.data.map(c => ({ id: c.id, created: new Date(c.created * 1000) })));
+        
+        if (customers.data.length > 0) {
+          // Check each customer for active subscriptions
+          let foundActiveSubscription = false;
+          
+          for (const customer of customers.data) {
+            console.log('Checking subscriptions for customer:', customer.id);
+            const customerSubscriptions = await stripe.subscriptions.list({
+              customer: customer.id,
+              status: 'active',
+              limit: 10
+            });
+            
+            if (customerSubscriptions.data.length > 0) {
+              console.log('Found active subscription for customer:', customer.id);
+              customerId = customer.id;
+              foundActiveSubscription = true;
+              // Update user with the correct customer ID
+              await storage.updateStripeCustomerId(user.id, customerId);
+              break;
+            }
+          }
+          
+          if (!foundActiveSubscription) {
+            // Use the most recent customer if no active subscriptions found
+            customerId = customers.data[0].id;
+            await storage.updateStripeCustomerId(user.id, customerId);
+            console.log('No active subscriptions found, using most recent customer:', customerId);
+          }
+        } else {
+          return res.json({ 
+            subscriptionActive: false, 
+            message: 'No Stripe customer found for this email' 
+          });
+        }
       }
 
       // Get all subscriptions for this customer
+      console.log('Fetching subscriptions for customer:', customerId);
       const subscriptions = await stripe.subscriptions.list({
         customer: customerId,
         status: 'active',
         limit: 10
       });
+      console.log('Found subscriptions:', subscriptions.data.length, subscriptions.data.map(s => ({ id: s.id, status: s.status })));
+
+      // Also check for ALL subscriptions (not just active) to see what exists
+      const allSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 10
+      });
+      console.log('All subscriptions for customer:', allSubscriptions.data.map(s => ({ id: s.id, status: s.status, created: new Date(s.created * 1000) })));
 
       const activeSubscription = subscriptions.data[0];
 

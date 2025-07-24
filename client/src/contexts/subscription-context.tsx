@@ -102,6 +102,28 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [databaseUser?.subscriptionStatus, databaseUser?.stripeCustomerId, databaseUser?.stripeSubscriptionId, session?.user?.id])
 
+  // Initial subscription verification on app load
+  useEffect(() => {
+    if (!session?.user || !databaseUser) return
+
+    // Initial verification on app load (after user is authenticated)
+    const initialCheck = async () => {
+      console.log('🔄 Subscription: Performing initial subscription verification');
+      try {
+        await verifySubscription()
+      } catch (error) {
+        console.error('Initial subscription verification failed:', error)
+      }
+    }
+
+    // Run initial check after a short delay
+    const initialTimeout = setTimeout(initialCheck, 2000)
+
+    return () => {
+      clearTimeout(initialTimeout)
+    }
+  }, [session?.user?.id, databaseUser?.id]) // Re-run when user changes
+
   const refreshSubscription = async () => {
     if (!session?.user) return
 

@@ -60,9 +60,7 @@ export class PlayerFactory {
   static getAudioUrlToPlay(song: { audioUrl: string | null; youtubeId: string | null }): string {
     if (this.isIOS()) {
       // Use sample MP3 file for iOS devices
-      const sampleMp3Url = 'https://scd.dlod.link/?expire=1753399119171&p=Mr_84tbkaADhIblI8rfcgSrQGA5uMTLhwvVNc0DwTTDTPEt7aBq9u0LemAaoZ7zbEI4I8l9q1IhbjbKbQ_vxWJs30G1YVZUf4eF4zb4Lk6iA1wIoh6iZVtnZF34rVxRBPfGiqgGI-J9XcZGzGNqF4w&s=zhqc9PY5p6DOHmgQlQ6mEnOGLA-SArH3rmr0x4NUZ_U';
-      console.log('Using sample MP3 file for iOS device');
-      return sampleMp3Url;
+      return song.audioUrl || '';
     } else {
       // Use appropriate field based on player type
       const playerType = this.getPlayerTypeFromUrl('');
