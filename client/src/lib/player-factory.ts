@@ -55,23 +55,17 @@ export class PlayerFactory {
 
   /**
    * Gets the actual audio URL to use based on device and player type
-   * If device is iOS, use sample MP3, otherwise use appropriate field for player type
+   * If device is iOS, use audioUrl (MP3), otherwise use appropriate field for player type
    */
   static getAudioUrlToPlay(song: { audioUrl: string | null; youtubeId: string | null }): string {
-    if (this.isIOS()) {
-      // Use sample MP3 file for iOS devices
+    const playerType = this.getPlayerTypeFromUrl('');
+    
+    if (playerType === PlayerType.MP3 || this.isIOS()) {
+      console.log('Using audioUrl for MP3 player (iOS or MP3 player selected)');
       return song.audioUrl || '';
     } else {
-      // Use appropriate field based on player type
-      const playerType = this.getPlayerTypeFromUrl('');
-      
-      if (playerType === PlayerType.YOUTUBE) {
-        console.log('Using youtubeId for YouTube player');
-        return song.youtubeId || '';
-      } else {
-        console.log('Using audioUrl for MP3 player');
-        return song.audioUrl || '';
-      }
+      console.log('Using youtubeId for YouTube player');
+      return song.youtubeId || '';
     }
   }
 }

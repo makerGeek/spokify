@@ -515,10 +515,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if translation already exists in cache
+      const cacheStartTime = Date.now();
+      console.log(`🔍 Translation cache lookup: "${text.substring(0, 50)}..." (${fromLanguage} → ${toLanguage})`);
+      
       const cached = await storage.getTranslation(text, fromLanguage, toLanguage);
+      const cacheEndTime = Date.now();
+      const cacheLookupTime = cacheEndTime - cacheStartTime;
       
       if (cached) {
         // Return cached result
+        console.log(`✅ CACHE HIT! Lookup took ${cacheLookupTime}ms`);
         res.json({
           translation: cached.translation,
           confidence: cached.confidence / 100, // Convert back to decimal
@@ -527,8 +533,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
+      console.log(`❌ CACHE MISS! Lookup took ${cacheLookupTime}ms - calling AI API`);
       // Generate new translation if not cached
+      const aiStartTime = Date.now();
       const result = await translateText(text, fromLanguage, toLanguage);
+      const aiEndTime = Date.now();
+      const aiTime = aiEndTime - aiStartTime;
+      console.log(`🤖 AI translation took ${aiTime}ms`);
       
       // Cache the result in database
       await storage.createTranslation({

@@ -179,19 +179,41 @@ async function uploadAudioToS3(audioUrl: string, title: string, artist: string):
   try {
     console.log(`Downloading audio from: ${audioUrl.substring(0, 50)}...`);
     
-    // Download the audio file
+    // Download the audio file with proper headers and follow redirects
     const response = await axios({
       method: 'GET',
       url: audioUrl,
-      responseType: 'stream'
+      responseType: 'arraybuffer', // Use arraybuffer instead of stream for better reliability
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'audio/mpeg, audio/*, */*',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive'
+      },
+      timeout: 60000, // 60 second timeout
+      maxRedirects: 5 // Follow up to 5 redirects
     });
 
-    // Create a buffer from the stream
-    const chunks: Buffer[] = [];
-    for await (const chunk of response.data) {
-      chunks.push(chunk);
+    console.log(`Downloaded ${response.data.byteLength} bytes`);
+    
+    // Verify we got actual audio data
+    if (response.data.byteLength < 1000) {
+      console.error(`Downloaded file too small (${response.data.byteLength} bytes), likely not a valid MP3`);
+      return null;
     }
-    const audioBuffer = Buffer.concat(chunks);
+
+    const audioBuffer = Buffer.from(response.data);
+    
+    // Check if it's actually an MP3 file by looking at the header
+    const header = audioBuffer.subarray(0, 3);
+    const isMP3 = (header[0] === 0xFF && (header[1] & 0xE0) === 0xE0) || // MP3 frame header
+                  (header[0] === 0x49 && header[1] === 0x44 && header[2] === 0x33); // ID3 tag
+    
+    if (!isMP3) {
+      console.error('Downloaded file does not appear to be a valid MP3');
+      console.log('First 10 bytes:', audioBuffer.subarray(0, 10));
+      return null;
+    }
 
     // Generate a unique filename
     const sanitizedTitle = title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
@@ -199,7 +221,7 @@ async function uploadAudioToS3(audioUrl: string, title: string, artist: string):
     const timestamp = Date.now();
     const fileName = `audio/${sanitizedArtist}/${sanitizedTitle}_${timestamp}.mp3`;
 
-    console.log(`Uploading to S3: ${fileName}`);
+    console.log(`Uploading ${audioBuffer.length} bytes to S3: ${fileName}`);
 
     // Upload to S3-compatible storage
     const command = new PutObjectCommand({

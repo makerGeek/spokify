@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -100,7 +100,14 @@ export const translations = pgTable("translations", {
   confidence: integer("confidence").notNull(), // Stored as percentage (0-100)
   vocabulary: jsonb("vocabulary").notNull(), // Array of vocabulary objects
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  // Composite index for fast translation lookups
+  translationLookupIdx: index("translation_lookup_idx").on(
+    table.text,
+    table.fromLanguage,
+    table.toLanguage
+  ),
+}));
 
 export const bookmarks = pgTable("bookmarks", {
   id: serial("id").primaryKey(),

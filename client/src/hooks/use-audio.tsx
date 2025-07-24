@@ -104,12 +104,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     // Create player based on URL
     const createPlayer = async () => {
       try {
-        // Get the actual audio URL to use (sample MP3 if ?try=true, otherwise appropriate field)
-        const audioUrlToPlay = PlayerFactory.getAudioUrlToPlay({
-          audioUrl: currentSong.audioUrl,
-          youtubeId: (currentSong as any).youtubeId || null
-        });
-        
         const player = PlayerFactory.createPlayerFromUrl(currentSong.audioUrl || '');
         playerRef.current = player;
 
@@ -149,6 +143,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             setCurrentTime(time);
           }
         };
+
+        // Only get the audio URL when we're about to load it - this prevents unnecessary downloads
+        const audioUrlToPlay = PlayerFactory.getAudioUrlToPlay({
+          audioUrl: currentSong.audioUrl,
+          youtubeId: (currentSong as any).youtubeId || null
+        });
 
         await player.load(audioUrlToPlay, callbacks);
       } catch (error) {

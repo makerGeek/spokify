@@ -477,7 +477,8 @@ export class DatabaseStorage implements IStorage {
           eq(translations.fromLanguage, fromLanguage),
           eq(translations.toLanguage, toLanguage)
         )
-      );
+      )
+      .limit(1); // Only need one result, helps query optimizer
     return translation || undefined;
   }
 

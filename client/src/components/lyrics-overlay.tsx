@@ -231,11 +231,11 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
   }
 
   return (
-    <div className={`fixed inset-0 z-50 bg-spotify-bg pb-32 overflow-x-hidden transition-transform duration-300 ease-out ${
+    <div className={`fixed inset-0 z-50 bg-spotify-bg flex flex-col transition-transform duration-300 ease-out ${
       isVisible && shouldSlideUp ? 'translate-y-0' : 'translate-y-full'
     }`}>
-      {/* Header with controls */}
-      <div className="p-3 w-full max-w-full">
+      {/* Fixed Header with controls */}
+      <div className="sticky top-0 z-10 bg-spotify-bg p-3 w-full max-w-full">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
@@ -316,7 +316,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
         <div className="space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain" 
              id="lyrics-container"
              style={{ 
-               height: 'calc(100vh - 160px)', // Screen minus fixed header and bottom sections
+               height: 'calc(100vh - 190px)', // Screen minus header (64px) + bottom bar (60px) + mini player (77px)
                WebkitOverflowScrolling: 'touch',
                scrollBehavior: 'smooth',
                touchAction: 'pan-y',
