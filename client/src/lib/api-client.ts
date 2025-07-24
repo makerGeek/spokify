@@ -86,8 +86,8 @@ export const api = {
 
   vocabulary: {
     save: (vocabulary: any) => api.post('/vocabulary', vocabulary),
-    submitReview: (vocabularyId: number, quality: number) => 
-      api.post(`/vocabulary/${vocabularyId}/review`, { quality }),
+    submitReview: (vocabularyId: number, answer: string) => 
+      api.post(`/vocabulary/${vocabularyId}/review`, { answer }),
     delete: (vocabularyId: number) => api.delete(`/vocabulary/${vocabularyId}`),
   },
 

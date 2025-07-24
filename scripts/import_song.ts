@@ -520,6 +520,9 @@ async function main() {
     console.log('First 5 lines with translations:');
     console.log(JSON.stringify(translatedLyrics.slice(0, 5), null, 2));
   }
+  
+  // Force exit to close database connection pool
+  process.exit(0);
 }
 
 // Run the script if called directly

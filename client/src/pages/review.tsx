@@ -1,78 +1,19 @@
-import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, CheckCircle, XCircle, Music } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Music, Home, RotateCcw, Trophy } from "lucide-react";
+import { useLocation } from "wouter";
 import AuthenticatedOnly from "@/components/authenticated-only";
+import { ReviewProgress } from "@/components/review/review-progress";
+import { ReviewQuestionCard } from "@/components/review/review-question-card";
+import { useReviewSession } from "@/hooks/use-review-session";
 import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api-client";
 import { type Vocabulary } from "@shared/schema";
 
-interface ReviewQuestion {
-  vocabulary: Vocabulary;
-  correctAnswer: string;
-  options: string[];
-  sourceSong: string;
-}
-
 export default function Review() {
-  const [currentQuestion, setCurrentQuestion] = useState<ReviewQuestion | null>(null);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
-  const [isAnswered, setIsAnswered] = useState(false);
-  const [autoNext, setAutoNext] = useState(() => {
-    const saved = localStorage.getItem('reviewAutoNext');
-    return saved ? JSON.parse(saved) : false;
-  });
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [, setLocation] = useLocation();
   const { user, databaseUser } = useAuth();
 
-  // Audio refs for sound effects
-  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
-  const wrongSoundRef = useRef<HTMLAudioElement | null>(null);
-
-  // Initialize audio elements
-  useEffect(() => {
-    correctSoundRef.current = new Audio('/sounds/correct.wav');
-    wrongSoundRef.current = new Audio('/sounds/wrong.wav');
-    
-    // Preload the audio files
-    correctSoundRef.current.preload = 'auto';
-    wrongSoundRef.current.preload = 'auto';
-    
-    // Set volume to a reasonable level
-    correctSoundRef.current.volume = 0.5;
-    wrongSoundRef.current.volume = 0.5;
-
-    return () => {
-      // Cleanup audio elements
-      if (correctSoundRef.current) {
-        correctSoundRef.current.pause();
-        correctSoundRef.current = null;
-      }
-      if (wrongSoundRef.current) {
-        wrongSoundRef.current.pause();
-        wrongSoundRef.current = null;
-      }
-    };
-  }, []);
-
-  // Function to play sound effects
-  const playSound = (isCorrect: boolean) => {
-    try {
-      const audio = isCorrect ? correctSoundRef.current : wrongSoundRef.current;
-      if (audio) {
-        audio.currentTime = 0; // Reset to beginning
-        audio.play().catch(error => {
-          console.log('Audio play failed:', error);
-        });
-      }
-    } catch (error) {
-      console.log('Sound effect error:', error);
-    }
-  };
-
-  const { data: vocabulary, isLoading, refetch } = useQuery<Vocabulary[]>({
+  const { data: vocabulary, isLoading } = useQuery<Vocabulary[]>({
     queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary"] : [],
     queryFn: async () => {
       if (!databaseUser?.id) return [];
@@ -80,107 +21,33 @@ export default function Review() {
     },
     retry: false,
     enabled: !!databaseUser?.id && !!user,
-    staleTime: 60 * 1000, // Cache for 1 minute to prevent rapid refetches
-    refetchOnWindowFocus: false, // Don't refetch on window focus
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
-  // Generate random incorrect answers for multiple choice
-  const generateIncorrectAnswers = (correctAnswer: string, allVocab: Vocabulary[]): string[] => {
-    const otherTranslations = allVocab
-      .filter(v => v.translation !== correctAnswer && v.translation)
-      .map(v => v.translation);
-    
-    // If we don't have enough vocabulary, use some generic wrong answers
-    const genericWrongAnswers = [
-      "to sing", "to dance", "to walk", "to eat", "to drink", "to sleep",
-      "happy", "sad", "beautiful", "fast", "slow", "big", "small",
-      "house", "car", "book", "music", "love", "friend", "family"
-    ].filter(answer => answer !== correctAnswer);
+  // Use review session hook with 10 question limit for practice mode
+  const {
+    currentQuestion,
+    selectedAnswer,
+    showResult,
+    score,
+    isAnswered,
+    autoNext,
+    progress,
+    isSessionComplete,
+    handleAnswerSelect,
+    handleNextQuestion,
+    resetSession,
+    setAutoNext
+  } = useReviewSession({
+    vocabulary: vocabulary || [],
+    maxQuestions: 10, // Limited to 10 words per session
+  });
 
-    const availableWrong = [...otherTranslations, ...genericWrongAnswers];
-    
-    // Shuffle and take 3 random wrong answers
-    const shuffled = availableWrong.sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 3);
+  // Handle starting a new session
+  const handleNewSession = () => {
+    resetSession();
   };
-
-  // Generate a new question
-  const generateQuestion = () => {
-    if (!vocabulary || vocabulary.length === 0) return;
-
-    const randomVocab = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-    const incorrectAnswers = generateIncorrectAnswers(randomVocab.translation, vocabulary);
-    
-    // Create options array with correct answer and 3 wrong answers
-    const options = [randomVocab.translation, ...incorrectAnswers];
-    // Shuffle the options
-    const shuffledOptions = options.sort(() => Math.random() - 0.5);
-
-    setCurrentQuestion({
-      vocabulary: randomVocab,
-      correctAnswer: randomVocab.translation,
-      options: shuffledOptions,
-      sourceSong: randomVocab.songName || "Unknown Song"
-    });
-    
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setIsAnswered(false);
-  };
-
-  // Handle answer selection
-  const handleAnswerSelect = (answer: string) => {
-    if (isAnswered) return;
-    
-    setSelectedAnswer(answer);
-    setIsAnswered(true);
-    setShowResult(true);
-    
-    // Update score
-    const isCorrect = answer === currentQuestion?.correctAnswer;
-    setScore(prev => ({
-      correct: prev.correct + (isCorrect ? 1 : 0),
-      total: prev.total + 1
-    }));
-
-    // Play sound effect
-    playSound(isCorrect);
-
-    // Auto next functionality
-    if (autoNext) {
-      timeoutRef.current = setTimeout(() => {
-        generateQuestion();
-      }, 2000);
-    }
-  };
-
-  // Cleanup timeout on unmount or when generating new question
-  const cleanupTimeout = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  };
-
-  // Update generate question to cleanup timeout
-  const handleGenerateQuestion = () => {
-    cleanupTimeout();
-    generateQuestion();
-  };
-
-  // Start with first question when vocabulary loads
-  useEffect(() => {
-    if (vocabulary && vocabulary.length > 0 && !currentQuestion) {
-      generateQuestion();
-    }
-  }, [vocabulary, currentQuestion]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      cleanupTimeout();
-    };
-  }, []);
 
   if (isLoading) {
     return (
@@ -207,7 +74,7 @@ export default function Review() {
                 Start learning by tapping on words in song lyrics to build your vocabulary!
               </p>
               <button
-                onClick={() => window.location.href = "/home"}
+                onClick={() => setLocation("/home")}
                 className="spotify-btn-primary"
               >
                 Discover Songs
@@ -239,102 +106,71 @@ export default function Review() {
             </div>
           </div>
 
+          {/* Progress Bar */}
+          <ReviewProgress 
+            current={progress.current} 
+            total={progress.total} 
+            className="mb-6" 
+          />
 
+          {/* Question Card */}
+          {currentQuestion && !isSessionComplete && (
+            <ReviewQuestionCard
+              question={currentQuestion}
+              selectedAnswer={selectedAnswer}
+              showResult={showResult}
+              isAnswered={isAnswered}
+              autoNext={autoNext}
+              onAnswerSelect={handleAnswerSelect}
+              onNextQuestion={handleNextQuestion}
+            />
+          )}
 
-          {currentQuestion && (
-            <div className="spotify-card p-6 mb-6">
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Music size={20} className="text-[var(--spotify-green)]" />
-                    <span className="spotify-text-muted text-sm">From: {currentQuestion.sourceSong}</span>
+          {/* Session Complete Stats */}
+          {isSessionComplete && (
+            <div className="text-center py-8">
+              <div className="spotify-card p-8 max-w-md mx-auto">
+                <Trophy className="mx-auto spotify-text-accent mb-4" size={64} />
+                <h2 className="spotify-heading-md mb-4">Session Complete!</h2>
+                
+                {/* Stats */}
+                <div className="mb-6">
+                  <div className="text-4xl font-bold text-[var(--spotify-green)] mb-2">
+                    {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
                   </div>
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-xs font-medium">
-                    {currentQuestion.vocabulary.difficulty}
+                  <div className="spotify-text-muted mb-4">
+                    {score.correct} out of {score.total} correct
+                  </div>
+                  
+                  {/* Performance message */}
+                  <div className="spotify-text-muted text-sm">
+                    {score.total > 0 && (
+                      <>
+                        {Math.round((score.correct / score.total) * 100) >= 80 && "Excellent work! 🎉"}
+                        {Math.round((score.correct / score.total) * 100) >= 60 && Math.round((score.correct / score.total) * 100) < 80 && "Good job! Keep it up! 👍"}
+                        {Math.round((score.correct / score.total) * 100) < 60 && "Keep practicing, you're getting there! 💪"}
+                      </>
+                    )}
                   </div>
                 </div>
-                <h2 className="spotify-text-primary text-center text-2xl font-bold mt-4">
-                  What does "{currentQuestion.vocabulary.word}" mean?
-                </h2>
-                {currentQuestion.vocabulary.context && (
-                  <div className="text-center mt-3">
-                    <p className="spotify-text-muted text-sm italic">
-                      Context: "{currentQuestion.vocabulary.context}"
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div>
-                <div className="grid grid-cols-2 gap-3">
-                  {currentQuestion.options.map((option, index) => {
-                    const isSelected = selectedAnswer === option;
-                    const isCorrect = option === currentQuestion.correctAnswer;
-                    const showCorrectAnswer = showResult && isCorrect;
-                    const showWrongAnswer = showResult && isSelected && !isCorrect;
 
-                    return (
-                      <button
-                        key={index}
-                        className={`w-full text-center p-6 h-auto rounded-lg transition-all font-medium ${
-                          showCorrectAnswer
-                            ? "bg-green-600/20 border border-green-500 text-green-400"
-                            : showWrongAnswer
-                            ? "bg-red-600/20 border border-red-500 text-red-400"
-                            : isSelected
-                            ? "bg-[var(--spotify-green)]/20 border border-[var(--spotify-green)] text-[var(--spotify-green)]"
-                            : isAnswered
-                            ? "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary opacity-60 cursor-default"
-                            : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary"
-                        }`}
-                        onClick={() => handleAnswerSelect(option)}
-                        disabled={isAnswered}
-                      >
-                        <span className="text-lg leading-relaxed">{option}</span>
-                      </button>
-                    );
-                  })}
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={handleNewSession}
+                    className="flex items-center justify-center space-x-2 spotify-btn-primary"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    <span>Start Another Session</span>
+                  </button>
+                  <button
+                    onClick={() => setLocation("/home")}
+                    className="flex items-center justify-center space-x-2 spotify-btn-secondary"
+                  >
+                    <Home className="h-4 w-4" />
+                    <span>Back to Home</span>
+                  </button>
                 </div>
-
-                {showResult && (
-                  <div className="mt-6 pt-4 border-t border-[var(--spotify-border)]">
-                    <div className="text-center">
-                      {selectedAnswer === currentQuestion.correctAnswer ? (
-                        <div className="text-green-400 mb-4">
-                          <CheckCircle className="mx-auto mb-2" size={32} />
-                          <p className="font-semibold spotify-text-primary">Correct! Well done!</p>
-                        </div>
-                      ) : (
-                        <div className="text-red-400 mb-4">
-                          <XCircle className="mx-auto mb-2" size={32} />
-                          <p className="font-semibold spotify-text-primary">
-                            Incorrect. The correct answer is "{currentQuestion.correctAnswer}"
-                          </p>
-                        </div>
-                      )}
-                      
-                      {!autoNext && (
-                        <button
-                          onClick={handleGenerateQuestion}
-                          className="spotify-btn-primary inline-flex items-center"
-                        >
-                          <RefreshCw size={16} className="mr-2" />
-                          Next Question
-                        </button>
-                      )}
-                      
-                      {autoNext && (
-                        <div className="flex flex-col items-center">
-                          <div className="spotify-text-muted text-sm mb-2">
-                            Next question in 2s...
-                          </div>
-                          <div className="w-24 h-1 bg-[var(--spotify-light-gray)] rounded-full overflow-hidden">
-                            <div className="h-full bg-[var(--spotify-green)] animate-[progress_2s_linear_forwards]"></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}

@@ -311,7 +311,7 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
         </div>
       </div>
 
-      {/* Main Content - Scrollable Lyrics */}
+      {/* Main Content - Scrollable Linyrics */}
       <div className="px-4 w-full max-w-full">
         <div className="space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain" 
              id="lyrics-container"

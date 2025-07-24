@@ -4,13 +4,17 @@ import { promisify } from 'util';
 const exec = promisify(spawn);
 
 // ============================================================================
-// CONFIGURATION: Change this boolean to control execution mode
+// CONFIGURATION: Change these values to control execution mode
 // ============================================================================
 // true:  Sequential execution - Shows full output from each import_song script
 //        Slower but provides detailed logs for debugging
 // false: Parallel execution - Minimal output, faster processing
 //        Better for bulk imports when you trust the process works
-const SEQUENTIAL_EXECUTION = true;
+const SEQUENTIAL_EXECUTION = false;
+
+// Maximum number of parallel import processes to run simultaneously
+// Only applies when SEQUENTIAL_EXECUTION is false
+const MAX_PARALLEL_PROCESSES = 2;
 
 interface ImportResult {
   song: string;
@@ -66,6 +70,48 @@ async function importSong(songQuery: string, showOutput: boolean = false): Promi
   });
 }
 
+async function processWithPool<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  maxConcurrency: number
+): Promise<R[]> {
+  const results: R[] = [];
+  const executing: Promise<R>[] = [];
+  let index = 0;
+  
+  async function processNext(): Promise<void> {
+    while (index < items.length && executing.length < maxConcurrency) {
+      const currentIndex = index++;
+      const promise = processor(items[currentIndex]);
+      executing.push(promise);
+      
+      promise.then(result => {
+        results[currentIndex] = result;
+        const execIndex = executing.indexOf(promise);
+        if (execIndex > -1) {
+          executing.splice(execIndex, 1);
+        }
+      }).catch(error => {
+        const execIndex = executing.indexOf(promise);
+        if (execIndex > -1) {
+          executing.splice(execIndex, 1);
+        }
+        throw error;
+      });
+    }
+    
+    if (executing.length > 0) {
+      await Promise.race(executing);
+      await processNext();
+    }
+  }
+  
+  await processNext();
+  await Promise.all(executing);
+  
+  return results;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   
@@ -77,6 +123,7 @@ async function main() {
     console.error('  - Edit SEQUENTIAL_EXECUTION at the top of this file to control execution mode');
     console.error('  - true: Sequential execution with full output from import_song script');
     console.error('  - false: Parallel execution with minimal output (faster but less detailed)');
+    console.error('  - Edit MAX_PARALLEL_PROCESSES to control max concurrent imports (default: 3)');
     process.exit(1);
   }
 
@@ -121,10 +168,12 @@ async function main() {
         }
       }
     } else {
-      // Import all songs in parallel
-      console.log('⚡ Processing songs in parallel...\n');
-      results = await Promise.all(
-        songs.map(song => importSong(song, false))
+      // Import songs with controlled parallelism
+      console.log(`⚡ Processing songs in parallel (max ${MAX_PARALLEL_PROCESSES} concurrent)...\n`);
+      results = await processWithPool(
+        songs,
+        (song) => importSong(song, false),
+        MAX_PARALLEL_PROCESSES
       );
     }
 

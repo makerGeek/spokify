@@ -346,14 +346,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
       
-      // Get the vocabulary item to verify ownership
+      // Get the vocabulary item to verify ownership and check answer
       const allUserVocab = await storage.getUserVocabulary(user.id);
       const vocabItem = allUserVocab.find(v => v.id === vocabularyId);
       if (!vocabItem) {
         return res.status(403).json({ message: "Vocabulary item not found or access denied" });
       }
       
-      const updatedVocabulary = await storage.submitReview(vocabularyId, reviewData.quality);
+      // Calculate quality based on whether answer is correct
+      const isCorrect = reviewData.answer === vocabItem.translation;
+      const quality = isCorrect ? 4 : 1; // Good (4) for correct, Again (1) for wrong
+      
+      const updatedVocabulary = await storage.submitReview(vocabularyId, quality);
       res.json(updatedVocabulary);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Failed to submit review" });

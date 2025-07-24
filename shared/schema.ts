@@ -193,7 +193,7 @@ export const insertBookmarkSchema = createInsertSchema(bookmarks).pick({
 
 // Review result schema for spaced repetition
 export const reviewResultSchema = z.object({
-  quality: z.number().min(1).max(5), // 1=Again, 2=Hard, 3=Okay, 4=Good, 5=Perfect
+  answer: z.string().min(1), // User's selected answer
 });
 
 export type ReviewResult = z.infer<typeof reviewResultSchema>;
