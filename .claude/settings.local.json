@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run check:*)",
+      "Bash(node:*)"
+    ],
+    "deny": []
+  }
+}

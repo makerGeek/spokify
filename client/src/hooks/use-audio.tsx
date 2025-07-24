@@ -1,10 +1,13 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 import { type Song } from "@shared/schema";
+import { PlayerAdapter, PlayerCallbacks, PlayerState } from "@/lib/player-adapter";
+import { PlayerFactory } from "@/lib/player-factory";
 
 declare global {
   interface Window {
     YT: any;
     onYouTubeIframeAPIReady: () => void;
+    youTubeAPIReady: boolean;
   }
 }
 
@@ -25,22 +28,20 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export function AudioProvider({ children }: { children: ReactNode }) {
-  // All state hooks must be declared first to prevent React Error #300
+  // State hooks
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isYouTubeReady, setIsYouTubeReady] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isYouTubeReady, setIsYouTubeReady] = useState(false);
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   
-  // All ref hooks must be declared after state hooks, in consistent order
-  const playerRef = useRef<any>(null);
-  const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const playerContainerId = useRef(`youtube-player-${Math.random().toString(36).substr(2, 9)}`);
+  // Ref hooks
+  const playerRef = useRef<PlayerAdapter | null>(null);
 
-  // Listen for YouTube API ready event
+  // Listen for YouTube API ready event (still needed for YouTube adapter)
   useEffect(() => {
     const checkYouTubeReady = () => {
       if (window.YT && window.YT.Player) {
@@ -49,10 +50,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Check immediately
     checkYouTubeReady();
 
-    // Listen for the custom event from main.tsx
     const handleYouTubeReady = () => {
       console.log('YouTube API ready event received in audio hook');
       setIsYouTubeReady(true);
@@ -60,7 +59,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     window.addEventListener('youtubeAPIReady', handleYouTubeReady);
 
-    // Also check window.youTubeAPIReady flag
     if (window.youTubeAPIReady) {
       console.log('YouTube API already ready according to flag');
       setIsYouTubeReady(true);
@@ -71,22 +69,26 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Create YouTube player when song changes
+  // Create player when song changes
   useEffect(() => {
-    if (!isYouTubeReady || !currentSong?.audioUrl) {
-      console.log('YouTube not ready or no song:', { isYouTubeReady, audioUrl: currentSong?.audioUrl });
+    if (!currentSong?.audioUrl) {
+      console.log('No song or audio URL');
       return;
     }
 
-    console.log('Creating YouTube player for:', currentSong.title, 'Video ID:', currentSong.audioUrl);
-    console.log('YouTube API ready state:', window.YT && window.YT.Player ? 'Available' : 'Not available');
-    console.log('Player container ID:', playerContainerId.current);
+    // For YouTube players, wait for API to be ready
+    const needsYouTubeAPI = PlayerFactory.getPlayerTypeFromUrl(currentSong.audioUrl) === 'youtube';
+    if (needsYouTubeAPI && !isYouTubeReady) {
+      console.log('YouTube API not ready yet');
+      return;
+    }
+
+    console.log('Creating player for:', currentSong.title, 'Audio URL:', currentSong.audioUrl);
 
     // Reset state immediately when switching songs
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
-    stopTimeUpdate();
 
     // Clean up existing player
     if (playerRef.current) {
@@ -99,79 +101,61 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       playerRef.current = null;
     }
 
-    // Small delay to ensure proper cleanup before creating new player
-    const createPlayer = () => {
+    // Create player based on URL
+    const createPlayer = async () => {
       try {
-        playerRef.current = new window.YT.Player(playerContainerId.current, {
-          height: '0',
-          width: '0',
-          videoId: currentSong.audioUrl,
-          playerVars: {
-            autoplay: 0,
-            controls: 0,
-            disablekb: 1,
-            fs: 0,
-            iv_load_policy: 3,
-            modestbranding: 1,
-            rel: 0,
-            showinfo: 0,
+        // Get the actual audio URL to use (sample MP3 if ?try=true, otherwise original)
+        const audioUrlToPlay = PlayerFactory.getAudioUrlToPlay(currentSong.audioUrl!);
+        
+        const player = PlayerFactory.createPlayerFromUrl(currentSong.audioUrl!);
+        playerRef.current = player;
+
+        const callbacks: PlayerCallbacks = {
+          onStateChange: (state: Partial<PlayerState>) => {
+            if (state.isPlaying !== undefined) setIsPlaying(state.isPlaying);
+            if (state.isLoading !== undefined) setIsLoading(state.isLoading);
+            if (state.hasError !== undefined) setHasError(state.hasError);
           },
-          events: {
-            onReady: (event: any) => {
-              console.log('YouTube player ready');
-              const duration = event.target.getDuration();
-              console.log('Song duration:', duration);
-              setDuration(duration);
-              setHasError(false);
-              
-              // Auto-play if requested
-              if (shouldAutoPlay) {
-                console.log('Auto-playing song after player ready');
-                setShouldAutoPlay(false);
-                setTimeout(() => {
-                  if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
-                    playerRef.current.playVideo();
+          onReady: (songDuration: number) => {
+            console.log('Player ready, duration:', songDuration);
+            setDuration(songDuration);
+            setHasError(false);
+            
+            // Auto-play if requested
+            if (shouldAutoPlay) {
+              console.log('Auto-playing song after player ready');
+              setShouldAutoPlay(false);
+              setTimeout(async () => {
+                if (playerRef.current?.isReady()) {
+                  try {
+                    await playerRef.current.play();
+                  } catch (error) {
+                    console.error('Auto-play failed:', error);
                   }
-                }, 500);
-              }
-            },
-            onStateChange: (event: any) => {
-              console.log('Player state changed:', event.data);
-              if (event.data === window.YT.PlayerState.PLAYING) {
-                setIsPlaying(true);
-                setIsLoading(false); // Clear loading state when actually playing
-                startTimeUpdate();
-              } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
-                setIsPlaying(false);
-                setIsLoading(false); // Clear loading state when paused/ended
-                stopTimeUpdate();
-              } else if (event.data === window.YT.PlayerState.BUFFERING) {
-                setIsLoading(true); // Show loading during buffering
-              }
-            },
-            onError: (event: any) => {
-              console.error('YouTube player error:', event.data);
-              const errorMessages: { [key: number]: string } = {
-                2: 'Invalid video ID',
-                5: 'HTML5 player error',
-                100: 'Video not found or private',
-                101: 'Video owner has disallowed embedding',
-                150: 'Video owner has disallowed embedding'
-              };
-              const errorMessage = errorMessages[event.data] || 'Unknown error';
-              console.error(`YouTube Error ${event.data}: ${errorMessage} for video ${currentSong?.audioUrl}`);
-              setIsPlaying(false);
-              setHasError(true);
-              stopTimeUpdate();
-            },
+                }
+              }, 500);
+            }
           },
-        });
+          onError: (error: string) => {
+            console.error('Player error:', error);
+            setIsPlaying(false);
+            setHasError(true);
+            setIsLoading(false);
+          },
+          onTimeUpdate: (time: number) => {
+            setCurrentTime(time);
+          }
+        };
+
+        await player.load(audioUrlToPlay, callbacks);
       } catch (error) {
-        console.error('Error creating YouTube player:', error);
+        console.error('Error creating player:', error);
+        setHasError(true);
+        setIsLoading(false);
       }
     };
 
-    // Use setTimeout to ensure cleanup is complete
+    // Use setTimeout to ensure proper cleanup
     const timeoutId = setTimeout(createPlayer, 100);
 
     return () => {
@@ -184,98 +168,65 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         }
         playerRef.current = null;
       }
-      stopTimeUpdate();
       setIsPlaying(false);
     };
   }, [currentSong, isYouTubeReady]);
 
-  const startTimeUpdate = () => {
-    if (timeUpdateIntervalRef.current) return;
-    
-    timeUpdateIntervalRef.current = setInterval(() => {
-      if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
-        const time = playerRef.current.getCurrentTime();
-        if (time && !isNaN(time)) {
-          setCurrentTime(Math.floor(time));
-        }
-      }
-    }, 1000);
-  };
-
-  const stopTimeUpdate = () => {
-    if (timeUpdateIntervalRef.current) {
-      clearInterval(timeUpdateIntervalRef.current);
-      timeUpdateIntervalRef.current = null;
-    }
-  };
-
-  const play = () => {
-    console.log('Play requested, player:', !!playerRef.current);
+  const play = async () => {
+    console.log('Play requested, player ready:', playerRef.current?.isReady());
     console.log('Current song:', currentSong?.title);
-    console.log('YouTube ready:', isYouTubeReady);
     
-    if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+    if (playerRef.current?.isReady()) {
       try {
-        console.log('Calling playVideo');
-        setIsLoading(true); // Set loading state when play is requested
-        playerRef.current.playVideo();
+        console.log('Calling play');
+        setIsLoading(true);
+        await playerRef.current.play();
       } catch (error) {
-        console.error('Error calling playVideo:', error);
+        console.error('Error calling play:', error);
         setHasError(true);
-        setIsLoading(false); // Clear loading state on error
+        setIsLoading(false);
       }
     } else {
-      console.error('Player not ready or playVideo not available');
+      console.error('Player not ready');
       setHasError(true);
-      setIsLoading(false); // Clear loading state on error
+      setIsLoading(false);
     }
   };
 
-  const pause = () => {
-    console.log('Pause requested, player:', !!playerRef.current);
-    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+  const pause = async () => {
+    console.log('Pause requested, player ready:', playerRef.current?.isReady());
+    if (playerRef.current?.isReady()) {
       try {
-        console.log('Calling pauseVideo');
-        setIsLoading(false); // Clear loading state when pausing
-        playerRef.current.pauseVideo();
+        console.log('Calling pause');
+        setIsLoading(false);
+        await playerRef.current.pause();
       } catch (error) {
-        console.error('Error calling pauseVideo:', error);
+        console.error('Error calling pause:', error);
         setIsPlaying(false);
-        setIsLoading(false); // Clear loading state on error
+        setIsLoading(false);
       }
     } else {
-      console.error('Player not ready or pauseVideo not available');
-      setIsLoading(false); // Clear loading state if player not ready
+      console.error('Player not ready');
+      setIsLoading(false);
     }
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (isPlaying) {
-      pause();
+      await pause();
     } else {
-      // Set loading immediately for responsive UI
       setIsLoading(true);
-      play();
+      await play();
     }
   };
 
-  const seekTo = (time: number) => {
-    if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
-      // Remember the current playing state
-      const wasPlaying = isPlaying;
-      
-      // Seek to the time
-      playerRef.current.seekTo(time, true);
-      setCurrentTime(time);
-      
-      // If the video wasn't playing before, pause it after seeking
-      if (!wasPlaying) {
-        // Use a small timeout to ensure the seek operation completes first
-        setTimeout(() => {
-          if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
-            playerRef.current.pauseVideo();
-          }
-        }, 100);
+  const seekTo = async (time: number) => {
+    if (playerRef.current?.isReady()) {
+      try {
+        await playerRef.current.seekTo(time);
+        setCurrentTime(time);
+      } catch (error) {
+        console.error('Error seeking:', error);
       }
     }
   };
@@ -287,9 +238,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setShouldAutoPlay(autoPlay);
       
       if (autoPlay && !isPlaying) {
-        // Set loading immediately for responsive UI
         setIsLoading(true);
-        // If auto-play is requested and not currently playing, start playing
         setTimeout(() => play(), 100);
       }
       return;
@@ -309,11 +258,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setCurrentSong(song);
     setShouldAutoPlay(autoPlay);
     setIsPlaying(false);
-    // Set loading immediately if auto-play is requested for responsive UI
     setIsLoading(autoPlay);
     setCurrentTime(0);
     setDuration(0);
-    setHasError(false); // Reset error state when setting new song
+    setHasError(false);
   };
 
   return (
@@ -333,8 +281,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-      {/* Hidden YouTube player */}
-      <div id={playerContainerId.current} style={{ display: 'none' }}></div>
     </AudioContext.Provider>
   );
 }
