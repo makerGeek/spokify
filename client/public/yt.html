@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Player with Controls</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .video-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-container.hidden {
+            opacity: 0;
+            height: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+        }
+
+        .video-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+
+        .video-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .video-description {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .load-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .load-button:hover {
+            background: #0056CC;
+            transform: translateY(-2px);
+        }
+
+        .load-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .controls {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .controls.visible {
+            display: block;
+        }
+
+        .controls h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .control-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .control-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .control-btn.pause {
+            background: #dc3545;
+        }
+
+        .control-btn.pause:hover {
+            background: #c82333;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .volume-label {
+            font-size: 14px;
+            color: #666;
+            min-width: 80px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .success {
+            color: #28a745;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .video-section {
+                padding: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .control-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Audio Player with External Controls</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Load audio files dynamically and control them with external buttons (Safari iOS compatible)
+        </p>
+
+        <div class="video-section">
+            <div class="video-title">Audio Player</div>
+            <div class="video-description">
+                Load audio files and control playback using the external controls below:
+            </div>
+            
+            
+            <div class="video-container" id="videoContainer"></div>
+            
+            <div class="button-group">
+                <button class="load-button" onclick="loadAudio('https://scd.dlod.link/?expire=1753383821804&p=4lzX8VNQRGSktF3ECnODDUK20Tmq06qo7ZIkreGmPc7bIAEjhXJe0DZSvLYr9vESLbinkbW362uDHPX07IXGl5Ob-eDDdXn_a_3NKvmpzs5Co6bYu-uyugGMkiN2kh7m297AR-FntpTkNqEU2IVGJEH7PiNaXqQyMNSZO1kpfWZNKao6Rby0hlKb_T5hVDfF&s=HNsvCLe_sCCIasFuFZEppaTd7VBxi5SQIlONll7nVUk', 'Dynamic Audio Track', this)">
+                    🎵 Load Audio Track
+                </button>
+            </div>
+
+            <div class="controls" id="audioControls">
+                <h3>🎮 External Audio Controls</h3>
+                <div class="control-buttons">
+                    <button class="control-btn" id="playBtn" onclick="playAudio()">
+                        ▶️ Play
+                    </button>
+                    <button class="control-btn pause" id="pauseBtn" onclick="pauseAudio()">
+                        ⏸️ Pause
+                    </button>
+                    <button class="control-btn" onclick="stopAudio()">
+                        ⏹️ Stop
+                    </button>
+                    <button class="control-btn" onclick="muteAudio()">
+                        🔇 Mute
+                    </button>
+                    <button class="control-btn" onclick="unmuteAudio()">
+                        🔊 Unmute
+                    </button>
+                </div>
+                
+                <div class="volume-control">
+                    <span class="volume-label">Volume:</span>
+                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume(this.value)">
+                    <span id="volumeDisplay">50%</span>
+                </div>
+            </div>
+            
+            <div class="status" id="status">No audio loaded</div>
+        </div>
+    </div>
+
+    <script>
+        let audioPlayer;
+        let currentAudioTitle = '';
+
+
+
+        function loadAudio(audioUrl, title, button) {
+            currentAudioTitle = title;
+            const container = document.getElementById('videoContainer');
+            const statusElement = document.getElementById('status');
+            const controls = document.getElementById('audioControls');
+            
+            // Disable all buttons temporarily
+            const buttons = document.querySelectorAll('.load-button');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            // Show loading state
+            statusElement.innerHTML = `<span class="loading"></span>Loading ${title}...`;
+            
+            // Remove existing audio player if it exists
+            if (audioPlayer) {
+                audioPlayer.remove();
+                audioPlayer = null;
+            }
+            
+            // Clear existing content
+            container.innerHTML = '';
+            
+            // Create audio element
+            audioPlayer = document.createElement('audio');
+            audioPlayer.src = audioUrl;
+            audioPlayer.controls = true;
+            audioPlayer.style.width = '100%';
+            audioPlayer.style.position = 'absolute';
+            audioPlayer.style.top = '50%';
+            audioPlayer.style.left = '50%';
+            audioPlayer.style.transform = 'translate(-50%, -50%)';
+            audioPlayer.style.maxWidth = '400px';
+            
+            // Add event listeners
+            audioPlayer.addEventListener('loadeddata', () => {
+                updateStatus(`${title} loaded successfully! Use controls below.`, 'success');
+                controls.classList.add('visible');
+                enableButtons();
+                
+                // Set initial volume
+                const volumeSlider = document.getElementById('volumeSlider');
+                audioPlayer.volume = volumeSlider.value / 100;
+            });
+            
+            // Show controls immediately for iOS Safari
+            audioPlayer.addEventListener('loadstart', () => {
+                controls.classList.add('visible');
+                enableButtons();
+            });
+            
+            // Also show controls when metadata loads (fallback)
+            audioPlayer.addEventListener('loadedmetadata', () => {
+                controls.classList.add('visible');
+                enableButtons();
+            });
+            
+            audioPlayer.addEventListener('error', (e) => {
+                updateStatus(`Error loading audio: ${e.message || 'Unknown error'}`, 'error');
+                enableButtons();
+            });
+            
+            audioPlayer.addEventListener('play', () => {
+                updateStatus(`Playing ${title}`, 'success');
+            });
+            
+            audioPlayer.addEventListener('pause', () => {
+                updateStatus(`Paused ${title}`, 'success');
+            });
+            
+            audioPlayer.addEventListener('ended', () => {
+                updateStatus(`${title} ended`, 'success');
+            });
+            
+            container.appendChild(audioPlayer);
+            
+            // Show controls immediately (iOS Safari fix)
+            controls.classList.add('visible');
+            enableButtons();
+        }
+
+
+        // Control functions
+        function playAudio() {
+            if (audioPlayer) {
+                audioPlayer.play();
+            } else {
+                updateStatus('No audio loaded', 'error');
+            }
+        }
+
+        function pauseAudio() {
+            if (audioPlayer) {
+                audioPlayer.pause();
+            } else {
+                updateStatus('No audio loaded', 'error');
+            }
+        }
+
+        function stopAudio() {
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                updateStatus(`Stopped ${currentAudioTitle}`, 'success');
+            } else {
+                updateStatus('No audio loaded', 'error');
+            }
+        }
+
+        function muteAudio() {
+            if (audioPlayer) {
+                audioPlayer.muted = true;
+                updateStatus('Audio muted', 'success');
+            } else {
+                updateStatus('No audio loaded', 'error');
+            }
+        }
+
+        function unmuteAudio() {
+            if (audioPlayer) {
+                audioPlayer.muted = false;
+                updateStatus('Audio unmuted', 'success');
+            } else {
+                updateStatus('No audio loaded', 'error');
+            }
+        }
+
+        function setVolume(volume) {
+            if (audioPlayer) {
+                audioPlayer.volume = volume / 100;
+                document.getElementById('volumeDisplay').textContent = volume + '%';
+                updateStatus(`Volume set to ${volume}%`, 'success');
+            } else {
+                updateStatus('No audio loaded', 'error');
+            }
+        }
+
+        // Helper functions
+        function updateStatus(message, type = '') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function enableButtons() {
+            const buttons = document.querySelectorAll('.load-button');
+            buttons.forEach(btn => btn.disabled = false);
+        }
+
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Audio Player with External Controls initialized');
+            console.log('User Agent:', navigator.userAgent);
+            updateStatus('Ready to load audio!', 'success');
+        });
+
+        // Handle orientation changes on mobile
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (audioPlayer) {
+                    // Ensure audio player maintains proper sizing after orientation change
+                    audioPlayer.style.width = '100%';
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
