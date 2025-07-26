@@ -64,14 +64,62 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="spotify-heading-lg text-white mb-4">7. Privacy</h2>
+            <h2 className="spotify-heading-lg text-white mb-4">7. DMCA Copyright Policy</h2>
+            <p className="mb-4">
+              Spokify respects the intellectual property rights of others and expects our users to do the same. 
+              We respond to notices of alleged copyright infringement that comply with the Digital Millennium Copyright Act ("DMCA").
+            </p>
+            
+            <h3 className="spotify-heading-md text-white mb-3">Copyright Infringement Notices</h3>
+            <p className="mb-4">
+              If you believe that content on Spokify infringes your copyright, you may submit a takedown notice. 
+              To be effective, your notice must include:
+            </p>
+            <ul className="list-disc list-inside space-y-2 ml-4 mb-4">
+              <li>Your contact information (name, address, phone, email)</li>
+              <li>Description of the copyrighted work you claim is being infringed</li>
+              <li>URL or description of the infringing content on our service</li>
+              <li>A statement that you have good faith belief the use is not authorized</li>
+              <li>A statement that the information is accurate and you're authorized to act</li>
+              <li>Your physical or electronic signature</li>
+            </ul>
+            
+            <h3 className="spotify-heading-md text-white mb-3">How to Submit a Takedown Notice</h3>
+            <p className="mb-4">
+              Submit copyright infringement notices through our <a href="/dmca-takedown" className="text-spotify-green hover:underline">DMCA Takedown Form</a> or 
+              email our designated agent at: <span className="text-spotify-green">dmca@spokify.com</span>
+            </p>
+            
+            <h3 className="spotify-heading-md text-white mb-3">Counter-Notifications</h3>
+            <p className="mb-4">
+              If your content was removed due to a DMCA notice and you believe it was removed in error, 
+              you may submit a counter-notification. We will forward valid counter-notifications to the 
+              original complainant and may restore the content after 10-14 business days unless they file a lawsuit.
+            </p>
+            
+            <h3 className="spotify-heading-md text-white mb-3">Repeat Infringer Policy</h3>
+            <p className="mb-4">
+              We may terminate accounts of users who are found to be repeat infringers of copyright. 
+              Users who receive multiple valid DMCA takedown notices may have their accounts suspended or terminated.
+            </p>
+            
+            <p className="mb-4">
+              <strong>DMCA Agent Contact:</strong><br />
+              Spokify Legal Team<br />
+              Email: dmca@spokify.com<br />
+              We typically respond to valid notices within 2-3 business days.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="spotify-heading-lg text-white mb-4">8. Privacy</h2>
             <p className="mb-4">
               Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the service.
             </p>
           </section>
 
           <section>
-            <h2 className="spotify-heading-lg text-white mb-4">8. Limitation of Liability</h2>
+            <h2 className="spotify-heading-lg text-white mb-4">9. Limitation of Liability</h2>
             <p className="mb-4">
               Spokify shall not be liable for any indirect, incidental, special, consequential, or punitive damages, 
               including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
@@ -79,7 +127,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="spotify-heading-lg text-white mb-4">9. Changes to Terms</h2>
+            <h2 className="spotify-heading-lg text-white mb-4">10. Changes to Terms</h2>
             <p className="mb-4">
               We reserve the right to modify these terms at any time. We will notify users of any material changes 
               via email or through the service.
@@ -87,7 +135,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="spotify-heading-lg text-white mb-4">10. Contact Information</h2>
+            <h2 className="spotify-heading-lg text-white mb-4">11. Contact Information</h2>
             <p className="mb-4">
               If you have any questions about these Terms of Service, please contact us at support@spokify.com.
             </p>

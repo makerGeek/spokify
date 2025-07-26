@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { translateText } from "./services/gemini";
-import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertBookmarkSchema, reviewResultSchema } from "@shared/schema";
+import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertBookmarkSchema, reviewResultSchema, insertDmcaRequestSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, requireAdmin, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 import session from "express-session";
@@ -558,6 +558,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : "Translation failed" });
+    }
+  });
+
+  // Test route
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "Test route working" });
+  });
+
+  // DMCA takedown request endpoint
+  console.log("🔧 Registering DMCA endpoint: /api/dmca/submit");
+  app.post("/api/dmca/submit", rateLimit({ windowMs: 15 * 60 * 1000, max: 5 }), async (req, res) => {
+    try {
+      // Extract IP address and user agent for logging
+      const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+      const userAgent = req.get('User-Agent') || 'unknown';
+      
+      // Validate the request data
+      const dmcaData = insertDmcaRequestSchema.parse({
+        ...req.body,
+        ipAddress,
+        userAgent
+      });
+      
+      // Additional validation for required fields
+      if (!dmcaData.name || !dmcaData.email || !dmcaData.workDescription || 
+          !dmcaData.infringingUrl || !dmcaData.digitalSignature ||
+          !dmcaData.goodFaithBelief || !dmcaData.accuracyStatement) {
+        return res.status(400).json({ 
+          message: "Missing required fields. Please fill in all required fields marked with *" 
+        });
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(dmcaData.email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+      
+      // Validate URL format for infringingUrl
+      try {
+        new URL(dmcaData.infringingUrl);
+      } catch {
+        return res.status(400).json({ message: "Invalid URL format for infringing content" });
+      }
+      
+      console.log(`📋 DMCA takedown request received from ${dmcaData.email} for ${dmcaData.infringingUrl}`);
+      
+      // Save to database
+      const dmcaRequest = await storage.createDmcaRequest(dmcaData);
+      
+      console.log(`✅ DMCA request saved with ID: ${dmcaRequest.id}`);
+      
+      // TODO: Send email notification to admins and acknowledgment to submitter
+      // For now, we'll just log it
+      console.log(`📧 Email notifications would be sent for DMCA request ID: ${dmcaRequest.id}`);
+      
+      res.status(201).json({ 
+        message: "DMCA takedown request submitted successfully",
+        requestId: dmcaRequest.id,
+        status: "pending"
+      });
+      
+    } catch (error) {
+      console.error('DMCA submission error:', error);
+      
+      if (error instanceof Error && error.message.includes('validation')) {
+        return res.status(400).json({ 
+          message: "Invalid request data. Please check all required fields." 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "Failed to submit DMCA request. Please try again or contact dmca@spokify.com directly." 
+      });
     }
   });
 

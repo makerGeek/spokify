@@ -366,6 +366,18 @@ export default function Profile() {
           </button>
         </div>
 
+        {/* Legal Links */}
+        <div className="text-center pb-4">
+          <div className="flex justify-center space-x-6 mb-4">
+            <Link href="/terms-of-service" className="text-xs text-spotify-muted hover:text-spotify-primary transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/privacy-policy" className="text-xs text-spotify-muted hover:text-spotify-primary transition-colors">
+              Privacy Policy
+            </Link>
+          </div>
+        </div>
+
         {/* Build Version */}
         <div className="text-center pb-4">
           <p className="text-xs text-spotify-muted opacity-60">

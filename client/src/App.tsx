@@ -32,6 +32,7 @@ import SubscriptionConfirmation from "@/pages/subscription-confirmation";
 import Checkout from "@/pages/checkout";
 import TermsOfService from "@/pages/terms-of-service";
 import PrivacyPolicy from "@/pages/privacy-policy";
+import DMCATakedown from "@/pages/dmca-takedown";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -122,6 +123,7 @@ function Router() {
         <Route path="/pwa-debug" component={PWADebug} />
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/dmca-takedown" component={DMCATakedown} />
         <Route component={NotFound} />
       </Switch>
       

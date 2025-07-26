@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, ArrowLeft, Home, RotateCcw, Trophy } from "lucide-react";
 import { useLocation } from "wouter";
@@ -32,13 +33,8 @@ export default function ReviewSession() {
     mutationFn: async ({ vocabularyId, answer }: { vocabularyId: number; answer: string }) => {
       return api.vocabulary.submitReview(vocabularyId, answer);
     },
-    onSuccess: () => {
-      if (databaseUser?.id) {
-        queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary", "due"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary", "stats"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary"] });
-      }
-    }
+    // Don't invalidate queries during session - wait until session is complete
+    // This prevents the vocabulary data from reloading and resetting the session
   });
 
   // Handle answer submission for spaced repetition
@@ -74,8 +70,30 @@ export default function ReviewSession() {
 
   // Handle starting a new session
   const handleNewSession = () => {
+    // Reset the invalidation flag
+    setHasInvalidatedQueries(false);
+    // Invalidate the due query to get fresh vocabulary
+    if (databaseUser?.id) {
+      queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary", "due"] });
+    }
     resetSession();
   };
+
+  // Track if we've already invalidated queries to prevent multiple invalidations
+  const [hasInvalidatedQueries, setHasInvalidatedQueries] = React.useState(false);
+
+  // Invalidate queries when session completes to update vocabulary stats
+  React.useEffect(() => {
+    if (isSessionComplete && databaseUser?.id && !hasInvalidatedQueries) {
+      setHasInvalidatedQueries(true);
+      // Delay the invalidation to allow the completion screen to show
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary", "stats"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary"] });
+        // Don't invalidate the "due" query to prevent resetting the session
+      }, 100);
+    }
+  }, [isSessionComplete, databaseUser?.id, hasInvalidatedQueries, queryClient]);
 
   if (isLoading) {
     return (

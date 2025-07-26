@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 import { type Song } from "@shared/schema";
-import { PlayerAdapter, PlayerCallbacks, PlayerState } from "@/lib/player-adapter";
+import { PlayerAdapter, PlayerCallbacks, PlayerState, PlayerType } from "@/lib/player-adapter";
 import { PlayerFactory } from "@/lib/player-factory";
 
 declare global {
@@ -77,7 +77,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
 
     // For YouTube players, wait for API to be ready
-    const needsYouTubeAPI = PlayerFactory.getPlayerTypeFromUrl(currentSong.audioUrl) === 'youtube';
+    const needsYouTubeAPI = PlayerFactory.getPlayerTypeFromUrl(currentSong.audioUrl) === PlayerType.YOUTUBE;
     if (needsYouTubeAPI && !isYouTubeReady) {
       console.log('YouTube API not ready yet');
       return;
@@ -133,8 +133,37 @@ export function AudioProvider({ children }: { children: ReactNode }) {
               }, 500);
             }
           },
-          onError: (error: string) => {
+          onError: async (error: string) => {
             console.error('Player error:', error);
+            
+            // Check if this is a YouTube embedding error and we have an MP3 fallback
+            if (error.includes('Video owner has disallowed embedding') && 
+                currentSong?.audioUrl && 
+                !PlayerFactory.isIOS()) {
+              console.log('YouTube embedding blocked, trying MP3 fallback...');
+              
+              try {
+                // Clean up current YouTube player
+                if (playerRef.current) {
+                  playerRef.current.destroy();
+                  playerRef.current = null;
+                }
+                
+                // Create MP3 player
+                const mp3Player = PlayerFactory.createPlayer({ type: PlayerType.MP3 });
+                playerRef.current = mp3Player;
+                
+                // Use the same callbacks
+                await mp3Player.load(currentSong.audioUrl, callbacks);
+                
+                console.log('Successfully fell back to MP3 player');
+                return; // Exit early, don't set error state
+              } catch (fallbackError) {
+                console.error('MP3 fallback also failed:', fallbackError);
+              }
+            }
+            
+            // If fallback failed or wasn't applicable, set error state
             setIsPlaying(false);
             setHasError(true);
             setIsLoading(false);

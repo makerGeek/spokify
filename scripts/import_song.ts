@@ -175,80 +175,109 @@ async function fetchSpotifyLyrics(trackId: string): Promise<LyricsLine[] | null>
   }
 }
 
-async function uploadAudioToS3(audioUrl: string, title: string, artist: string): Promise<string | null> {
-  try {
-    console.log(`Downloading audio from: ${audioUrl.substring(0, 50)}...`);
-    
-    // Download the audio file with proper headers and follow redirects
-    const response = await axios({
-      method: 'GET',
-      url: audioUrl,
-      responseType: 'arraybuffer', // Use arraybuffer instead of stream for better reliability
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'audio/mpeg, audio/*, */*',
-        'Accept-Encoding': 'gzip, deflate',
-        'Connection': 'keep-alive'
-      },
-      timeout: 60000, // 60 second timeout
-      maxRedirects: 5 // Follow up to 5 redirects
-    });
+async function uploadAudioToS3(audioUrl: string, title: string, artist: string, maxRetries: number = 2): Promise<string | null> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`Retry attempt ${attempt}/${maxRetries} for audio download...`);
+        // Wait a bit between retries
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } else {
+        console.log(`Downloading audio from: ${audioUrl.substring(0, 50)}...`);
+      }
+      
+      // Download the audio file with proper headers and follow redirects
+      const response = await axios({
+        method: 'GET',
+        url: audioUrl,
+        responseType: 'arraybuffer', // Use arraybuffer instead of stream for better reliability
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'audio/mpeg, audio/*, */*',
+          'Accept-Encoding': 'gzip, deflate',
+          'Connection': 'keep-alive'
+        },
+        timeout: 60000, // 60 second timeout
+        maxRedirects: 5 // Follow up to 5 redirects
+      });
 
-    console.log(`Downloaded ${response.data.byteLength} bytes`);
-    
-    // Verify we got actual audio data
-    if (response.data.byteLength < 1000) {
-      console.error(`Downloaded file too small (${response.data.byteLength} bytes), likely not a valid MP3`);
-      return null;
+      console.log(`Downloaded ${response.data.byteLength} bytes`);
+      
+      // Verify we got actual audio data
+      if (response.data.byteLength < 1000) {
+        const errorMsg = `Downloaded file too small (${response.data.byteLength} bytes), likely not a valid MP3`;
+        if (attempt < maxRetries) {
+          console.error(`${errorMsg} - will retry...`);
+          continue; // Retry
+        } else {
+          console.error(`${errorMsg} - no more retries left`);
+          return null;
+        }
+      }
+
+      const audioBuffer = Buffer.from(response.data);
+      
+      // Check if it's actually an MP3 file by looking at the header
+      const header = audioBuffer.subarray(0, 3);
+      const isMP3 = (header[0] === 0xFF && (header[1] & 0xE0) === 0xE0) || // MP3 frame header
+                    (header[0] === 0x49 && header[1] === 0x44 && header[2] === 0x33); // ID3 tag
+      
+      if (!isMP3) {
+        const errorMsg = 'Downloaded file does not appear to be a valid MP3';
+        console.log('First 10 bytes:', audioBuffer.subarray(0, 10));
+        if (attempt < maxRetries) {
+          console.error(`${errorMsg} - will retry...`);
+          continue; // Retry
+        } else {
+          console.error(`${errorMsg} - no more retries left`);
+          return null;
+        }
+      }
+
+      // Generate a unique filename
+      const sanitizedTitle = title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+      const sanitizedArtist = artist.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+      const timestamp = Date.now();
+      const fileName = `audio/${sanitizedArtist}/${sanitizedTitle}_${timestamp}.mp3`;
+
+      console.log(`Uploading ${audioBuffer.length} bytes to S3: ${fileName}`);
+
+      // Upload to S3-compatible storage
+      const command = new PutObjectCommand({
+        Bucket: process.env.S3_BUCKET || '',
+        Key: fileName,
+        Body: audioBuffer,
+        ContentType: 'audio/mpeg',
+        ContentDisposition: `attachment; filename="${sanitizedTitle}.mp3"`
+      });
+
+      await s3Client.send(command);
+
+      // Generate the public URL based on endpoint configuration
+      const endpoint = process.env.S3_ENDPOINT || '';
+      const bucket = process.env.S3_BUCKET || '';
+      
+      // Remove protocol from endpoint for URL construction
+      const cleanEndpoint = endpoint.replace(/^https?:\/\//, '');
+      const s3Url = `https://${cleanEndpoint}/${bucket}/${fileName}`;
+      
+      console.log(`✓ Audio uploaded to S3-compatible storage: ${s3Url}`);
+      return s3Url;
+
+    } catch (error) {
+      const errorMsg = `Error downloading/uploading audio (attempt ${attempt + 1}/${maxRetries + 1}): ${error}`;
+      if (attempt < maxRetries) {
+        console.error(`${errorMsg} - will retry...`);
+        continue; // Retry
+      } else {
+        console.error(`${errorMsg} - no more retries left`);
+        return null;
+      }
     }
-
-    const audioBuffer = Buffer.from(response.data);
-    
-    // Check if it's actually an MP3 file by looking at the header
-    const header = audioBuffer.subarray(0, 3);
-    const isMP3 = (header[0] === 0xFF && (header[1] & 0xE0) === 0xE0) || // MP3 frame header
-                  (header[0] === 0x49 && header[1] === 0x44 && header[2] === 0x33); // ID3 tag
-    
-    if (!isMP3) {
-      console.error('Downloaded file does not appear to be a valid MP3');
-      console.log('First 10 bytes:', audioBuffer.subarray(0, 10));
-      return null;
-    }
-
-    // Generate a unique filename
-    const sanitizedTitle = title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-    const sanitizedArtist = artist.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-    const timestamp = Date.now();
-    const fileName = `audio/${sanitizedArtist}/${sanitizedTitle}_${timestamp}.mp3`;
-
-    console.log(`Uploading ${audioBuffer.length} bytes to S3: ${fileName}`);
-
-    // Upload to S3-compatible storage
-    const command = new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET || '',
-      Key: fileName,
-      Body: audioBuffer,
-      ContentType: 'audio/mpeg',
-      ContentDisposition: `attachment; filename="${sanitizedTitle}.mp3"`
-    });
-
-    await s3Client.send(command);
-
-    // Generate the public URL based on endpoint configuration
-    const endpoint = process.env.S3_ENDPOINT || '';
-    const bucket = process.env.S3_BUCKET || '';
-    
-    // Remove protocol from endpoint for URL construction
-    const cleanEndpoint = endpoint.replace(/^https?:\/\//, '');
-    const s3Url = `https://${cleanEndpoint}/${bucket}/${fileName}`;
-    
-    console.log(`✓ Audio uploaded to S3-compatible storage: ${s3Url}`);
-    return s3Url;
-
-  } catch (error) {
-    console.error('Error uploading audio to S3:', error);
-    return null;
   }
+  
+  // This should never be reached due to the logic above, but just in case
+  return null;
 }
 
 async function fetchSoundCloudTrack(title: string, artist: string): Promise<{ audioUrl: string; duration: number } | null> {

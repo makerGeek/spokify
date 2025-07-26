@@ -34,6 +34,8 @@ export function useReviewSession({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const correctSoundRef = useRef<HTMLAudioElement | null>(null);
   const wrongSoundRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
 
   // Initialize session questions (limit to maxQuestions)
   useEffect(() => {
@@ -46,17 +48,74 @@ export function useReviewSession({
     }
   }, [vocabulary, maxQuestions]);
 
-  // Initialize audio elements
+  // Initialize audio elements and context
   useEffect(() => {
-    correctSoundRef.current = new Audio('/sounds/correct.wav');
-    wrongSoundRef.current = new Audio('/sounds/wrong.wav');
-    
-    if (correctSoundRef.current && wrongSoundRef.current) {
-      correctSoundRef.current.preload = 'auto';
-      wrongSoundRef.current.preload = 'auto';
-      correctSoundRef.current.volume = 0.5;
-      wrongSoundRef.current.volume = 0.5;
-    }
+    const initializeAudio = async () => {
+      try {
+        correctSoundRef.current = new Audio('/sounds/correct.wav');
+        wrongSoundRef.current = new Audio('/sounds/wrong.wav');
+        
+        if (correctSoundRef.current && wrongSoundRef.current) {
+          correctSoundRef.current.preload = 'auto';
+          wrongSoundRef.current.preload = 'auto';
+          correctSoundRef.current.volume = 0.5;
+          wrongSoundRef.current.volume = 0.5;
+          
+          // Try to create AudioContext if supported
+          try {
+            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+            if (AudioContextClass) {
+              audioContextRef.current = new AudioContextClass();
+            }
+          } catch (audioContextError) {
+            console.log('AudioContext not supported:', audioContextError);
+          }
+          
+          // Check if we're on mobile
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                           'ontouchstart' in window || 
+                           navigator.maxTouchPoints > 0;
+          
+          // Try to enable audio context on first user interaction
+          const enableAudio = async () => {
+            try {
+              if (audioContextRef.current?.state === 'suspended') {
+                await audioContextRef.current.resume();
+              }
+              setIsAudioEnabled(true);
+              console.log('Audio enabled');
+            } catch (error) {
+              console.log('Failed to enable audio context:', error);
+              // Even if AudioContext fails, try to enable basic audio
+              setIsAudioEnabled(true);
+            }
+          };
+
+          if (isMobile) {
+            // On mobile, wait for user interaction
+            const handleUserInteraction = () => {
+              enableAudio();
+              document.removeEventListener('touchstart', handleUserInteraction);
+              document.removeEventListener('click', handleUserInteraction);
+              document.removeEventListener('keydown', handleUserInteraction);
+            };
+
+            document.addEventListener('touchstart', handleUserInteraction, { once: true });
+            document.addEventListener('click', handleUserInteraction, { once: true });
+            document.addEventListener('keydown', handleUserInteraction, { once: true });
+          } else {
+            // On desktop, enable immediately
+            enableAudio();
+          }
+        }
+      } catch (error) {
+        console.log('Audio initialization failed:', error);
+        // Try to enable basic audio even if initialization fails
+        setIsAudioEnabled(true);
+      }
+    };
+
+    initializeAudio();
 
     return () => {
       if (correctSoundRef.current) {
@@ -67,16 +126,42 @@ export function useReviewSession({
         wrongSoundRef.current.pause();
         wrongSoundRef.current = null;
       }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
     };
   }, []);
 
-  // Play sound effects
+  // Play sound effects with mobile support
   const playSound = (isCorrect: boolean) => {
+    if (!isAudioEnabled) {
+      console.log('Audio not enabled yet');
+      return;
+    }
+
     try {
       const audio = isCorrect ? correctSoundRef.current : wrongSoundRef.current;
       if (audio) {
+        // Reset audio to beginning
         audio.currentTime = 0;
-        audio.play().catch(error => console.log('Audio play failed:', error));
+        
+        // Create a promise to handle the play
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log(`${isCorrect ? 'Correct' : 'Wrong'} sound played successfully`);
+            })
+            .catch(error => {
+              console.log('Audio play failed:', error);
+              // On mobile, sometimes the first play fails, try to enable audio context again
+              if (audioContextRef.current?.state === 'suspended') {
+                audioContextRef.current.resume().catch(e => console.log('Resume failed:', e));
+              }
+            });
+        }
       }
     } catch (error) {
       console.log('Sound effect error:', error);

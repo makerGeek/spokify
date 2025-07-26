@@ -215,3 +215,58 @@ export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 export type Translation = typeof translations.$inferSelect;
 export type InsertBookmark = z.infer<typeof insertBookmarkSchema>;
 export type Bookmark = typeof bookmarks.$inferSelect;
+
+// DMCA takedown requests table
+export const dmcaRequests = pgTable("dmca_requests", {
+  id: serial("id").primaryKey(),
+  
+  // Copyright holder information
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  
+  // Copyrighted work description
+  workDescription: text("work_description").notNull(),
+  originalWorkUrl: text("original_work_url"),
+  
+  // Infringing content
+  infringingUrl: text("infringing_url").notNull(),
+  infringingDescription: text("infringing_description"),
+  
+  // Legal statements
+  goodFaithBelief: boolean("good_faith_belief").notNull().default(false),
+  accuracyStatement: boolean("accuracy_statement").notNull().default(false),
+  digitalSignature: text("digital_signature").notNull(),
+  
+  // Status and processing
+  status: text("status").notNull().default("pending"), // pending, reviewed, resolved, rejected
+  adminNotes: text("admin_notes"),
+  processedBy: integer("processed_by").references(() => users.id),
+  processedAt: timestamp("processed_at"),
+  
+  // Metadata
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export const insertDmcaRequestSchema = createInsertSchema(dmcaRequests).pick({
+  name: true,
+  email: true,
+  phone: true,
+  address: true,
+  workDescription: true,
+  originalWorkUrl: true,
+  infringingUrl: true,
+  infringingDescription: true,
+  goodFaithBelief: true,
+  accuracyStatement: true,
+  digitalSignature: true,
+  ipAddress: true,
+  userAgent: true,
+});
+
+export type InsertDmcaRequest = z.infer<typeof insertDmcaRequestSchema>;
+export type DmcaRequest = typeof dmcaRequests.$inferSelect;

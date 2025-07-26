@@ -1,6 +1,6 @@
-import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, dmcaRequests, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark, type DmcaRequest, type InsertDmcaRequest } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -65,12 +65,18 @@ export interface IStorage {
 
   // Stripe-related methods
   updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;
-  updateUserStripeInfo(userId: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
+  updateUserStripeInfo(userId: number, updates: { customerId?: string; subscriptionId?: string; subscriptionStatus?: string; subscriptionEndsAt?: Date; }): Promise<User>;
   updateSubscriptionStatus(userId: number, status: string, endsAt?: Date): Promise<User>;
   
   // Premium user identification
   getUsersBySubscriptionStatus(status: string): Promise<User[]>;
   isPremiumUser(userId: number): Promise<boolean>;
+
+  // DMCA methods
+  createDmcaRequest(dmcaRequest: InsertDmcaRequest): Promise<DmcaRequest>;
+  getDmcaRequest(id: number): Promise<DmcaRequest | undefined>;
+  getAllDmcaRequests(): Promise<DmcaRequest[]>;
+  updateDmcaRequestStatus(id: number, status: string, adminNotes?: string, processedBy?: number): Promise<DmcaRequest>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -620,6 +626,54 @@ export class DatabaseStorage implements IStorage {
     }
     
     return false;
+  }
+
+  // DMCA methods implementation
+  async createDmcaRequest(dmcaRequest: InsertDmcaRequest): Promise<DmcaRequest> {
+    const [request] = await db
+      .insert(dmcaRequests)
+      .values(dmcaRequest)
+      .returning();
+    return request;
+  }
+
+  async getDmcaRequest(id: number): Promise<DmcaRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(dmcaRequests)
+      .where(eq(dmcaRequests.id, id));
+    return request;
+  }
+
+  async getAllDmcaRequests(): Promise<DmcaRequest[]> {
+    return await db
+      .select()
+      .from(dmcaRequests)
+      .orderBy(desc(dmcaRequests.createdAt));
+  }
+
+  async updateDmcaRequestStatus(id: number, status: string, adminNotes?: string, processedBy?: number): Promise<DmcaRequest> {
+    const updates: any = {
+      status,
+      updatedAt: new Date()
+    };
+
+    if (adminNotes) {
+      updates.adminNotes = adminNotes;
+    }
+
+    if (processedBy) {
+      updates.processedBy = processedBy;
+      updates.processedAt = new Date();
+    }
+
+    const [request] = await db
+      .update(dmcaRequests)
+      .set(updates)
+      .where(eq(dmcaRequests.id, id))
+      .returning();
+    
+    return request;
   }
 }
 
