@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import { initializePWA } from "@/lib/pwa";
-import { initGA } from "@/lib/analytics";
+import { initGA, trackVisitorInfo, setupSessionTracking } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { AudioProvider } from "@/hooks/use-audio";
 import { AppStateProvider } from "@/contexts/app-state-provider";
@@ -155,6 +155,12 @@ function AppContent() {
           console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
         } else {
           initGA();
+          
+          // Setup enhanced analytics tracking
+          setTimeout(() => {
+            trackVisitorInfo();
+            setupSessionTracking();
+          }, 1000); // Delay to ensure GA is fully loaded
         }
         
         // Add small delay to ensure proper initialization in PWA mode

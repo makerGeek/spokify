@@ -4,36 +4,34 @@ import { REAL_TIME_CONFIG } from '@/lib/query-config'
 import { api } from '@/lib/api-client'
 
 export function useFeatureFlag(flagName: string) {
-  const { data: flag, isLoading, error } = useQuery({
-    queryKey: ['feature-flags', flagName],
-    queryFn: (): Promise<FeatureFlag> => api.featureFlags.get(flagName),
+  const { data: activeFlags, isLoading, error } = useQuery({
+    queryKey: ['active-flags'],
+    queryFn: (): Promise<string[]> => api.featureFlags.getActive(),
     ...REAL_TIME_CONFIG
   })
 
-  const isEnabled = !isLoading && (flag?.enabled ?? false)
+  const isEnabled = !isLoading && (activeFlags ? activeFlags.includes(flagName) : false)
 
   return {
     isEnabled,
-    flag,
     isLoading,
     error,
   }
 }
 
 export function useFeatureFlags() {
-  const { data: flags, isLoading, error } = useQuery({
-    queryKey: ['feature-flags'],
-    queryFn: (): Promise<FeatureFlag[]> => api.featureFlags.getAll(),
+  const { data: activeFlags, isLoading, error } = useQuery({
+    queryKey: ['active-flags'],
+    queryFn: (): Promise<string[]> => api.featureFlags.getActive(),
     ...REAL_TIME_CONFIG
   })
 
   return {
-    flags: flags ?? [],
+    activeFlags: activeFlags ?? [],
     isLoading,
     error,
     isEnabled: (flagName: string) => {
-      const flag = flags?.find(f => f.name === flagName)
-      return flag?.enabled ?? false
+      return activeFlags ? activeFlags.includes(flagName) : false
     },
   }
 }

@@ -3,6 +3,7 @@ import { type Song } from "@shared/schema";
 import { PlayerAdapter, PlayerCallbacks, PlayerState, PlayerType } from "@/lib/player-adapter";
 import { PlayerFactory } from "@/lib/player-factory";
 import { api } from "@/lib/api-client";
+import { trackSongPlay, trackSongComplete } from "@/lib/analytics";
 
 declare global {
   interface Window {
@@ -38,6 +39,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [hasError, setHasError] = useState(false);
   const [isYouTubeReady, setIsYouTubeReady] = useState(false);
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+  const [playStartTime, setPlayStartTime] = useState<number | null>(null);
   
   // Ref hooks
   const playerRef = useRef<PlayerAdapter | null>(null);
@@ -249,6 +251,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         console.log('Calling play');
         setIsLoading(true);
         await playerRef.current.play();
+        
+        // Track song play when it actually starts
+        if (currentSong && !playStartTime) {
+          setPlayStartTime(Date.now());
+          trackSongPlay(
+            currentSong.id,
+            currentSong.title,
+            currentSong.artist,
+            currentSong.genre,
+            currentSong.language,
+            duration
+          );
+        }
       } catch (error) {
         console.error('Error calling play:', error);
         setHasError(true);
@@ -312,6 +327,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       return;
     }
     
+    // Track completion of previous song if it was playing
+    if (currentSong && playStartTime && duration > 0) {
+      const listenDuration = (Date.now() - playStartTime) / 1000;
+      trackSongComplete(currentSong.id, currentSong.title, listenDuration, duration);
+    }
+    
     // Different song or null - destroy existing player and create new one
     if (playerRef.current) {
       console.log('Destroying existing player for new song');
@@ -330,6 +351,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setCurrentTime(0);
     setDuration(0);
     setHasError(false);
+    setPlayStartTime(null); // Reset play start time for new song
   };
 
   return (

@@ -6,7 +6,7 @@ import { useMarquee } from "@/hooks/use-marquee";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { usePremium } from "@/hooks/use-premium";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, trackSongView, trackFeatureUsage } from "@/lib/analytics";
 
 import { type Song } from "@shared/schema";
 
@@ -37,6 +37,9 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     
     // Check if this is a premium song (not free) and user doesn't have active subscription
     if (!song.isFree && !canAccessPremiumContent) {
+      // Track premium paywall interaction
+      trackFeatureUsage('premium_paywall', 'shown', song.id);
+      
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }
@@ -53,10 +56,14 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     
     // User has access - play the song
     trackEvent('song_played', 'music', song.title, song.id);
+    // Note: detailed song play tracking happens in use-audio.tsx when play actually starts
     setCurrentSong(song, true); // Second parameter indicates auto-play
   };
 
   const handleCardClick = () => {
+    // Track song view when card is clicked
+    trackSongView(song.id, song.title, song.artist, song.genre, song.language);
+    
     // Check if user is authenticated
     if (!user) {
       if (onPremiumRequested) {
@@ -67,6 +74,9 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
     
     // Check if this is a premium song (not free) and user doesn't have active subscription
     if (!song.isFree && !canAccessPremiumContent) {
+      // Track premium paywall interaction
+      trackFeatureUsage('premium_paywall', 'shown', song.id);
+      
       if (onPremiumRequested) {
         onPremiumRequested(song);
       }

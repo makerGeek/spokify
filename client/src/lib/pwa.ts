@@ -115,8 +115,8 @@ export function initializePWA() {
     
     // Check if install features are enabled via feature flag
     try {
-      const response = await api.get('/feature-flags/ALLOW_APP_INSTALL');
-      if (!response?.enabled) {
+      const activeFlags = await api.featureFlags.getActive();
+      if (!activeFlags.includes('ALLOW_APP_INSTALL')) {
         console.log('App install feature disabled via flag');
         return;
       }

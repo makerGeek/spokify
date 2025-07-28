@@ -675,6 +675,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Feature flag routes
+  app.get("/api/flags", async (req, res) => {
+    try {
+      const flags = await storage.getAllFeatureFlags();
+      const activeFlags = flags.filter(flag => flag.enabled).map(flag => flag.name);
+      res.json(activeFlags);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch feature flags" });
+    }
+  });
+
   app.get("/api/feature-flags", async (req, res) => {
     try {
       const flags = await storage.getAllFeatureFlags();
@@ -684,18 +694,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/feature-flags/:name", async (req, res) => {
-    try {
-      const { name } = req.params;
-      const flag = await storage.getFeatureFlag(name);
-      if (!flag) {
-        return res.status(404).json({ message: "Feature flag not found" });
-      }
-      res.json(flag);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch feature flag" });
-    }
-  });
 
   app.post("/api/feature-flags", async (req, res) => {
     try {

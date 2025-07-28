@@ -97,8 +97,8 @@ export const api = {
   },
 
   featureFlags: {
-    get: (name: string) => api.get(`/feature-flags/${name}`),
     getAll: () => api.get('/feature-flags'),
+    getActive: (): Promise<string[]> => api.get<string[]>('/flags'),
   },
 
   translate: (text: string, targetLanguage: string, fromLanguage: string = "es", songId?: number) => 
