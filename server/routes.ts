@@ -21,6 +21,20 @@ function canAccessPremiumContent(user: any): boolean {
   return user?.subscriptionStatus === 'active';
 }
 
+// Song serializer function to ensure consistent response format
+function serializeSongWithAccess(song: any, user: any) {
+  const canAccess = song.isFree || canAccessPremiumContent(user);
+  const requiresPremium = !song.isFree;
+
+  const { audioUrl, sdcldAudioUrl, ...songWithoutAudioUrls } = song;
+
+  return {
+    ...songWithoutAudioUrls,
+    canAccess,
+    requiresPremium
+  };
+}
+
 // Helper function to check if user can access specific song
 async function canAccessSong(user: any, songId: number): Promise<{ canAccess: boolean; song: any; requiresPremium: boolean }> {
   const song = await storage.getSong(songId);
@@ -134,39 +148,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Song routes
   app.get("/api/songs", optionalAuth, async (req: AuthenticatedRequest, res) => {
     try {
-      const { genre, difficulty, language } = req.query;
-      const songs = await storage.getSongs({
+      const { genre, difficulty, language, page, limit } = req.query;
+      
+      // Parse pagination parameters
+      const pageNum = parseInt(page as string) || 1;
+      const pageLimit = Math.min(parseInt(limit as string) || 15, 50); // Max 50 songs per page
+      const offset = (pageNum - 1) * pageLimit;
+      
+      const result = await storage.getSongs({
         genre: genre as string,
         difficulty: difficulty as string,
-        language: language as string
+        language: language as string,
+        limit: pageLimit,
+        offset: offset
       });
 
       // Add access control information for each song
-      const songsWithAccess = songs.map(song => {
-        let canAccess = true;
-        let requiresPremium = false;
+      const songsWithAccess = result.songs.map(song => 
+        serializeSongWithAccess(song, req.user)
+      );
 
-        // Free songs are always accessible
-        if (song.isFree) {
-          canAccess = true;
-        } else {
-          // Premium songs require active subscription
-          requiresPremium = true;
-          if (req.user?.subscriptionStatus === 'active') {
-            canAccess = true;
-          } else {
-            canAccess = false;
-          }
-        }
-
-        return {
-          ...song,
-          canAccess,
-          requiresPremium
-        };
+      const response = {
+        songs: songsWithAccess,
+        totalCount: result.totalCount,
+        hasMore: offset + pageLimit < result.totalCount,
+        page: pageNum,
+        limit: pageLimit
+      };
+      
+      res.json({
+        songs: songsWithAccess,
+        totalCount: result.totalCount,
+        hasMore: offset + pageLimit < result.totalCount,
+        page: pageNum,
+        limit: pageLimit
       });
-
-      res.json(songsWithAccess);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch songs" });
     }
@@ -213,17 +229,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      res.json({
-        ...song,
-        canAccess: accessResult.canAccess,
-        requiresPremium: accessResult.requiresPremium
-      });
+      res.json(serializeSongWithAccess(song, req.user));
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch song" });
     }
   });
 
+  // Audio URL endpoint - only for fallback scenarios (YouTube failure or iOS)
+  app.get("/api/songs/:id/audio", optionalAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const accessResult = await canAccessSong(req.user, id);
+      
+      if (!accessResult.song) {
+        return res.status(404).json({ message: "Song not found" });
+      }
 
+      // Security: Verify user can access this song
+      if (!accessResult.canAccess && accessResult.requiresPremium) {
+        return res.status(403).json({ 
+          message: "Premium subscription required to access this song's audio",
+          requiresPremium: true 
+        });
+      }
+
+      const song = accessResult.song;
+
+      // Only return the audio URL - no other song data
+      res.json({
+        audioUrl: song.audioUrl || null
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch audio URL" });
+    }
+  });
 
   // Progress routes - now protected
   app.get("/api/users/:userId/progress", authenticateToken, async (req: AuthenticatedRequest, res) => {
@@ -685,12 +724,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/management/songs", authenticateToken, requireAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       const { genre, difficulty, language } = req.query;
-      const songs = await storage.getSongs({
+      const result = await storage.getSongs({
         genre: genre as string,
         difficulty: difficulty as string,
         language: language as string
       });
-      res.json(songs);
+      res.json(result.songs);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch songs" });
     }
@@ -1036,6 +1075,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     res.json({ received: true });
   });
+
 
   const httpServer = createServer(app);
   return httpServer;

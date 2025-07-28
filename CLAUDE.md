@@ -98,8 +98,14 @@ SUPABASE_URL=                   # Supabase project URL
 SUPABASE_ANON_KEY=              # Supabase anonymous key
 SUPABASE_SERVICE_ROLE_KEY=      # Supabase service role key
 STRIPE_SECRET_KEY=              # Stripe secret key
+STRIPE_WEBHOOK_SECRET=          # Stripe webhook secret
 GEMINI_API_KEY=                 # Google AI Studio API key
 VITE_GA_MEASUREMENT_ID=         # Google Analytics tracking ID
+
+# Konnect Payment Provider (Optional)
+KONNECT_API_KEY=                # Konnect API key from dashboard
+KONNECT_BASE_URL=               # Konnect API base URL (defaults to https://api.konnect.network)
+KONNECT_RECEIVER_WALLET_ID=     # Your Konnect wallet ID for receiving payments
 ```
 
 ### Development Dependencies

@@ -385,7 +385,12 @@ async function saveSongToDatabase(songData: {
 
 // Main function to run the script
 async function main() {
-  const songName = process.argv[2];
+  // Debug: Log all arguments
+  console.log('DEBUG: All process.argv:', process.argv);
+  console.log('DEBUG: Arguments from index 2:', process.argv.slice(2));
+  
+  // Join all arguments after the script name to handle song names with spaces
+  const songName = process.argv.slice(2).join(' ');
   
   if (!songName) {
     console.log('Usage: npx tsx scripts/import_song.ts "Song Name"');

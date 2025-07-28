@@ -1,7 +1,7 @@
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
 
-const exec = promisify(spawn);
+const execAsync = promisify(exec);
 
 // ============================================================================
 // CONFIGURATION: Change these values to control execution mode
@@ -10,7 +10,7 @@ const exec = promisify(spawn);
 //        Slower but provides detailed logs for debugging
 // false: Parallel execution - Minimal output, faster processing
 //        Better for bulk imports when you trust the process works
-const SEQUENTIAL_EXECUTION = false;
+const SEQUENTIAL_EXECUTION = true;
 
 // Maximum number of parallel import processes to run simultaneously
 // Only applies when SEQUENTIAL_EXECUTION is false
@@ -26,47 +26,33 @@ async function importSong(songQuery: string, showOutput: boolean = false): Promi
   return new Promise((resolve) => {
     console.log(`🎵 Starting import for: "${songQuery}"`);
     
-    const child = spawn('npx', ['tsx', 'scripts/import_song.ts', songQuery], {
-      stdio: showOutput ? 'inherit' : 'pipe',
-      shell: true
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    if (!showOutput) {
-      child.stdout?.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      child.stderr?.on('data', (data) => {
-        stderr += data.toString();
-      });
-    }
-
-    child.on('close', (code) => {
-      if (code === 0) {
+    // Properly escape the song query for shell execution
+    const escapedQuery = songQuery.replace(/"/g, '\\"');
+    const command = `npx tsx scripts/import_song.ts "${escapedQuery}"`;
+    
+    const child = exec(command, (error, stdout, stderr) => {
+      if (error) {
+        if (!showOutput) {
+          console.error(`❌ Failed to import: "${songQuery}"`);
+          console.error(`Error: ${error.message}`);
+        } else {
+          console.error(`\n❌ Failed to import: "${songQuery}"\n`);
+        }
+        resolve({ song: songQuery, success: false, error: error.message });
+      } else {
         if (!showOutput) {
           console.log(`✅ Successfully imported: "${songQuery}"`);
         } else {
           console.log(`\n✅ Successfully completed import for: "${songQuery}"\n`);
         }
         resolve({ song: songQuery, success: true });
-      } else {
-        if (!showOutput) {
-          console.error(`❌ Failed to import: "${songQuery}"`);
-          console.error(`Error output: ${stderr}`);
-        } else {
-          console.error(`\n❌ Failed to import: "${songQuery}"\n`);
-        }
-        resolve({ song: songQuery, success: false, error: stderr });
       }
     });
 
-    child.on('error', (error) => {
-      console.error(`❌ Error importing "${songQuery}": ${error.message}`);
-      resolve({ song: songQuery, success: false, error: error.message });
-    });
+    if (showOutput) {
+      child.stdout?.pipe(process.stdout);
+      child.stderr?.pipe(process.stderr);
+    }
   });
 }
 

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Music, User, Crown } from "lucide-react";
+import { Music, User, Crown, Loader2 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { usePremium } from "@/hooks/use-premium";
 import { useFeatureFlag } from "@/hooks/use-feature-flags";
+import { useSongsInfinite } from "@/hooks/use-songs-infinite";
 import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
 
@@ -108,21 +109,56 @@ export default function Home() {
     level = "A1",
   } = userPreferences;
 
-  const { data: songs = [], isLoading } = useQuery<Song[]>({
-    queryKey: ["/api/songs", showGenreFilters ? selectedGenre : "all", targetLanguage],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      // Only filter by genre if genre filters are enabled
-      if (showGenreFilters && selectedGenre !== "all") {
-        params.append("genre", selectedGenre);
-      }
-      // Always filter by target language
-      if (targetLanguage) {
-        params.append("language", targetLanguage);
-      }
-      return api.get(`/songs?${params}`);
-    },
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useSongsInfinite({
+    genre: showGenreFilters ? selectedGenre : undefined,
+    language: targetLanguage,
+    limit: 15
   });
+
+  // Flatten all pages into a single array of songs
+  const songs = useMemo(() => {
+    if (!data?.pages) {
+      return [];
+    }
+    return data.pages.flatMap(page => {
+      // Handle both old format (array) and new format (object with songs property)
+      let songsArray;
+      if (Array.isArray(page)) {
+        // Old format: page is directly an array of songs
+        songsArray = page;
+      } else if (page?.songs && Array.isArray(page.songs)) {
+        // New format: page has songs property
+        songsArray = page.songs;
+      } else {
+        console.error('Invalid page data:', page);
+        return [];
+      }
+      return songsArray.filter(song => song && typeof song.id !== 'undefined');
+    });
+  }, [data]);
+
+  // Set up infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        hasNextPage &&
+        !isFetchingNextPage &&
+        window.innerHeight + document.documentElement.scrollTop >=
+          document.documentElement.offsetHeight - 1000
+      ) {
+        fetchNextPage();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleProfileClick = () => {
     setLocation("/profile");
@@ -261,6 +297,25 @@ export default function Home() {
                 }}
               />
             ))}
+            
+            {/* Loading indicator for infinite scroll */}
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-8">
+                <div className="flex items-center space-x-2 text-spotify-muted">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Loading more songs...</span>
+                </div>
+              </div>
+            )}
+            
+            {/* End of results indicator */}
+            {!hasNextPage && songs.length > 0 && (
+              <div className="flex justify-center py-8">
+                <div className="text-spotify-muted text-sm">
+                  You've reached the end! No more songs to load.
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

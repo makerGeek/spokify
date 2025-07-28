@@ -2,6 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect, useRef } fro
 import { type Song } from "@shared/schema";
 import { PlayerAdapter, PlayerCallbacks, PlayerState, PlayerType } from "@/lib/player-adapter";
 import { PlayerFactory } from "@/lib/player-factory";
+import { api } from "@/lib/api-client";
 
 declare global {
   interface Window {
@@ -41,6 +42,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   // Ref hooks
   const playerRef = useRef<PlayerAdapter | null>(null);
 
+  // Function to fetch audio URL from backend when needed for fallback
+  const fetchAudioUrl = async (songId: number): Promise<string | null> => {
+    try {
+      const response = await api.get(`/songs/${songId}/audio`);
+      return response.audioUrl || null;
+    } catch (error) {
+      console.error('Failed to fetch audio URL:', error);
+      return null;
+    }
+  };
+
   // Listen for YouTube API ready event (still needed for YouTube adapter)
   useEffect(() => {
     const checkYouTubeReady = () => {
@@ -71,19 +83,25 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   // Create player when song changes
   useEffect(() => {
-    if (!currentSong?.audioUrl) {
-      console.log('No song or audio URL');
+    if (!currentSong) {
+      console.log('No song');
       return;
     }
 
+    // Determine if we should use YouTube or need to fetch audio URL
+    const hasYouTubeId = !!(currentSong as any).youtubeId;
+    const isIOS = PlayerFactory.isIOS();
+    
+    // On iOS or if no YouTube ID, we'll need the audio URL from the backend
+    const needsAudioUrl = isIOS || !hasYouTubeId;
+    
     // For YouTube players, wait for API to be ready
-    const needsYouTubeAPI = PlayerFactory.getPlayerTypeFromUrl(currentSong.audioUrl) === PlayerType.YOUTUBE;
-    if (needsYouTubeAPI && !isYouTubeReady) {
+    if (hasYouTubeId && !isIOS && !isYouTubeReady) {
       console.log('YouTube API not ready yet');
       return;
     }
 
-    console.log('Creating player for:', currentSong.title, 'Audio URL:', currentSong.audioUrl);
+    console.log('Creating player for:', currentSong.title, 'Has YouTube ID:', hasYouTubeId, 'Is iOS:', isIOS);
 
     // Reset state immediately when switching songs
     setIsPlaying(false);
@@ -101,10 +119,29 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       playerRef.current = null;
     }
 
-    // Create player based on URL
+    // Create player based on available media
     const createPlayer = async () => {
       try {
-        const player = PlayerFactory.createPlayerFromUrl(currentSong.audioUrl || '');
+        let audioUrlToPlay: string;
+        
+        // Determine what URL to use for playback
+        if (needsAudioUrl) {
+          // Fetch audio URL from backend for iOS or songs without YouTube ID
+          console.log('Fetching audio URL from backend...');
+          const fetchedAudioUrl = await fetchAudioUrl(currentSong.id);
+          if (!fetchedAudioUrl) {
+            throw new Error('No audio URL available for this song');
+          }
+          audioUrlToPlay = fetchedAudioUrl;
+        } else {
+          // Use YouTube ID for non-iOS devices
+          audioUrlToPlay = PlayerFactory.getAudioUrlToPlay({
+            audioUrl: null, // We don't have this anymore
+            youtubeId: (currentSong as any).youtubeId
+          });
+        }
+
+        const player = PlayerFactory.createPlayerFromUrl(audioUrlToPlay);
         playerRef.current = player;
 
         const callbacks: PlayerCallbacks = {
@@ -136,30 +173,35 @@ export function AudioProvider({ children }: { children: ReactNode }) {
           onError: async (error: string) => {
             console.error('Player error:', error);
             
-            // Check if this is a YouTube embedding error and we have an MP3 fallback
+            // Check if this is a YouTube embedding error and we can fall back to audio file
             if (error.includes('Video owner has disallowed embedding') && 
-                currentSong?.audioUrl && 
                 !PlayerFactory.isIOS()) {
-              console.log('YouTube embedding blocked, trying MP3 fallback...');
+              console.log('YouTube embedding blocked, trying audio file fallback...');
               
               try {
+                // Fetch the audio URL from backend
+                const fallbackAudioUrl = await fetchAudioUrl(currentSong.id);
+                if (!fallbackAudioUrl) {
+                  throw new Error('No fallback audio URL available');
+                }
+                
                 // Clean up current YouTube player
                 if (playerRef.current) {
                   playerRef.current.destroy();
                   playerRef.current = null;
                 }
                 
-                // Create MP3 player
+                // Create MP3 player with fetched URL
                 const mp3Player = PlayerFactory.createPlayer({ type: PlayerType.MP3 });
                 playerRef.current = mp3Player;
                 
                 // Use the same callbacks
-                await mp3Player.load(currentSong.audioUrl, callbacks);
+                await mp3Player.load(fallbackAudioUrl, callbacks);
                 
                 console.log('Successfully fell back to MP3 player');
                 return; // Exit early, don't set error state
               } catch (fallbackError) {
-                console.error('MP3 fallback also failed:', fallbackError);
+                console.error('Audio file fallback also failed:', fallbackError);
               }
             }
             
@@ -172,12 +214,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             setCurrentTime(time);
           }
         };
-
-        // Only get the audio URL when we're about to load it - this prevents unnecessary downloads
-        const audioUrlToPlay = PlayerFactory.getAudioUrlToPlay({
-          audioUrl: currentSong.audioUrl,
-          youtubeId: (currentSong as any).youtubeId || null
-        });
 
         await player.load(audioUrlToPlay, callbacks);
       } catch (error) {

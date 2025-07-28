@@ -14,7 +14,7 @@ export interface IStorage {
   activateUser(userId: number, activationData: ActivateUser): Promise<User>;
 
   // Song methods
-  getSongs(filters?: { genre?: string; difficulty?: string; language?: string }): Promise<Song[]>;
+  getSongs(filters?: { genre?: string; difficulty?: string; language?: string; limit?: number; offset?: number }): Promise<{ songs: Song[]; totalCount: number }>;
   getSong(id: number): Promise<Song | undefined>;
   createSong(song: InsertSong): Promise<Song>;
   updateSongLyrics(id: number, lyrics: any[]): Promise<Song>;
@@ -71,6 +71,7 @@ export interface IStorage {
   // Premium user identification
   getUsersBySubscriptionStatus(status: string): Promise<User[]>;
   isPremiumUser(userId: number): Promise<boolean>;
+
 
   // DMCA methods
   createDmcaRequest(dmcaRequest: InsertDmcaRequest): Promise<DmcaRequest>;
@@ -130,8 +131,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getSongs(filters?: { genre?: string; difficulty?: string; language?: string }): Promise<Song[]> {
-    let query = db.select().from(songs);
+  async getSongs(filters?: { genre?: string; difficulty?: string; language?: string; limit?: number; offset?: number }): Promise<{ songs: Song[]; totalCount: number }> {
     const conditions = [];
     
     if (filters?.genre) {
@@ -144,11 +144,34 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(songs.language, filters.language));
     }
     
+    // Get total count first
+    const countResult = await db.select({ count: sql<number>`count(*)` }).from(songs)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+    const totalCount = countResult[0].count;
+    
+    // Get paginated data
+    let query = db.select().from(songs);
+    
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     }
     
-    return await query;
+    // Add ordering and pagination - sort free songs first, then alphabetically
+    query = query.orderBy(sql`${songs.isFree} DESC, ${songs.title} ASC`);
+    
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset);
+    }
+    
+    const songsResult = await query;
+    
+    return {
+      songs: songsResult,
+      totalCount
+    };
   }
 
   async getSong(id: number): Promise<Song | undefined> {
@@ -675,6 +698,7 @@ export class DatabaseStorage implements IStorage {
     
     return request;
   }
+
 }
 
 export const storage = new DatabaseStorage();
