@@ -5,6 +5,11 @@ import { registerRoutes } from "./routes";
 
 const app = express();
 
+// Trust proxy for Cloudflare (important for real IP detection)
+if (process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', true);
+}
+
 // CORS configuration for separated deployment
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
