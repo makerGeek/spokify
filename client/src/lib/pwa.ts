@@ -1,4 +1,5 @@
 import { PWAErrorHandler } from './pwa-error-handler';
+import { api } from './api-client';
 
 export function initializePWA() {
   // Initialize error handling first
@@ -108,9 +109,21 @@ export function initializePWA() {
   // Install prompt handling
   let deferredPrompt: any;
 
-  window.addEventListener('beforeinstallprompt', (e) => {
+  window.addEventListener('beforeinstallprompt', async (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    
+    // Check if install features are enabled via feature flag
+    try {
+      const response = await api.get('/feature-flags/ALLOW_APP_INSTALL');
+      if (!response?.enabled) {
+        console.log('App install feature disabled via flag');
+        return;
+      }
+    } catch (error) {
+      console.log('Feature flag check failed, disabling install prompts:', error);
+      return;
+    }
     
     // Check if user previously dismissed or hasn't engaged enough
     if (shouldShowInstallPrompt()) {

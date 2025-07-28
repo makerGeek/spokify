@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useFeatureFlag } from './use-feature-flags';
 
 export function usePWADetection() {
+  const { isEnabled: allowAppInstall } = useFeatureFlag('ALLOW_APP_INSTALL');
   const [isInstalled, setIsInstalled] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -36,6 +38,13 @@ export function usePWADetection() {
     // Listen for beforeinstallprompt
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
+      
+      // Only allow install if feature flag is enabled
+      if (!allowAppInstall) {
+        console.log('App install feature disabled via flag');
+        return;
+      }
+      
       setDeferredPrompt(e);
       setCanInstall(true);
     };
@@ -113,6 +122,11 @@ export function usePWADetection() {
   };
 
   const installApp = async () => {
+    if (!allowAppInstall) {
+      console.log('App install feature disabled via flag');
+      return;
+    }
+    
     if (deferredPrompt) {
       try {
         await deferredPrompt.prompt();

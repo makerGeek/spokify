@@ -23,11 +23,13 @@ import { getBuildVersion, getBuildInfo } from "@/lib/build-info";
 import { api } from "@/lib/api-client";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
+import { useFeatureFlag } from "@/hooks/use-feature-flags";
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth();
   const { subscription, upgradeToPreemium, manageBilling } = useSubscription();
   const { toast } = useToast();
+  const { isEnabled: allowAppInstall } = useFeatureFlag('ALLOW_APP_INSTALL');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [canInstall, setCanInstall] = useState(false);
   const [autoNextReview, setAutoNextReview] = useState(() => {
@@ -287,39 +289,41 @@ export default function Profile() {
 
 
 
-        {/* Install App Section */}
-        <div className="spotify-card p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <Smartphone className="h-6 w-6 text-[var(--spotify-green)]" />
-              <div>
-                <h3 className="spotify-heading-md">Install App</h3>
-                <p className="spotify-text-secondary text-sm">
-                  Get the native app experience
-                </p>
+        {/* Install App Section - Hidden behind feature flag */}
+        {allowAppInstall && (
+          <div className="spotify-card p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <Smartphone className="h-6 w-6 text-[var(--spotify-green)]" />
+                <div>
+                  <h3 className="spotify-heading-md">Install App</h3>
+                  <p className="spotify-text-secondary text-sm">
+                    Get the native app experience
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="mt-6">
-            {canInstall ? (
-              <button
-                className="spotify-btn-primary w-full"
-                onClick={handleInstallApp}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Install Spokify
-              </button>
-            ) : (
-              <div className="text-center p-4 bg-[var(--spotify-light-gray)] rounded-lg">
-                <Smartphone className="h-8 w-8 text-[var(--spotify-green)] mx-auto mb-2" />
-                <p className="spotify-text-secondary text-sm">
-                  App installation is available in supported browsers
-                </p>
-              </div>
-            )}
+            <div className="mt-6">
+              {canInstall ? (
+                <button
+                  className="spotify-btn-primary w-full"
+                  onClick={handleInstallApp}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Install Spokify
+                </button>
+              ) : (
+                <div className="text-center p-4 bg-[var(--spotify-light-gray)] rounded-lg">
+                  <Smartphone className="h-8 w-8 text-[var(--spotify-green)] mx-auto mb-2" />
+                  <p className="spotify-text-secondary text-sm">
+                    App installation is available in supported browsers
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
 
 
