@@ -148,14 +148,26 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
         const callbacks: PlayerCallbacks = {
           onStateChange: (state: Partial<PlayerState>) => {
-            if (state.isPlaying !== undefined) setIsPlaying(state.isPlaying);
-            if (state.isLoading !== undefined) setIsLoading(state.isLoading);
-            if (state.hasError !== undefined) setHasError(state.hasError);
+            console.log('Player state change:', state);
+            if (state.isPlaying !== undefined) {
+              setIsPlaying(state.isPlaying);
+              // Clear loading state when playback starts
+              if (state.isPlaying) {
+                setIsLoading(false);
+              }
+            }
+            if (state.isLoading !== undefined) {
+              setIsLoading(state.isLoading);
+            }
+            if (state.hasError !== undefined) {
+              setHasError(state.hasError);
+            }
           },
           onReady: (songDuration: number) => {
             console.log('Player ready, duration:', songDuration);
             setDuration(songDuration);
             setHasError(false);
+            setIsLoading(false); // Clear loading state when player is ready
             
             // Auto-play if requested
             if (shouldAutoPlay) {
@@ -167,6 +179,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
                     await playerRef.current.play();
                   } catch (error) {
                     console.error('Auto-play failed:', error);
+                    setIsLoading(false); // Clear loading on error
                   }
                 }
               }, 500);
@@ -250,6 +263,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       try {
         console.log('Calling play');
         setIsLoading(true);
+        setHasError(false); // Clear any previous errors
         await playerRef.current.play();
         
         // Track song play when it actually starts
@@ -264,6 +278,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             duration
           );
         }
+        
+        // Note: Loading state will be cleared by onStateChange when PLAYING state is received
       } catch (error) {
         console.error('Error calling play:', error);
         setHasError(true);
@@ -299,7 +315,18 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       await pause();
     } else {
       setIsLoading(true);
-      await play();
+      
+      // Safety timeout to clear loading state if it gets stuck
+      const loadingTimeout = setTimeout(() => {
+        console.warn('Loading state timeout - clearing loading');
+        setIsLoading(false);
+      }, 10000); // 10 seconds timeout
+      
+      try {
+        await play();
+      } finally {
+        clearTimeout(loadingTimeout);
+      }
     }
   };
 

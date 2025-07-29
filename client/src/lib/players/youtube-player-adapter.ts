@@ -13,18 +13,42 @@ export class YouTubePlayerAdapter implements PlayerAdapter {
   private containerId: string;
   private timeUpdateInterval: NodeJS.Timeout | null = null;
   private isPlayerReady = false;
+  private isVisible: boolean;
 
-  constructor() {
+  constructor(options?: { visible?: boolean; targetElementId?: string }) {
     this.containerId = `youtube-player-${Math.random().toString(36).substr(2, 9)}`;
-    this.createContainer();
+    this.isVisible = options?.visible ?? false;
+    this.createContainer(options?.targetElementId);
   }
 
-  private createContainer() {
-    // Create hidden container for YouTube player
+  private createContainer(targetElementId?: string) {
+    // Create container for YouTube player
     const container = document.createElement('div');
     container.id = this.containerId;
-    container.style.display = 'none';
-    document.body.appendChild(container);
+    container.className = 'youtube-player-container';
+    
+    // Set container dimensions and styling
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.backgroundColor = '#000';
+    container.style.borderRadius = '8px';
+    container.style.overflow = 'hidden';
+    
+    if (!this.isVisible) {
+      container.style.display = 'none';
+    }
+    
+    // If target element is specified, append there, otherwise to body (hidden)
+    if (targetElementId) {
+      const targetElement = document.getElementById(targetElementId);
+      if (targetElement) {
+        targetElement.appendChild(container);
+      } else {
+        document.body.appendChild(container);
+      }
+    } else {
+      document.body.appendChild(container);
+    }
   }
 
   async load(audioUrl: string, callbacks: PlayerCallbacks): Promise<void> {
@@ -51,18 +75,18 @@ export class YouTubePlayerAdapter implements PlayerAdapter {
 
       try {
         this.player = new window.YT.Player(this.containerId, {
-          height: '0',
-          width: '0',
+          height: '100%',
+          width: '100%',
           videoId: audioUrl,
           playerVars: {
             autoplay: 0,
-            controls: 0,
-            disablekb: 1,
-            fs: 0,
+            controls: this.isVisible ? 1 : 0,
+            disablekb: this.isVisible ? 0 : 1,
+            fs: this.isVisible ? 1 : 0,
             iv_load_policy: 3,
             modestbranding: 1,
             rel: 0,
-            showinfo: 0,
+            showinfo: this.isVisible ? 1 : 0,
           },
           events: {
             onReady: (event: any) => {
@@ -224,6 +248,32 @@ export class YouTubePlayerAdapter implements PlayerAdapter {
 
   isReady(): boolean {
     return this.isPlayerReady && !!this.player;
+  }
+
+  toggleVisibility(): void {
+    this.isVisible = !this.isVisible;
+    const container = document.getElementById(this.containerId);
+    
+    if (container) {
+      container.style.display = this.isVisible ? 'block' : 'none';
+    }
+  }
+
+  setVisibility(visible: boolean): void {
+    this.isVisible = visible;
+    const container = document.getElementById(this.containerId);
+    
+    if (container) {
+      container.style.display = this.isVisible ? 'block' : 'none';
+    }
+  }
+
+  getContainerId(): string {
+    return this.containerId;
+  }
+
+  isVideoVisible(): boolean {
+    return this.isVisible;
   }
 
   destroy(): void {

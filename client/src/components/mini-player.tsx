@@ -10,11 +10,54 @@ export default function MiniPlayer() {
   const [location, setLocation] = useLocation();
   const { currentSong, isPlaying, isLoading, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
   const [isLyricsShown, setIsLyricsShown] = useState(false);
+  const [youtubeContainerId, setYoutubeContainerId] = useState<string | null>(null);
 
   // Check if we're currently on a lyrics page
   useEffect(() => {
     setIsLyricsShown(location.startsWith('/lyrics/'));
   }, [location]);
+
+  // Find and relocate YouTube player to mini-player
+  useEffect(() => {
+    if (currentSong && (currentSong as any).youtubeId) {
+      // Look for YouTube player container
+      const interval = setInterval(() => {
+        const containers = document.querySelectorAll('[id^="youtube-player-"]');
+        if (containers.length > 0) {
+          const container = containers[containers.length - 1] as HTMLElement;
+          setYoutubeContainerId(container.id);
+          
+          // Move the YouTube player to mini-player video container
+          const videoContainer = document.getElementById(`mini-player-video-container-${currentSong.id}`);
+          if (videoContainer && container.parentNode !== videoContainer) {
+            videoContainer.appendChild(container);
+            // Style for mini-player
+            container.style.position = 'relative';
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.borderRadius = '8px';
+            container.style.display = 'block';
+            container.style.zIndex = 'auto';
+            container.style.top = 'auto';
+            container.style.left = 'auto';
+            container.style.right = 'auto';
+            container.style.bottom = 'auto';
+            container.style.backgroundColor = '#000';
+          }
+          
+          clearInterval(interval);
+        }
+      }, 500);
+
+      // Clear interval after 10 seconds
+      setTimeout(() => clearInterval(interval), 10000);
+
+      return () => clearInterval(interval);
+    } else {
+      setYoutubeContainerId(null);
+    }
+  }, [currentSong]);
+
 
   if (!currentSong) return null;
 
@@ -73,12 +116,21 @@ export default function MiniPlayer() {
       <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl border-t-0 relative">
         <CardContent className="p-3">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={handleToggleLyrics}>
-            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
-              <img
-                src={currentSong.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
-                alt="Album cover"
-                className="w-full h-full object-cover"
-              />
+            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative">
+              {/* YouTube Video Container - shows for YouTube songs */}
+              {(currentSong as any)?.youtubeId ? (
+                <div 
+                  id={`mini-player-video-container-${currentSong.id}`}
+                  className="absolute inset-0 z-10"
+                />
+              ) : (
+                /* Album Cover - shows for non-YouTube songs */
+                <img
+                  src={currentSong.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
+                  alt="Album cover"
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
@@ -114,6 +166,7 @@ export default function MiniPlayer() {
                   <Play size={16} />
                 )}
               </Button>
+              
               <Button
                 variant="ghost"
                 size="sm"

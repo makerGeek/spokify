@@ -15,7 +15,9 @@ export class PlayerFactory {
   static createPlayer(config: PlayerConfig): PlayerAdapter {
     switch (config.type) {
       case PlayerType.YOUTUBE:
-        return new YouTubePlayerAdapter();
+        return new YouTubePlayerAdapter({ 
+          visible: (config as any).visible ?? false 
+        });
       case PlayerType.MP3:
         return new MP3PlayerAdapter();
       default:
