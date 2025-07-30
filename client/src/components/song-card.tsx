@@ -7,7 +7,6 @@ import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
 import { usePremium } from "@/hooks/use-premium";
 import { trackEvent, trackSongView, trackFeatureUsage } from "@/lib/analytics";
-
 import { type Song } from "@shared/schema";
 
 interface SongCardProps {

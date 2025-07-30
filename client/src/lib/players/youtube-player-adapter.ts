@@ -114,15 +114,24 @@ export class YouTubePlayerAdapter implements PlayerAdapter {
   private handleStateChange(state: number) {
     if (!this.callbacks) return;
 
+    console.log('YouTube player state change:', this.getStateString(state));
+
     switch (state) {
       case window.YT.PlayerState.PLAYING:
         this.callbacks.onStateChange({ 
           isPlaying: true, 
-          isLoading: false 
+          isLoading: false,
+          hasError: false
         });
         this.startTimeUpdate();
         break;
       case window.YT.PlayerState.PAUSED:
+        this.callbacks.onStateChange({ 
+          isPlaying: false, 
+          isLoading: false 
+        });
+        this.stopTimeUpdate();
+        break;
       case window.YT.PlayerState.ENDED:
         this.callbacks.onStateChange({ 
           isPlaying: false, 
@@ -135,7 +144,27 @@ export class YouTubePlayerAdapter implements PlayerAdapter {
           isLoading: true 
         });
         break;
+      case window.YT.PlayerState.CUED:
+        // Video is loaded and ready
+        this.callbacks.onStateChange({ 
+          isPlaying: false, 
+          isLoading: false,
+          hasError: false
+        });
+        break;
     }
+  }
+
+  private getStateString(state: number): string {
+    const states: { [key: number]: string } = {
+      [-1]: 'UNSTARTED',
+      [0]: 'ENDED',
+      [1]: 'PLAYING', 
+      [2]: 'PAUSED',
+      [3]: 'BUFFERING',
+      [5]: 'CUED'
+    };
+    return states[state] || `UNKNOWN(${state})`;
   }
 
   private handleError(errorCode: number) {
@@ -183,9 +212,22 @@ export class YouTubePlayerAdapter implements PlayerAdapter {
     }
 
     try {
-      this.callbacks?.onStateChange({ isLoading: true });
+      console.log('YouTube adapter: play() called');
+      // Don't set loading state here - let the BUFFERING state handle it
       this.player.playVideo();
+      
+      // Add a fallback in case the state change doesn't fire
+      setTimeout(() => {
+        if (this.player && this.player.getPlayerState() === window.YT.PlayerState.PLAYING) {
+          this.callbacks?.onStateChange({ 
+            isPlaying: true, 
+            isLoading: false,
+            hasError: false
+          });
+        }
+      }, 1000);
     } catch (error) {
+      console.error('YouTube adapter: play() error:', error);
       this.callbacks?.onStateChange({ isLoading: false, hasError: true });
       throw error;
     }
@@ -265,6 +307,19 @@ export class YouTubePlayerAdapter implements PlayerAdapter {
     
     if (container) {
       container.style.display = this.isVisible ? 'block' : 'none';
+    }
+  }
+
+  forceControls(showControls: boolean): void {
+    if (this.player && this.isPlayerReady) {
+      try {
+        // Recreate the player with new control settings if necessary
+        console.log('Force controls:', showControls);
+        // Note: YouTube API doesn't allow dynamic control changes after initialization
+        // This is a placeholder for future implementation if needed
+      } catch (error) {
+        console.warn('Error forcing controls:', error);
+      }
     }
   }
 

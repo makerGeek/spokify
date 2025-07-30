@@ -43,17 +43,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Ref hooks
   const playerRef = useRef<PlayerAdapter | null>(null);
+  const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Function to fetch audio URL from backend when needed for fallback
-  const fetchAudioUrl = async (songId: number): Promise<string | null> => {
-    try {
-      const response = await api.get(`/songs/${songId}/audio`);
-      return response.audioUrl || null;
-    } catch (error) {
-      console.error('Failed to fetch audio URL:', error);
-      return null;
-    }
-  };
 
   // Listen for YouTube API ready event (still needed for YouTube adapter)
   useEffect(() => {
@@ -83,6 +74,41 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Sync interval functions
+  const startSyncInterval = () => {
+    if (syncIntervalRef.current) return;
+    
+    syncIntervalRef.current = setInterval(() => {
+      if (playerRef.current?.isReady()) {
+        try {
+          // Sync play state with YouTube player
+          const ytPlayer = (playerRef.current as any).player;
+          if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+            const ytState = ytPlayer.getPlayerState();
+            const shouldBePlaying = ytState === window.YT?.PlayerState?.PLAYING;
+            
+            if (shouldBePlaying !== isPlaying) {
+              console.log('Sync: YouTube state mismatch, correcting...', { ytState, shouldBePlaying, currentIsPlaying: isPlaying });
+              setIsPlaying(shouldBePlaying);
+              if (!shouldBePlaying) {
+                setIsLoading(false);
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('Sync interval error:', error);
+        }
+      }
+    }, 2000); // Check every 2 seconds
+  };
+
+  const stopSyncInterval = () => {
+    if (syncIntervalRef.current) {
+      clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = null;
+    }
+  };
+
   // Create player when song changes
   useEffect(() => {
     if (!currentSong) {
@@ -90,20 +116,23 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Determine if we should use YouTube or need to fetch audio URL
+    // Check if song has YouTube ID
     const hasYouTubeId = !!(currentSong as any).youtubeId;
-    const isIOS = PlayerFactory.isIOS();
     
-    // On iOS or if no YouTube ID, we'll need the audio URL from the backend
-    const needsAudioUrl = isIOS || !hasYouTubeId;
+    if (!hasYouTubeId) {
+      console.log('No YouTube ID for song:', currentSong.title);
+      setHasError(true);
+      setIsLoading(false);
+      return;
+    }
     
-    // For YouTube players, wait for API to be ready
-    if (hasYouTubeId && !isIOS && !isYouTubeReady) {
+    // Wait for YouTube API to be ready
+    if (!isYouTubeReady) {
       console.log('YouTube API not ready yet');
       return;
     }
 
-    console.log('Creating player for:', currentSong.title, 'Has YouTube ID:', hasYouTubeId, 'Is iOS:', isIOS);
+    console.log('Creating YouTube player for:', currentSong.title);
 
     // Reset state immediately when switching songs
     setIsPlaying(false);
@@ -121,29 +150,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       playerRef.current = null;
     }
 
-    // Create player based on available media
+    // Create YouTube player
     const createPlayer = async () => {
       try {
-        let audioUrlToPlay: string;
-        
-        // Determine what URL to use for playback
-        if (needsAudioUrl) {
-          // Fetch audio URL from backend for iOS or songs without YouTube ID
-          console.log('Fetching audio URL from backend...');
-          const fetchedAudioUrl = await fetchAudioUrl(currentSong.id);
-          if (!fetchedAudioUrl) {
-            throw new Error('No audio URL available for this song');
-          }
-          audioUrlToPlay = fetchedAudioUrl;
-        } else {
-          // Use YouTube ID for non-iOS devices
-          audioUrlToPlay = PlayerFactory.getAudioUrlToPlay({
-            audioUrl: null, // We don't have this anymore
-            youtubeId: (currentSong as any).youtubeId
-          });
-        }
+        const audioUrlToPlay = PlayerFactory.getAudioUrlToPlay({
+          audioUrl: null,
+          youtubeId: (currentSong as any).youtubeId
+        });
 
-        const player = PlayerFactory.createPlayerFromUrl(audioUrlToPlay);
+        const player = PlayerFactory.createPlayerFromUrl(audioUrlToPlay, { 
+          visible: true // Always create visible players for better iOS compatibility
+        });
         playerRef.current = player;
 
         const callbacks: PlayerCallbacks = {
@@ -154,6 +171,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
               // Clear loading state when playback starts
               if (state.isPlaying) {
                 setIsLoading(false);
+                // Start sync interval when playing
+                startSyncInterval();
+              } else {
+                // Stop sync interval when not playing
+                stopSyncInterval();
               }
             }
             if (state.isLoading !== undefined) {
@@ -161,6 +183,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             }
             if (state.hasError !== undefined) {
               setHasError(state.hasError);
+              if (state.hasError) {
+                setIsLoading(false);
+                stopSyncInterval();
+              }
             }
           },
           onReady: (songDuration: number) => {
@@ -187,40 +213,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
           },
           onError: async (error: string) => {
             console.error('Player error:', error);
-            
-            // Check if this is a YouTube embedding error and we can fall back to audio file
-            if (error.includes('Video owner has disallowed embedding') && 
-                !PlayerFactory.isIOS()) {
-              console.log('YouTube embedding blocked, trying audio file fallback...');
-              
-              try {
-                // Fetch the audio URL from backend
-                const fallbackAudioUrl = await fetchAudioUrl(currentSong.id);
-                if (!fallbackAudioUrl) {
-                  throw new Error('No fallback audio URL available');
-                }
-                
-                // Clean up current YouTube player
-                if (playerRef.current) {
-                  playerRef.current.destroy();
-                  playerRef.current = null;
-                }
-                
-                // Create MP3 player with fetched URL
-                const mp3Player = PlayerFactory.createPlayer({ type: PlayerType.MP3 });
-                playerRef.current = mp3Player;
-                
-                // Use the same callbacks
-                await mp3Player.load(fallbackAudioUrl, callbacks);
-                
-                console.log('Successfully fell back to MP3 player');
-                return; // Exit early, don't set error state
-              } catch (fallbackError) {
-                console.error('Audio file fallback also failed:', fallbackError);
-              }
-            }
-            
-            // If fallback failed or wasn't applicable, set error state
             setIsPlaying(false);
             setHasError(true);
             setIsLoading(false);
@@ -243,6 +235,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     return () => {
       clearTimeout(timeoutId);
+      stopSyncInterval();
       if (playerRef.current) {
         try {
           playerRef.current.destroy();
@@ -252,6 +245,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         playerRef.current = null;
       }
       setIsPlaying(false);
+      setIsLoading(false);
     };
   }, [currentSong, isYouTubeReady]);
 
@@ -264,7 +258,34 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         console.log('Calling play');
         setIsLoading(true);
         setHasError(false); // Clear any previous errors
+        
+        // Set a timeout to clear loading state if it gets stuck
+        const loadingTimeout = setTimeout(() => {
+          console.warn('Play loading timeout - checking actual YouTube state');
+          try {
+            const ytPlayer = (playerRef.current as any)?.player;
+            if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+              const ytState = ytPlayer.getPlayerState();
+              if (ytState === window.YT?.PlayerState?.PLAYING) {
+                console.log('YouTube is actually playing, clearing loading state');
+                setIsPlaying(true);
+                setIsLoading(false);
+              } else if (ytState === window.YT?.PlayerState?.PAUSED) {
+                console.log('YouTube is paused, clearing loading state');
+                setIsPlaying(false);
+                setIsLoading(false);
+              }
+            }
+          } catch (error) {
+            console.warn('Error checking YouTube state in timeout:', error);
+            setIsLoading(false);
+          }
+        }, 5000);
+        
         await playerRef.current.play();
+        
+        // Clear the timeout if play completes normally
+        clearTimeout(loadingTimeout);
         
         // Track song play when it actually starts
         if (currentSong && !playStartTime) {
@@ -380,6 +401,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setHasError(false);
     setPlayStartTime(null); // Reset play start time for new song
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopSyncInterval();
+    };
+  }, []);
 
   return (
     <AudioContext.Provider

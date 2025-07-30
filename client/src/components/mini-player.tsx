@@ -1,16 +1,17 @@
-import { Play, Pause, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
+import { Play, Pause, ChevronUp, ChevronDown, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { useLocation } from "wouter";
 import { useAudio } from "@/hooks/use-audio";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function MiniPlayer() {
   const [location, setLocation] = useLocation();
   const { currentSong, isPlaying, isLoading, togglePlay, currentTime, duration, seekTo, hasError } = useAudio();
   const [isLyricsShown, setIsLyricsShown] = useState(false);
   const [youtubeContainerId, setYoutubeContainerId] = useState<string | null>(null);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   // Check if we're currently on a lyrics page
   useEffect(() => {
@@ -56,8 +57,7 @@ export default function MiniPlayer() {
     } else {
       setYoutubeContainerId(null);
     }
-  }, [currentSong]);
-
+  }, [currentSong, isMaximized]);
 
   if (!currentSong) return null;
 
@@ -77,6 +77,10 @@ export default function MiniPlayer() {
     }
   };
 
+  const handleToggleMaximize = () => {
+    setIsMaximized(!isMaximized);
+  };
+
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
@@ -89,7 +93,13 @@ export default function MiniPlayer() {
   };
 
   return (
-    <div className="fixed left-0 right-0 z-60" style={{ bottom: '60px' }}>
+    <div 
+      className="fixed left-0 right-0 z-60 transition-all duration-300" 
+      style={{ 
+        bottom: '60px',
+        height: isMaximized ? '33.333vh' : 'auto'
+      }}
+    >
       {/* Compact Progress Bar - Spotify style */}
       <div className="bg-spotify-card/95 backdrop-blur-md relative overflow-visible">
         <div className="relative group py-1 px-0 overflow-visible">
@@ -113,77 +123,170 @@ export default function MiniPlayer() {
       </div>
 
       {/* Main Player Content */}
-      <Card className="bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl border-t-0 relative">
-        <CardContent className="p-3">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={handleToggleLyrics}>
-            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative">
-              {/* YouTube Video Container - shows for YouTube songs */}
-              {(currentSong as any)?.youtubeId ? (
+      <Card className={`bg-spotify-card/95 backdrop-blur-md border-spotify-card rounded-none shadow-xl border-t-0 relative transition-all duration-300 ${isMaximized ? 'flex-1 overflow-hidden' : ''}`}>
+        <CardContent className={`transition-all duration-300 ${isMaximized ? 'p-4 h-full flex flex-col' : 'p-3'}`}>
+          {isMaximized && (currentSong as any)?.youtubeId ? (
+            /* Maximized Layout - YouTube Video Prominent */
+            <div className="flex flex-col h-full gap-4">
+              {/* Video Container */}
+              <div className="flex-1 rounded-lg overflow-hidden bg-black">
                 <div 
                   id={`mini-player-video-container-${currentSong.id}`}
-                  className="absolute inset-0 z-10"
+                  className="w-full h-full"
                 />
-              ) : (
-                /* Album Cover - shows for non-YouTube songs */
-                <img
-                  src={currentSong.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
-                  alt="Album cover"
-                  className="w-full h-full object-cover"
-                />
-              )}
+              </div>
+              
+              {/* Controls and Info */}
+              <div className="flex items-center space-x-3 flex-shrink-0">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-semibold text-spotify-text text-sm truncate">{currentSong.title}</h3>
+                    {currentSong.isFree && (
+                      <span className="free-badge text-[8px] px-1 py-0.5 rounded-full font-bold text-white flex-shrink-0">
+                        FREE
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-spotify-muted text-xs truncate">{currentSong.artist}</p>
+                </div>
+                <div className="flex items-center space-x-2 flex-shrink-0">
+                  <Button
+                    size="sm"
+                    className={`w-10 h-10 rounded-full transition-colors flex-shrink-0 ${
+                      hasError 
+                        ? "bg-red-500 hover:bg-red-600" 
+                        : "bg-spotify-green hover:bg-spotify-accent"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePlay();
+                    }}
+                    disabled={hasError || isLoading}
+                    title={hasError ? "Video unavailable for playback" : isLoading ? "Loading..." : undefined}
+                  >
+                    {isLoading ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : isPlaying ? (
+                      <Pause size={16} />
+                    ) : (
+                      <Play size={16} />
+                    )}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-10 h-10 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleLyrics();
+                    }}
+                  >
+                    {isLyricsShown ? (
+                      <ChevronDown size={16} className="transition-transform duration-200" />
+                    ) : (
+                      <ChevronUp size={16} className="transition-transform duration-200" />
+                    )}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-10 h-10 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleMaximize();
+                    }}
+                  >
+                    <Minimize2 size={16} />
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-semibold text-spotify-text text-sm truncate">{currentSong.title}</h3>
-                {currentSong.isFree && (
-                  <span className="free-badge text-[8px] px-1 py-0.5 rounded-full font-bold text-white flex-shrink-0">
-                    FREE
-                  </span>
+          ) : (
+            /* Normal Layout */
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={handleToggleLyrics}>
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative">
+                {/* YouTube Video Container - shows for YouTube songs */}
+                {(currentSong as any)?.youtubeId ? (
+                  <div 
+                    id={`mini-player-video-container-${currentSong.id}`}
+                    className="absolute inset-0 z-10"
+                  />
+                ) : (
+                  /* Album Cover - shows for non-YouTube songs */
+                  <img
+                    src={currentSong.albumCover || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200"}
+                    alt="Album cover"
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </div>
-              <p className="text-spotify-muted text-xs truncate">{currentSong.artist}</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-semibold text-spotify-text text-sm truncate">{currentSong.title}</h3>
+                  {currentSong.isFree && (
+                    <span className="free-badge text-[8px] px-1 py-0.5 rounded-full font-bold text-white flex-shrink-0">
+                      FREE
+                    </span>
+                  )}
+                </div>
+                <p className="text-spotify-muted text-xs truncate">{currentSong.artist}</p>
+              </div>
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <Button
+                  size="sm"
+                  className={`w-10 h-10 rounded-full transition-colors flex-shrink-0 ${
+                    hasError 
+                      ? "bg-red-500 hover:bg-red-600" 
+                      : "bg-spotify-green hover:bg-spotify-accent"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlay();
+                  }}
+                  disabled={hasError || isLoading}
+                  title={hasError ? "Video unavailable for playback" : isLoading ? "Loading..." : undefined}
+                >
+                  {isLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : isPlaying ? (
+                    <Pause size={16} />
+                  ) : (
+                    <Play size={16} />
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-10 h-10 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleLyrics();
+                  }}
+                >
+                  {isLyricsShown ? (
+                    <ChevronDown size={16} className="transition-transform duration-200" />
+                  ) : (
+                    <ChevronUp size={16} className="transition-transform duration-200" />
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-10 h-10 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleMaximize();
+                  }}
+                >
+                  <Maximize2 size={16} />
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <Button
-                size="sm"
-                className={`w-10 h-10 rounded-full transition-colors flex-shrink-0 ${
-                  hasError 
-                    ? "bg-red-500 hover:bg-red-600" 
-                    : "bg-spotify-green hover:bg-spotify-accent"
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePlay();
-                }}
-                disabled={hasError || isLoading}
-                title={hasError ? "Video unavailable for playback" : isLoading ? "Loading..." : undefined}
-              >
-                {isLoading ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : isPlaying ? (
-                  <Pause size={16} />
-                ) : (
-                  <Play size={16} />
-                )}
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-10 h-10 rounded-full text-spotify-muted hover:text-spotify-text hover:bg-spotify-bg/50"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggleLyrics();
-                }}
-              >
-                {isLyricsShown ? (
-                  <ChevronDown size={16} className="transition-transform duration-200" />
-                ) : (
-                  <ChevronUp size={16} className="transition-transform duration-200" />
-                )}
-              </Button>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
