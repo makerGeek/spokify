@@ -273,7 +273,7 @@ export default function Profile() {
         <div className="mb-8">
           <h2 className="spotify-heading-lg mb-6">Your Progress</h2>
           <div className="grid grid-cols-1 gap-4">
-            <div className="spotify-card spotify-hover-lift p-6">
+            <div className="spotify-card-nohover p-6">
               <div className="flex items-center justify-between mb-3">
                 <Trophy className="h-6 w-6 text-[var(--spotify-green)]" />
                 <span className="text-3xl font-bold spotify-text-primary">
@@ -291,7 +291,7 @@ export default function Profile() {
 
         {/* Install App Section - Hidden behind feature flag */}
         {allowAppInstall && (
-          <div className="spotify-card p-6 mb-8">
+          <div className="spotify-card-nohover p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <Smartphone className="h-6 w-6 text-[var(--spotify-green)]" />
@@ -328,7 +328,7 @@ export default function Profile() {
 
 
         {/* Settings Section */}
-        <div className="spotify-card p-6 mb-8">
+        <div className="spotify-card-nohover p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <Settings className="h-6 w-6 text-[var(--spotify-green)]" />
@@ -360,7 +360,7 @@ export default function Profile() {
         </div>
 
         {/* Sign Out Section */}
-        <div className="spotify-card p-6 mb-4">
+        <div className="spotify-card-nohover p-6 mb-4">
           <button
             className="spotify-btn-secondary w-full !border-red-500/20 !text-red-400 hover:!bg-red-500/10 hover:!text-red-300"
             onClick={handleSignOut}

@@ -37,6 +37,18 @@
   background-color: var(--spotify-light-gray);
 }
 
+.spotify-card-nohover {
+  background-color: var(--spotify-gray);
+  border: 1px solid var(--spotify-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.vocabulary  .spotify-card:hover,
+.review.spotify-card:hover {
+  background-color: var(--spotify-gray) !important;
+}
+
 .spotify-card-glass {
   background: rgba(24, 24, 24, 0.95);
   backdrop-filter: blur(20px);

@@ -28,7 +28,7 @@ export function ReviewQuestionCard({
   onNextQuestion
 }: ReviewQuestionCardProps) {
   return (
-    <div className="spotify-card p-6 mb-6">
+    <div className="review spotify-card p-6 mb-6">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
@@ -62,7 +62,7 @@ export function ReviewQuestionCard({
             return (
               <button
                 key={index}
-                className={`w-full text-center p-6 h-auto rounded-lg transition-all font-medium ${
+                className={`review-choice-button w-full text-center p-6 h-auto rounded-lg transition-all font-medium ${
                   showCorrectAnswer
                     ? "bg-green-600/20 border border-green-500 text-green-400"
                     : showWrongAnswer
@@ -71,7 +71,7 @@ export function ReviewQuestionCard({
                     ? "bg-[var(--spotify-green)]/20 border border-[var(--spotify-green)] text-[var(--spotify-green)]"
                     : isAnswered
                     ? "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary opacity-60 cursor-default"
-                    : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary hover:bg-[var(--spotify-border)] transition-colors"
+                    : "bg-[var(--spotify-gray)] border border-[var(--spotify-border)] spotify-text-primary md:hover:bg-[var(--spotify-border)] transition-colors"
                 }`}
                 onClick={() => onAnswerSelect(option)}
                 disabled={isAnswered}

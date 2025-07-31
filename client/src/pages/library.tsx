@@ -207,7 +207,7 @@ export default function Library() {
         
         {/* Main content */}
         <div 
-          className="spotify-card p-4 hover:bg-[var(--spotify-light-gray)] transition-all duration-200 relative"
+          className="spotify-card-nohover p-4 relative"
           style={{ 
             transform: `translateX(${translateX}px)`,
             transition: isDragging ? 'none' : 'transform 0.3s ease-out'
@@ -336,20 +336,20 @@ export default function Library() {
         {/* Vocabulary Tab */}
         {activeTab === 'vocabulary' && (
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="spotify-heading-lg">Your Vocabulary</h2>
-              <div className="flex items-center gap-4">
-                {vocabularyStats && vocabularyStats.dueCount > 0 && (
-                  <button
-                    onClick={() => setLocation('/review-session')}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition-colors"
-                  >
-                    <Brain className="h-4 w-4" />
-                    Review {vocabularyStats.dueCount} {vocabularyStats.dueCount === 1 ? 'word' : 'words'}
-                  </button>
-                )}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="spotify-heading-lg">Your Vocabulary</h2>
                 <p className="spotify-text-muted text-sm">{vocabulary.length} words</p>
               </div>
+              {vocabularyStats && vocabularyStats.dueCount > 0 && (
+                <button
+                  onClick={() => setLocation('/review-session')}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition-colors"
+                >
+                  <Brain className="h-4 w-4" />
+                  Review {vocabularyStats.dueCount} {vocabularyStats.dueCount === 1 ? 'due word' : 'due words'}
+                </button>
+              )}
             </div>
 
             {/* Stats Section */}
@@ -392,7 +392,7 @@ export default function Library() {
                 <p className="spotify-text-muted">Words you learn will appear here</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 vocabulary">
                 {vocabulary.map((word, index) => (
                   <VocabularyItem key={word.id} word={word} index={index} />
                 ))}
