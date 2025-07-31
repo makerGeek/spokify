@@ -1,34 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
-import { Music, User, Crown, Loader2 } from "lucide-react";
+import { Music, Loader2 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 import GenreFilters from "@/components/genre-filters";
 import SongCard from "@/components/song-card";
 import { AuthModal } from "@/components/auth-modal";
-
 import { PremiumModal } from "@/components/premium-modal";
-import FullscreenButton from "@/components/fullscreen-button";
+import AppHeader from "@/components/app-header";
 import LyricsOverlay from "@/components/lyrics-overlay";
 import LyricsOverlayIOS from "@/components/lyrics-overlay-ios";
 import { isIOS } from "@/lib/device-utils";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
-import { usePremium } from "@/hooks/use-premium";
 import { useFeatureFlag } from "@/hooks/use-feature-flags";
 import { useSongsInfinite } from "@/hooks/use-songs-infinite";
 import { api } from "@/lib/api-client";
 import { type Song } from "@shared/schema";
-
-const languageFlags = {
-  es: "/flags/es.png",
-  fr: "/flags/fr.png",
-  de: "/flags/de.png",
-  it: "/flags/it.png",
-};
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -36,7 +26,6 @@ export default function Home() {
   const { currentSong } = useAudio();
   const { user, databaseUser } = useAuth();
   const { checkSongAccess } = useSongAccess();
-  const { isPremium } = usePremium();
   const { isEnabled: showGenreFilters } = useFeatureFlag('SHOW_GENRES_FILTERS');
   const [selectedGenre, setSelectedGenre] = useState("all");
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -101,14 +90,12 @@ export default function Home() {
 
 
 
-  // Get user preferences from localStorage
+  // Get user preferences from localStorage for song filtering
   const userPreferences = JSON.parse(
     localStorage.getItem("userPreferences") || "{}",
   );
   const {
-    nativeLanguage = "en",
     targetLanguage = "es",
-    level = "A1",
   } = userPreferences;
 
   const {
@@ -162,14 +149,6 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleProfileClick = () => {
-    setLocation("/profile");
-  };
-
-  const handleLanguageLevelClick = () => {
-    console.log("🚩 Language flag clicked - navigating to language selection");
-    setLocation("/language-selection");
-  };
 
   const handleSongClick = (song: Song) => {
     const accessResult = checkSongAccess(song);
@@ -209,58 +188,7 @@ export default function Home() {
     <div
       className={`min-h-screen bg-spotify-bg ${currentSong ? "pb-32" : "pb-16"}`}
     >
-      {/* Header */}
-      <header className="bg-spotify-bg border-b border-spotify-card p-4 sticky top-0 z-40">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <div className="flex items-center space-x-3">
-            <Music className="text-spotify-green" size={24} />
-            <div className="flex items-center space-x-2">
-              <h1 className="text-xl font-bold circular-font">Spokify</h1>
-              {isPremium && (
-                <Crown 
-                  className="text-yellow-400" 
-                  size={20}
-                  fill="currentColor"
-                />
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div
-              className="w-12 h-8 rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log("🚩 Flag div clicked", {
-                  targetLanguage,
-                  flagSrc:
-                    languageFlags[targetLanguage as keyof typeof languageFlags],
-                });
-                handleLanguageLevelClick();
-              }}
-              onMouseDown={(e) => console.log("🚩 Flag mousedown")}
-              onMouseUp={(e) => console.log("🚩 Flag mouseup")}
-            >
-              <img
-                src={
-                  languageFlags[targetLanguage as keyof typeof languageFlags]
-                }
-                alt={`${targetLanguage} flag`}
-                className="w-full h-full object-cover pointer-events-none"
-              />
-            </div>
-            <FullscreenButton />
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-8 h-8 bg-gradient-to-br from-spotify-green to-spotify-accent rounded-full p-0 border-0 text-black hover:text-gray-800"
-              onClick={handleProfileClick}
-            >
-              <User size={14} />
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* Genre Filters - conditionally rendered based on feature flag */}
       {showGenreFilters && (

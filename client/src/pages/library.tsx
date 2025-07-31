@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { useBookmarks } from '@/hooks/use-bookmarks'
 import { api } from '@/lib/api-client'
 import SongCard from '@/components/song-card'
+import AppHeader from '@/components/app-header'
 
 export default function Library() {
   const [location, setLocation] = useLocation()
@@ -106,6 +107,7 @@ export default function Library() {
       year: 'numeric'
     })
   }
+
 
   // VocabularyItem component
   function VocabularyItem({ word, index }: { word: Vocabulary; index: number }) {
@@ -265,8 +267,10 @@ export default function Library() {
 
   return (
     <div className="min-h-screen spotify-bg spotify-text-primary">
+      <AppHeader />
+
       {/* Scrollable Container */}
-      <div className="overflow-y-auto px-6 pt-16 pb-24">
+      <div className="overflow-y-auto px-6 pt-8 pb-24">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="spotify-heading-xl mb-8">Your Library</h1>
