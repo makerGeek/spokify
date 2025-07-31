@@ -4,6 +4,7 @@ import { PlayerAdapter, PlayerCallbacks, PlayerState, PlayerType } from "@/lib/p
 import { PlayerFactory } from "@/lib/player-factory";
 import { api } from "@/lib/api-client";
 import { trackSongPlay, trackSongComplete } from "@/lib/analytics";
+import { AudioContext } from "@/hooks/use-audio";
 
 declare global {
   interface Window {
@@ -27,9 +28,8 @@ interface AudioContextType {
   hasError: boolean;
 }
 
-export const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
-export function AudioProvider({ children }: { children: ReactNode }) {
+export function AudioIOSProvider({ children }: { children: ReactNode }) {
   // State hooks
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -44,13 +44,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   // Ref hooks
   const playerRef = useRef<PlayerAdapter | null>(null);
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const directYTPlayerRef = useRef<any>(null); // Direct reference to YT player for iOS sync
 
-
-  // Listen for YouTube API ready event (still needed for YouTube adapter)
+  // Listen for YouTube API ready event
   useEffect(() => {
     const checkYouTubeReady = () => {
       if (window.YT && window.YT.Player) {
-        console.log('YouTube API available');
+        console.log('iOS Audio: YouTube API available');
         setIsYouTubeReady(true);
       }
     };
@@ -58,14 +58,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     checkYouTubeReady();
 
     const handleYouTubeReady = () => {
-      console.log('YouTube API ready event received in audio hook');
+      console.log('iOS Audio: YouTube API ready event received');
       setIsYouTubeReady(true);
     };
 
     window.addEventListener('youtubeAPIReady', handleYouTubeReady);
 
     if (window.youTubeAPIReady) {
-      console.log('YouTube API already ready according to flag');
+      console.log('iOS Audio: YouTube API already ready according to flag');
       setIsYouTubeReady(true);
     }
 
@@ -74,36 +74,79 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Sync interval functions
+  // Enhanced sync interval functions for iOS
   const startSyncInterval = () => {
     if (syncIntervalRef.current) return;
     
+    console.log('iOS Audio: Starting enhanced sync interval');
     syncIntervalRef.current = setInterval(() => {
       if (playerRef.current?.isReady()) {
         try {
-          // Sync play state with YouTube player
-          const ytPlayer = (playerRef.current as any).player;
+          // Get direct reference to YouTube player
+          const ytPlayer = (playerRef.current as any).player || directYTPlayerRef.current;
+          
           if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
             const ytState = ytPlayer.getPlayerState();
+            const ytCurrentTime = ytPlayer.getCurrentTime ? ytPlayer.getCurrentTime() : 0;
+            const ytDuration = ytPlayer.getDuration ? ytPlayer.getDuration() : 0;
             const shouldBePlaying = ytState === window.YT?.PlayerState?.PLAYING;
             
+            // Sync play state
             if (shouldBePlaying !== isPlaying) {
-              console.log('Sync: YouTube state mismatch, correcting...', { ytState, shouldBePlaying, currentIsPlaying: isPlaying });
+              console.log('iOS Audio: Play state sync - YT:', shouldBePlaying, 'State:', isPlaying);
               setIsPlaying(shouldBePlaying);
               if (!shouldBePlaying) {
                 setIsLoading(false);
               }
             }
+            
+            // Sync current time (with tolerance to avoid constant updates)
+            if (Math.abs(ytCurrentTime - currentTime) > 1) {
+              console.log('iOS Audio: Time sync - YT:', ytCurrentTime, 'State:', currentTime);
+              setCurrentTime(Math.floor(ytCurrentTime));
+            }
+            
+            // Sync duration
+            if (ytDuration && Math.abs(ytDuration - duration) > 1) {
+              console.log('iOS Audio: Duration sync - YT:', ytDuration, 'State:', duration);
+              setDuration(Math.floor(ytDuration));
+            }
+            
+            // Clear loading state if playing
+            if (shouldBePlaying && isLoading) {
+              console.log('iOS Audio: Clearing loading state - YouTube is playing');
+              setIsLoading(false);
+            }
           }
         } catch (error) {
-          console.warn('Sync interval error:', error);
+          console.warn('iOS Audio: Sync interval error:', error);
         }
       }
-    }, 2000); // Check every 2 seconds
+      
+      // Also try to find and sync with any YouTube player in the DOM
+      try {
+        const ytContainers = document.querySelectorAll('[id^="youtube-player-"]');
+        if (ytContainers.length > 0) {
+          const firstContainer = ytContainers[0];
+          const iframe = firstContainer.querySelector('iframe');
+          if (iframe && iframe.contentWindow) {
+            // Store reference for direct access if needed
+            const ytPlayer = (window as any).YT?.get?.(iframe.id);
+            if (ytPlayer && ytPlayer !== directYTPlayerRef.current) {
+              console.log('iOS Audio: Found DOM YouTube player, storing reference');
+              directYTPlayerRef.current = ytPlayer;
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('iOS Audio: DOM sync error:', error);
+      }
+    }, 1000); // Check every second for more responsive sync
   };
 
   const stopSyncInterval = () => {
     if (syncIntervalRef.current) {
+      console.log('iOS Audio: Stopping sync interval');
       clearInterval(syncIntervalRef.current);
       syncIntervalRef.current = null;
     }
@@ -112,7 +155,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   // Create player when song changes
   useEffect(() => {
     if (!currentSong) {
-      console.log('No song');
+      console.log('iOS Audio: No song');
       return;
     }
 
@@ -120,7 +163,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const hasYouTubeId = !!(currentSong as any).youtubeId;
     
     if (!hasYouTubeId) {
-      console.log('No YouTube ID for song:', currentSong.title);
+      console.log('iOS Audio: No YouTube ID for song:', currentSong.title);
       setHasError(true);
       setIsLoading(false);
       return;
@@ -128,11 +171,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     
     // Wait for YouTube API to be ready
     if (!isYouTubeReady) {
-      console.log('YouTube API not ready yet');
+      console.log('iOS Audio: YouTube API not ready yet');
       return;
     }
 
-    console.log('Creating YouTube player for:', currentSong.title);
+    console.log('iOS Audio: Creating YouTube player for:', currentSong.title);
 
     // Reset state immediately when switching songs
     setIsPlaying(false);
@@ -141,14 +184,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     // Clean up existing player
     if (playerRef.current) {
-      console.log('Destroying existing player');
+      console.log('iOS Audio: Destroying existing player');
       try {
         playerRef.current.destroy();
       } catch (error) {
-        console.warn('Error destroying player:', error);
+        console.warn('iOS Audio: Error destroying player:', error);
       }
       playerRef.current = null;
     }
+
+    // Reset direct YT player reference
+    directYTPlayerRef.current = null;
 
     // Create YouTube player
     const createPlayer = async () => {
@@ -159,23 +205,21 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         });
 
         const player = PlayerFactory.createPlayerFromUrl(audioUrlToPlay, { 
-          visible: true // Always create visible players for better iOS compatibility
+          visible: true // Always create visible players for iOS
         });
         playerRef.current = player;
 
         const callbacks: PlayerCallbacks = {
           onStateChange: (state: Partial<PlayerState>) => {
-            console.log('Player state change:', state);
+            console.log('iOS Audio: Player state change:', state);
             if (state.isPlaying !== undefined) {
               setIsPlaying(state.isPlaying);
-              // Clear loading state when playback starts
               if (state.isPlaying) {
                 setIsLoading(false);
-                // Start sync interval when playing
                 startSyncInterval();
               } else {
-                // Stop sync interval when not playing
-                stopSyncInterval();
+                // Don't stop sync interval immediately, let it handle final sync
+                setTimeout(stopSyncInterval, 2000);
               }
             }
             if (state.isLoading !== undefined) {
@@ -190,32 +234,44 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             }
           },
           onReady: (songDuration: number) => {
-            console.log('Player ready, duration:', songDuration);
+            console.log('iOS Audio: Player ready, duration:', songDuration);
             setDuration(songDuration);
             setHasError(false);
-            setIsLoading(false); // Clear loading state when player is ready
+            setIsLoading(false);
+            
+            // Store direct reference to YT player for enhanced sync
+            try {
+              const ytPlayer = (playerRef.current as any)?.player;
+              if (ytPlayer) {
+                directYTPlayerRef.current = ytPlayer;
+                console.log('iOS Audio: Stored direct YT player reference');
+              }
+            } catch (error) {
+              console.warn('iOS Audio: Could not store YT player reference:', error);
+            }
             
             // Auto-play if requested
             if (shouldAutoPlay) {
-              console.log('Auto-playing song after player ready');
+              console.log('iOS Audio: Auto-playing song after player ready');
               setShouldAutoPlay(false);
               setTimeout(async () => {
                 if (playerRef.current?.isReady()) {
                   try {
                     await playerRef.current.play();
                   } catch (error) {
-                    console.error('Auto-play failed:', error);
-                    setIsLoading(false); // Clear loading on error
+                    console.error('iOS Audio: Auto-play failed:', error);
+                    setIsLoading(false);
                   }
                 }
               }, 500);
             }
           },
           onError: async (error: string) => {
-            console.error('Player error:', error);
+            console.error('iOS Audio: Player error:', error);
             setIsPlaying(false);
             setHasError(true);
             setIsLoading(false);
+            stopSyncInterval();
           },
           onTimeUpdate: (time: number) => {
             setCurrentTime(time);
@@ -224,9 +280,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
         await player.load(audioUrlToPlay, callbacks);
       } catch (error) {
-        console.error('Error creating player:', error);
+        console.error('iOS Audio: Error creating player:', error);
         setHasError(true);
         setIsLoading(false);
+        stopSyncInterval();
       }
     };
 
@@ -240,54 +297,62 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         try {
           playerRef.current.destroy();
         } catch (error) {
-          console.warn('Error destroying player in cleanup:', error);
+          console.warn('iOS Audio: Error destroying player in cleanup:', error);
         }
         playerRef.current = null;
       }
+      directYTPlayerRef.current = null;
       setIsPlaying(false);
       setIsLoading(false);
     };
   }, [currentSong, isYouTubeReady]);
 
   const play = async () => {
-    console.log('Play requested, player ready:', playerRef.current?.isReady());
-    console.log('Current song:', currentSong?.title);
+    console.log('iOS Audio: Play requested, player ready:', playerRef.current?.isReady());
+    console.log('iOS Audio: Current song:', currentSong?.title);
     
     if (playerRef.current?.isReady()) {
       try {
-        console.log('Calling play');
+        console.log('iOS Audio: Calling play');
         setIsLoading(true);
-        setHasError(false); // Clear any previous errors
+        setHasError(false);
         
-        // Set a timeout to clear loading state if it gets stuck
+        // Enhanced loading timeout with YT player check
         const loadingTimeout = setTimeout(() => {
-          console.warn('Play loading timeout - checking actual YouTube state');
+          console.warn('iOS Audio: Play loading timeout - checking YouTube state');
           try {
-            const ytPlayer = (playerRef.current as any)?.player;
+            const ytPlayer = directYTPlayerRef.current || (playerRef.current as any)?.player;
             if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
               const ytState = ytPlayer.getPlayerState();
+              console.log('iOS Audio: Timeout check - YT state:', ytState);
+              
               if (ytState === window.YT?.PlayerState?.PLAYING) {
-                console.log('YouTube is actually playing, clearing loading state');
+                console.log('iOS Audio: YouTube is actually playing, syncing state');
                 setIsPlaying(true);
                 setIsLoading(false);
+                startSyncInterval();
               } else if (ytState === window.YT?.PlayerState?.PAUSED) {
-                console.log('YouTube is paused, clearing loading state');
+                console.log('iOS Audio: YouTube is paused, clearing loading');
                 setIsPlaying(false);
                 setIsLoading(false);
+              } else {
+                console.log('iOS Audio: YouTube state unclear, clearing loading');
+                setIsLoading(false);
               }
+            } else {
+              console.log('iOS Audio: No YouTube player found, clearing loading');
+              setIsLoading(false);
             }
           } catch (error) {
-            console.warn('Error checking YouTube state in timeout:', error);
+            console.warn('iOS Audio: Error checking YouTube state:', error);
             setIsLoading(false);
           }
-        }, 5000);
+        }, 3000); // Shorter timeout for iOS
         
         await playerRef.current.play();
-        
-        // Clear the timeout if play completes normally
         clearTimeout(loadingTimeout);
         
-        // Track song play when it actually starts
+        // Track song play
         if (currentSong && !playStartTime) {
           setPlayStartTime(Date.now());
           trackSongPlay(
@@ -299,49 +364,47 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             duration
           );
         }
-        
-        // Note: Loading state will be cleared by onStateChange when PLAYING state is received
       } catch (error) {
-        console.error('Error calling play:', error);
+        console.error('iOS Audio: Error calling play:', error);
         setHasError(true);
         setIsLoading(false);
       }
     } else {
-      console.error('Player not ready');
+      console.error('iOS Audio: Player not ready');
       setHasError(true);
       setIsLoading(false);
     }
   };
 
   const pause = async () => {
-    console.log('Pause requested, player ready:', playerRef.current?.isReady());
+    console.log('iOS Audio: Pause requested, player ready:', playerRef.current?.isReady());
     if (playerRef.current?.isReady()) {
       try {
-        console.log('Calling pause');
+        console.log('iOS Audio: Calling pause');
         setIsLoading(false);
         await playerRef.current.pause();
       } catch (error) {
-        console.error('Error calling pause:', error);
+        console.error('iOS Audio: Error calling pause:', error);
         setIsPlaying(false);
         setIsLoading(false);
       }
     } else {
-      console.error('Player not ready');
+      console.error('iOS Audio: Player not ready for pause');
       setIsLoading(false);
     }
   };
 
   const togglePlay = async () => {
+    console.log('iOS Audio: Toggle play - current state:', isPlaying);
     if (isPlaying) {
       await pause();
     } else {
       setIsLoading(true);
       
-      // Safety timeout to clear loading state if it gets stuck
       const loadingTimeout = setTimeout(() => {
-        console.warn('Loading state timeout - clearing loading');
+        console.warn('iOS Audio: Toggle loading timeout');
         setIsLoading(false);
-      }, 10000); // 10 seconds timeout
+      }, 5000);
       
       try {
         await play();
@@ -352,20 +415,37 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
 
   const seekTo = async (time: number) => {
+    console.log('iOS Audio: Seek to:', time);
     if (playerRef.current?.isReady()) {
       try {
         await playerRef.current.seekTo(time);
         setCurrentTime(time);
+        
+        // Force sync after seeking
+        setTimeout(() => {
+          try {
+            const ytPlayer = directYTPlayerRef.current || (playerRef.current as any)?.player;
+            if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+              const actualTime = ytPlayer.getCurrentTime();
+              if (Math.abs(actualTime - time) > 2) {
+                console.log('iOS Audio: Seek sync correction:', actualTime);
+                setCurrentTime(Math.floor(actualTime));
+              }
+            }
+          } catch (error) {
+            console.warn('iOS Audio: Seek sync error:', error);
+          }
+        }, 1000);
       } catch (error) {
-        console.error('Error seeking:', error);
+        console.error('iOS Audio: Error seeking:', error);
       }
     }
   };
 
   const setCurrentSongWrapper = (song: Song | null, autoPlay: boolean = false) => {
-    // If it's the same song, don't recreate the player - just handle play state
+    // If it's the same song, don't recreate the player
     if (currentSong && song && currentSong.id === song.id) {
-      console.log('Same song requested, handling play state instead of recreating player');
+      console.log('iOS Audio: Same song requested, handling play state');
       setShouldAutoPlay(autoPlay);
       
       if (autoPlay && !isPlaying) {
@@ -375,22 +455,25 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // Track completion of previous song if it was playing
+    // Track completion of previous song
     if (currentSong && playStartTime && duration > 0) {
       const listenDuration = (Date.now() - playStartTime) / 1000;
       trackSongComplete(currentSong.id, currentSong.title, listenDuration, duration);
     }
     
-    // Different song or null - destroy existing player and create new one
+    // Different song - destroy existing player and create new one
     if (playerRef.current) {
-      console.log('Destroying existing player for new song');
+      console.log('iOS Audio: Destroying existing player for new song');
       try {
         playerRef.current.destroy();
       } catch (error) {
-        console.warn('Error destroying existing player:', error);
+        console.warn('iOS Audio: Error destroying existing player:', error);
       }
       playerRef.current = null;
     }
+    
+    stopSyncInterval();
+    directYTPlayerRef.current = null;
     
     setCurrentSong(song);
     setShouldAutoPlay(autoPlay);
@@ -399,7 +482,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setCurrentTime(0);
     setDuration(0);
     setHasError(false);
-    setPlayStartTime(null); // Reset play start time for new song
+    setPlayStartTime(null);
   };
 
   // Cleanup on unmount
@@ -428,12 +511,4 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       {children}
     </AudioContext.Provider>
   );
-}
-
-export function useAudio() {
-  const context = useContext(AudioContext);
-  if (context === undefined) {
-    throw new Error("useAudio must be used within an AudioProvider");
-  }
-  return context;
 }

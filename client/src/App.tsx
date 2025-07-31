@@ -37,11 +37,14 @@ import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
 import MiniPlayer from "@/components/mini-player";
+import MiniPlayerIOS from "@/components/mini-player-ios";
+import { isIOS } from "@/lib/device-utils";
 import { type User } from "@shared/schema";
 import { useAuth } from "@/contexts/auth-context";
 import { useSubscription } from "@/contexts/subscription-context";
 import { getAuthToken } from "@/lib/auth";
 import { useAudio } from "@/hooks/use-audio";
+import { AudioIOSProvider } from "@/hooks/use-audio-ios";
 
 // Admin route component - authorization is handled by the APIs themselves
 function AdminRoute() {
@@ -129,7 +132,7 @@ function Router() {
       
       {/* Mini Player - Visible on home, lyrics pages, and library saved songs tab */}
       {currentSong && (location === '/home' || location.startsWith('/lyrics/') || isLibrarySavedTab) && (
-        <MiniPlayer />
+        !isIOS() && <MiniPlayer />
       )}
       
       {/* Bottom Navigation - visible on main app pages */}
@@ -198,15 +201,17 @@ function AppContent() {
 }
 
 function App() {
+  const AudioProviderComponent = isIOS() ? AudioIOSProvider : AudioProvider;
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AppStateProvider>
             <ErrorBoundary>
-              <AudioProvider>
+              <AudioProviderComponent>
                 <AppContent />
-              </AudioProvider>
+              </AudioProviderComponent>
             </ErrorBoundary>
           </AppStateProvider>
         </TooltipProvider>

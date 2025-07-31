@@ -12,6 +12,8 @@ import { AuthModal } from "@/components/auth-modal";
 import { PremiumModal } from "@/components/premium-modal";
 import FullscreenButton from "@/components/fullscreen-button";
 import LyricsOverlay from "@/components/lyrics-overlay";
+import LyricsOverlayIOS from "@/components/lyrics-overlay-ios";
+import { isIOS } from "@/lib/device-utils";
 import { useAudio } from "@/hooks/use-audio";
 import { useAuth } from "@/contexts/auth-context";
 import { useSongAccess } from "@/hooks/use-song-access";
@@ -353,15 +355,27 @@ export default function Home() {
 
       {/* Lyrics Overlay */}
       {showLyricsOverlay && lyricsSongId && (
-        <LyricsOverlay
-          songId={lyricsSongId}
-          isVisible={showLyricsOverlay}
-          onClose={() => {
-            setShowLyricsOverlay(false);
-            setLyricsSongId(null);
-            setLocation("/home");
-          }}
-        />
+        isIOS() ? (
+          <LyricsOverlayIOS
+            songId={lyricsSongId}
+            isVisible={showLyricsOverlay}
+            onClose={() => {
+              setShowLyricsOverlay(false);
+              setLyricsSongId(null);
+              setLocation("/home");
+            }}
+          />
+        ) : (
+          <LyricsOverlay
+            songId={lyricsSongId}
+            isVisible={showLyricsOverlay}
+            onClose={() => {
+              setShowLyricsOverlay(false);
+              setLyricsSongId(null);
+              setLocation("/home");
+            }}
+          />
+        )
       )}
     </div>
   );

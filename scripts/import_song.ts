@@ -421,7 +421,7 @@ async function main() {
   console.log(`✓ Song not found in database, proceeding with import...`);
   
   // Use Spotify track info for YouTube search to get better results
-  const youtubeSearchQuery = `${spotifyResult.title} ${spotifyResult.artist}`;
+  const youtubeSearchQuery = `${spotifyResult.title} ${spotifyResult.artist} lyrics`;
   console.log(`\nSearching YouTube for: "${youtubeSearchQuery}"`);
   
   const youtubeId = await findYouTubeVideoId(youtubeSearchQuery);
