@@ -44,6 +44,7 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
   // Ref hooks
   const playerRef = useRef<PlayerAdapter | null>(null);
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const directYTPlayerRef = useRef<any>(null); // Direct reference to YT player for iOS sync
 
   // Listen for YouTube API ready event
@@ -74,7 +75,7 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Enhanced sync interval functions for iOS
+  // Enhanced sync interval functions for iOS with aggressive failsafes
   const startSyncInterval = () => {
     if (syncIntervalRef.current) return;
     
@@ -90,14 +91,34 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
             const ytCurrentTime = ytPlayer.getCurrentTime ? ytPlayer.getCurrentTime() : 0;
             const ytDuration = ytPlayer.getDuration ? ytPlayer.getDuration() : 0;
             const shouldBePlaying = ytState === window.YT?.PlayerState?.PLAYING;
+            const shouldBePaused = ytState === window.YT?.PlayerState?.PAUSED;
+            const isBuffering = ytState === window.YT?.PlayerState?.BUFFERING;
             
-            // Sync play state
-            if (shouldBePlaying !== isPlaying) {
-              console.log('iOS Audio: Play state sync - YT:', shouldBePlaying, 'State:', isPlaying);
-              setIsPlaying(shouldBePlaying);
-              if (!shouldBePlaying) {
-                setIsLoading(false);
-              }
+            // Aggressive sync for play state
+            if (shouldBePlaying && (!isPlaying || isLoading)) {
+              console.log('iOS Audio: AGGRESSIVE SYNC - YouTube playing but controls not synced');
+              setIsPlaying(true);
+              setIsLoading(false);
+              setHasError(false);
+            }
+            
+            // Handle buffering state
+            if (isBuffering && !isLoading && isPlaying) {
+              console.log('iOS Audio: YouTube buffering, updating loading state');
+              setIsLoading(true);
+            }
+            
+            // Handle paused state
+            if (shouldBePaused && (isPlaying || isLoading)) {
+              console.log('iOS Audio: YouTube paused, syncing controls');
+              setIsPlaying(false);
+              setIsLoading(false);
+            }
+            
+            // Force clear loading if YouTube is in a definitive state
+            if ((shouldBePlaying || shouldBePaused) && isLoading) {
+              console.log('iOS Audio: Force clearing loading - YouTube in definitive state:', shouldBePlaying ? 'PLAYING' : 'PAUSED');
+              setIsLoading(false);
             }
             
             // Sync current time (with tolerance to avoid constant updates)
@@ -110,12 +131,6 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
             if (ytDuration && Math.abs(ytDuration - duration) > 1) {
               console.log('iOS Audio: Duration sync - YT:', ytDuration, 'State:', duration);
               setDuration(Math.floor(ytDuration));
-            }
-            
-            // Clear loading state if playing
-            if (shouldBePlaying && isLoading) {
-              console.log('iOS Audio: Clearing loading state - YouTube is playing');
-              setIsLoading(false);
             }
           }
         } catch (error) {
@@ -135,13 +150,26 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
             if (ytPlayer && ytPlayer !== directYTPlayerRef.current) {
               console.log('iOS Audio: Found DOM YouTube player, storing reference');
               directYTPlayerRef.current = ytPlayer;
+              
+              // Immediately check state of newly found player
+              try {
+                const ytState = ytPlayer.getPlayerState();
+                const shouldBePlaying = ytState === window.YT?.PlayerState?.PLAYING;
+                if (shouldBePlaying && (!isPlaying || isLoading)) {
+                  console.log('iOS Audio: Newly found player is playing, force sync');
+                  setIsPlaying(true);
+                  setIsLoading(false);
+                }
+              } catch (syncError) {
+                console.warn('iOS Audio: Error syncing newly found player:', syncError);
+              }
             }
           }
         }
       } catch (error) {
         console.warn('iOS Audio: DOM sync error:', error);
       }
-    }, 1000); // Check every second for more responsive sync
+    }, 500); // More frequent checking for better responsiveness
   };
 
   const stopSyncInterval = () => {
@@ -149,6 +177,50 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
       console.log('iOS Audio: Stopping sync interval');
       clearInterval(syncIntervalRef.current);
       syncIntervalRef.current = null;
+    }
+  };
+
+  // Health check interval - runs independently to catch sync issues
+  const startHealthCheck = () => {
+    if (healthCheckIntervalRef.current) return;
+    
+    console.log('iOS Audio: Starting health check interval');
+    healthCheckIntervalRef.current = setInterval(() => {
+      if (currentSong && playerRef.current?.isReady()) {
+        try {
+          const ytPlayer = directYTPlayerRef.current || (playerRef.current as any)?.player;
+          if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+            const ytState = ytPlayer.getPlayerState();
+            const shouldBePlaying = ytState === window.YT?.PlayerState?.PLAYING;
+            
+            // Health check: If YouTube is playing but we think we're loading, force sync
+            if (shouldBePlaying && isLoading && !isPlaying) {
+              console.log('iOS Audio: HEALTH CHECK RECOVERY - YouTube playing but controls stuck in loading');
+              setIsPlaying(true);
+              setIsLoading(false);
+              setHasError(false);
+              startSyncInterval();
+            }
+            
+            // Health check: If we think we're playing but YouTube is not, sync
+            if (!shouldBePlaying && isPlaying && ytState !== window.YT?.PlayerState?.BUFFERING) {
+              console.log('iOS Audio: HEALTH CHECK RECOVERY - Controls think playing but YouTube is not');
+              setIsPlaying(false);
+              setIsLoading(false);
+            }
+          }
+        } catch (error) {
+          console.warn('iOS Audio: Health check error:', error);
+        }
+      }
+    }, 3000); // Check every 3 seconds
+  };
+
+  const stopHealthCheck = () => {
+    if (healthCheckIntervalRef.current) {
+      console.log('iOS Audio: Stopping health check');
+      clearInterval(healthCheckIntervalRef.current);
+      healthCheckIntervalRef.current = null;
     }
   };
 
@@ -250,6 +322,9 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
               console.warn('iOS Audio: Could not store YT player reference:', error);
             }
             
+            // Start health check when player is ready
+            startHealthCheck();
+            
             // Auto-play if requested
             if (shouldAutoPlay) {
               console.log('iOS Audio: Auto-playing song after player ready');
@@ -272,6 +347,7 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
             setHasError(true);
             setIsLoading(false);
             stopSyncInterval();
+            stopHealthCheck();
           },
           onTimeUpdate: (time: number) => {
             setCurrentTime(time);
@@ -284,6 +360,7 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
         setHasError(true);
         setIsLoading(false);
         stopSyncInterval();
+        stopHealthCheck();
       }
     };
 
@@ -293,6 +370,7 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
     return () => {
       clearTimeout(timeoutId);
       stopSyncInterval();
+      stopHealthCheck();
       if (playerRef.current) {
         try {
           playerRef.current.destroy();
@@ -317,9 +395,9 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         setHasError(false);
         
-        // Enhanced loading timeout with YT player check
+        // Enhanced loading timeout with aggressive YT player check
         const loadingTimeout = setTimeout(() => {
-          console.warn('iOS Audio: Play loading timeout - checking YouTube state');
+          console.warn('iOS Audio: Play loading timeout - AGGRESSIVE YouTube state check');
           try {
             const ytPlayer = directYTPlayerRef.current || (playerRef.current as any)?.player;
             if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
@@ -327,27 +405,60 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
               console.log('iOS Audio: Timeout check - YT state:', ytState);
               
               if (ytState === window.YT?.PlayerState?.PLAYING) {
-                console.log('iOS Audio: YouTube is actually playing, syncing state');
+                console.log('iOS Audio: TIMEOUT RECOVERY - YouTube is playing, force sync');
                 setIsPlaying(true);
                 setIsLoading(false);
+                setHasError(false);
                 startSyncInterval();
               } else if (ytState === window.YT?.PlayerState?.PAUSED) {
-                console.log('iOS Audio: YouTube is paused, clearing loading');
+                console.log('iOS Audio: TIMEOUT RECOVERY - YouTube is paused');
                 setIsPlaying(false);
                 setIsLoading(false);
+              } else if (ytState === window.YT?.PlayerState?.BUFFERING) {
+                console.log('iOS Audio: TIMEOUT RECOVERY - YouTube still buffering, keep loading');
+                // Keep loading state for buffering
               } else {
-                console.log('iOS Audio: YouTube state unclear, clearing loading');
+                console.log('iOS Audio: TIMEOUT RECOVERY - Unknown YouTube state, clearing loading');
                 setIsLoading(false);
               }
             } else {
-              console.log('iOS Audio: No YouTube player found, clearing loading');
-              setIsLoading(false);
+              // Try to find any YouTube player in DOM as last resort
+              console.log('iOS Audio: TIMEOUT RECOVERY - Searching DOM for YouTube player');
+              const ytContainers = document.querySelectorAll('[id^="youtube-player-"]');
+              let foundPlayer = false;
+              
+              for (const container of ytContainers) {
+                const iframe = container.querySelector('iframe');
+                if (iframe) {
+                  const domYTPlayer = (window as any).YT?.get?.(iframe.id);
+                  if (domYTPlayer && typeof domYTPlayer.getPlayerState === 'function') {
+                    const domYTState = domYTPlayer.getPlayerState();
+                    console.log('iOS Audio: Found DOM player with state:', domYTState);
+                    
+                    if (domYTState === window.YT?.PlayerState?.PLAYING) {
+                      console.log('iOS Audio: DOM RECOVERY - YouTube is playing, force sync');
+                      directYTPlayerRef.current = domYTPlayer;
+                      setIsPlaying(true);
+                      setIsLoading(false);
+                      setHasError(false);
+                      startSyncInterval();
+                      foundPlayer = true;
+                      break;
+                    }
+                  }
+                }
+              }
+              
+              if (!foundPlayer) {
+                console.log('iOS Audio: No YouTube player found anywhere, clearing loading');
+                setIsLoading(false);
+              }
             }
           } catch (error) {
-            console.warn('iOS Audio: Error checking YouTube state:', error);
+            console.warn('iOS Audio: Error in timeout recovery:', error);
             setIsLoading(false);
           }
-        }, 3000); // Shorter timeout for iOS
+        }, 2000); // Even shorter timeout for faster recovery
         
         await playerRef.current.play();
         clearTimeout(loadingTimeout);
@@ -473,6 +584,7 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
     }
     
     stopSyncInterval();
+    stopHealthCheck();
     directYTPlayerRef.current = null;
     
     setCurrentSong(song);
@@ -489,6 +601,7 @@ export function AudioIOSProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     return () => {
       stopSyncInterval();
+      stopHealthCheck();
     };
   }, []);
 
