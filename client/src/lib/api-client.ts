@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { supabase } from '@/lib/supabase';
+import { getAuthToken } from '@/lib/auth';
 
 // Create the main API client
 const apiClient = axios.create({
@@ -10,15 +11,15 @@ const apiClient = axios.create({
   withCredentials: true, // For CORS with credentials
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token with refresh
 apiClient.interceptors.request.use(
   async (config) => {
     try {
-      // Get current session from Supabase
-      const { data: { session } } = await supabase.auth.getSession();
+      // Use the enhanced getAuthToken function that handles refresh
+      const token = await getAuthToken();
       
-      if (session?.access_token) {
-        config.headers.Authorization = `Bearer ${session.access_token}`;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
       console.warn('Failed to get auth token:', error);
@@ -31,14 +32,37 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Response interceptor with retry logic for token refresh
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.warn('Unauthorized request:', error.config?.url);
-      // Could trigger logout or token refresh here if needed
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If we get 401 and haven't already retried
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      console.warn('Got 401, attempting token refresh and retry:', error.config?.url);
+      
+      try {
+        // Force refresh session
+        const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (!refreshError && session?.access_token) {
+          // Update the authorization header and retry
+          originalRequest.headers.Authorization = `Bearer ${session.access_token}`;
+          return apiClient(originalRequest);
+        } else {
+          // Refresh failed, sign out user
+          console.error('Token refresh failed:', refreshError);
+          await supabase.auth.signOut();
+        }
+      } catch (refreshError) {
+        console.error('Error during token refresh:', refreshError);
+        await supabase.auth.signOut();
+      }
     }
+    
     return Promise.reject(error);
   }
 );

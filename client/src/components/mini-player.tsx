@@ -97,7 +97,7 @@ export default function MiniPlayer() {
       className="fixed left-0 right-0 z-60 transition-all duration-300" 
       style={{ 
         bottom: '60px',
-        height: isMaximized ? '33.333vh' : 'auto'
+        height: 'auto'
       }}
     >
       {/* Compact Progress Bar - Spotify style */}

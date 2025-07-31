@@ -27,11 +27,44 @@ export interface UserSyncResult {
 }
 
 /**
- * Get current Supabase session token
+ * Get current Supabase session token with automatic refresh
  */
 export async function getAuthToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token || null;
+  // First try to get the current session
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error) {
+    console.error('Error getting session:', error);
+    return null;
+  }
+  
+  if (!session) {
+    return null;
+  }
+  
+  // Check if token is about to expire (within 5 minutes)
+  const now = Math.floor(Date.now() / 1000);
+  const tokenExp = session.expires_at;
+  const fiveMinutesFromNow = now + (5 * 60);
+  
+  if (tokenExp && tokenExp < fiveMinutesFromNow) {
+    console.log('Token expiring soon, refreshing...');
+    // Refresh the session
+    const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+    
+    if (refreshError) {
+      console.error('Error refreshing session:', refreshError);
+      // If refresh fails, try to sign out to clear invalid session
+      await supabase.auth.signOut();
+      return null;
+    }
+    
+    if (refreshedSession) {
+      return refreshedSession.access_token;
+    }
+  }
+  
+  return session.access_token;
 }
 
 /**
