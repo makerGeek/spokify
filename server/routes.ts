@@ -821,12 +821,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ url: portalSession.url });
       } else {
         // User doesn't have subscription - create checkout session
+        // Fetch available prices from Stripe
+        const prices = await stripe.prices.list({
+          active: true,
+          type: 'recurring',
+          limit: 10,
+        });
+        
+        // Get the first active recurring price (or you can filter by product if you have specific product)
+        const subscriptionPrice = prices.data[0];
+        
+        if (!subscriptionPrice) {
+          return res.status(500).json({ error: 'No active subscription prices found' });
+        }
+        
         const checkoutSession = await stripe.checkout.sessions.create({
           customer: customerId,
           payment_method_types: ['card'],
           line_items: [
             {
-              price: 'price_1RmA4cGbz9pjaytse6XY1Vtf', // Your actual price ID
+              price: subscriptionPrice.id,
               quantity: 1,
             },
           ],

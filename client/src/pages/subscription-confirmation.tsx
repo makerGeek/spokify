@@ -21,7 +21,7 @@ export default function SubscriptionConfirmation() {
   const sessionId = urlParams.get('session_id');
 
   useEffect(() => {
-    const verifySubscription = async () => {
+    const handleVerification = async () => {
       if (hasVerified) return;
       setHasVerified(true);
       
@@ -60,7 +60,7 @@ export default function SubscriptionConfirmation() {
       }
     };
 
-    verifySubscription();
+    handleVerification();
   }, []); // Empty dependency array to run only once
 
   return (

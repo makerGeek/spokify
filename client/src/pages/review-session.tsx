@@ -145,28 +145,21 @@ export default function ReviewSession() {
 
   return (
     <AuthenticatedOnly>
-      <div className="min-h-screen spotify-bg pb-20">
-        <div className="p-6">
+      <div className="min-h-screen spotify-bg pb-20 max-h-[870px]:pb-16">
+        <div className="p-6 max-h-[870px]:p-4">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setLocation('/library?tab=vocabulary')}
-                className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                <span>Back</span>
-              </button>
+          <div className="flex items-center justify-between mb-6 max-h-[870px]:mb-4">
+            <div className="flex items-center space-x-4 max-h-[870px]:space-x-3">
               <div>
-                <h1 className="spotify-heading-lg">Spaced Repetition</h1>
-                <p className="spotify-text-muted">Review due vocabulary</p>
+                <h1 className="spotify-heading-lg max-h-[870px]:text-lg max-h-[870px]:font-bold">Spaced Repetition</h1>
+                <p className="spotify-text-muted text-sm max-h-[870px]:text-xs">Review due vocabulary</p>
               </div>
             </div>
             <div className="text-right">
               <div className="text-[var(--spotify-green)] font-semibold text-lg">
                 {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
               </div>
-              <div className="text-xs spotify-text-muted">
+              <div className="text-xs max-h-[870px]:text-[11px] spotify-text-muted">
                 {score.correct}/{score.total} correct
               </div>
             </div>
@@ -176,7 +169,7 @@ export default function ReviewSession() {
           <ReviewProgress 
             current={progress.current} 
             total={progress.total} 
-            className="mb-6" 
+            className="mb-6 max-h-[870px]:mb-4" 
           />
 
           {/* Question Card */}
@@ -194,22 +187,22 @@ export default function ReviewSession() {
 
           {/* Session Complete Stats */}
           {isSessionComplete && (
-            <div className="text-center py-8">
-              <div className="spotify-card p-8 max-w-md mx-auto">
-                <Trophy className="mx-auto spotify-text-accent mb-4" size={64} />
-                <h2 className="spotify-heading-md mb-4">Session Complete!</h2>
+            <div className="text-center py-8 max-h-[870px]:py-6">
+              <div className="spotify-card p-8 max-h-[870px]:p-6 max-w-md mx-auto">
+                <Trophy className="mx-auto spotify-text-accent mb-4 max-h-[870px]:mb-3" size={64} />
+                <h2 className="spotify-heading-md max-h-[870px]:text-lg max-h-[870px]:font-bold mb-4 max-h-[870px]:mb-3">Session Complete!</h2>
                 
                 {/* Stats */}
-                <div className="mb-6">
-                  <div className="text-4xl font-bold text-[var(--spotify-green)] mb-2">
+                <div className="mb-6 max-h-[870px]:mb-4">
+                  <div className="text-4xl max-h-[870px]:text-3xl font-bold text-[var(--spotify-green)] mb-2 max-h-[870px]:mb-1">
                     {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
                   </div>
-                  <div className="spotify-text-muted mb-4">
+                  <div className="spotify-text-muted mb-4 max-h-[870px]:mb-3 text-sm max-h-[870px]:text-xs">
                     {score.correct} out of {score.total} correct
                   </div>
                   
                   {/* Performance message */}
-                  <div className="spotify-text-muted text-sm">
+                  <div className="spotify-text-muted text-sm max-h-[870px]:text-xs">
                     {score.total > 0 && (
                       <>
                         {Math.round((score.correct / score.total) * 100) >= 80 && "Excellent work! 🎉"}
@@ -221,19 +214,19 @@ export default function ReviewSession() {
                 </div>
 
                 {/* Action buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="flex flex-col sm:flex-row gap-3 max-h-[870px]:gap-2 justify-center">
                   <button
                     onClick={handleNewSession}
-                    className="flex items-center justify-center space-x-2 spotify-btn-primary"
+                    className="flex items-center justify-center space-x-2 spotify-btn-primary text-sm max-h-[870px]:text-xs px-4 max-h-[870px]:px-3 py-2 max-h-[870px]:py-1.5"
                   >
-                    <RotateCcw className="h-4 w-4" />
+                    <RotateCcw className="h-4 w-4 max-h-[870px]:h-3 max-h-[870px]:w-3" />
                     <span>Start Another Session</span>
                   </button>
                   <button
                     onClick={() => setLocation('/home')}
-                    className="flex items-center justify-center space-x-2 spotify-btn-secondary"
+                    className="flex items-center justify-center space-x-2 spotify-btn-secondary text-sm max-h-[870px]:text-xs px-4 max-h-[870px]:px-3 py-2 max-h-[870px]:py-1.5"
                   >
-                    <Home className="h-4 w-4" />
+                    <Home className="h-4 w-4 max-h-[870px]:h-3 max-h-[870px]:w-3" />
                     <span>Back to Home</span>
                   </button>
                 </div>

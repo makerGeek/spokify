@@ -101,7 +101,7 @@ export function PremiumModal({ isOpen, onClose, song }: PremiumModalProps) {
         {/* Pricing */}
         <div className="text-center mb-6">
           <div className="spotify-gradient-green p-4 rounded-lg mb-4">
-            <div className="text-2xl font-black text-black">5.99€</div>
+            <div className="text-2xl font-black text-black">4.99€</div>
             <div className="text-xs font-semibold text-black/80">per month</div>
           </div>
         </div>
