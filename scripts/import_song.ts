@@ -57,7 +57,7 @@ async function checkSongExists(title: string, artist: string, spotifyId?: string
   }
 }
 
-async function findSpotifyTrackId(songName: string): Promise<{ spotifyId: string; title: string; artist: string } | null> {
+async function findSpotifyTrackId(songName: string): Promise<{ spotifyId: string; title: string; artist: string; albumCover: string | null } | null> {
   const options = {
     method: 'GET',
     url: 'https://spotify-scraper.p.rapidapi.com/v1/search',
@@ -81,10 +81,22 @@ async function findSpotifyTrackId(songName: string): Promise<{ spotifyId: string
       const title = firstTrack.name;
       const artist = firstTrack.artists?.[0]?.name || 'Unknown Artist';
       
+      // Extract album cover - prefer 640x640, fallback to 300x300, then 64x64
+      let albumCover = null;
+      if (firstTrack.album?.cover && firstTrack.album.cover.length > 0) {
+        const covers = firstTrack.album.cover;
+        const largeCover = covers.find((cover: any) => cover.width === 640);
+        const mediumCover = covers.find((cover: any) => cover.width === 300);
+        const smallCover = covers.find((cover: any) => cover.width === 64);
+        
+        albumCover = largeCover?.url || mediumCover?.url || smallCover?.url || null;
+      }
+      
       console.log(`Found Spotify track: ${title} by ${artist}`);
       console.log(`Spotify ID: ${spotifyId}`);
+      console.log(`Album cover: ${albumCover ? 'Found' : 'Not found'}`);
       
-      return { spotifyId, title, artist };
+      return { spotifyId, title, artist, albumCover };
     } else {
       console.log(`No Spotify tracks found for: ${songName}`);
       return null;
@@ -344,6 +356,7 @@ async function saveSongToDatabase(songData: {
   difficultyResult: any | null;
   soundcloudData?: { audioUrl: string; duration: number } | null;
   s3AudioUrl?: string | null;
+  albumCover?: string | null;
 }) {
   try {
     // Convert lyrics with translations to the format expected by the database
@@ -364,7 +377,7 @@ async function saveSongToDatabase(songData: {
       language,
       difficulty: songData.difficultyResult?.difficulty || "A1",
       rating: 0,
-      albumCover: null,
+      albumCover: songData.albumCover || null,
       audioUrl: songData.s3AudioUrl || null, // S3 bucket URL
       sdcldAudioUrl: songData.soundcloudData?.audioUrl || null, // Original SoundCloud URL
       duration: songData.soundcloudData?.duration || 0,
@@ -494,7 +507,8 @@ async function main() {
         translatedLyrics,
         difficultyResult,
         soundcloudData,
-        s3AudioUrl
+        s3AudioUrl,
+        albumCover: spotifyResult.albumCover
       });
     } catch (error) {
       console.error('Failed to save to database:', error);

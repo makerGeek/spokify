@@ -25,6 +25,8 @@ interface SongToEnrich {
   audioUrl: string | null;
   sdcldAudioUrl: string | null;
   duration: number;
+  albumCover: string | null;
+  spotifyId: string | null;
 }
 
 async function fetchSoundCloudTrack(title: string, artist: string): Promise<{ audioUrl: string; duration: number } | null> {
@@ -186,12 +188,52 @@ async function uploadAudioToS3(audioUrl: string, title: string, artist: string, 
   return null;
 }
 
+async function findSpotifyAlbumCover(title: string, artist: string): Promise<string | null> {
+  const options = {
+    method: 'GET',
+    url: 'https://spotify-scraper.p.rapidapi.com/v1/search',
+    params: {
+      term: `${title} ${artist}`,
+      type: 'track'
+    },
+    headers: {
+      'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
+      'x-rapidapi-host': 'spotify-scraper.p.rapidapi.com'
+    }
+  };
+
+  try {
+    const response = await axios.request(options);
+    const tracks = response.data?.tracks?.items;
+    
+    if (tracks && tracks.length > 0) {
+      const firstTrack = tracks[0];
+      
+      // Extract album cover - prefer 640x640, fallback to 300x300, then 64x64
+      if (firstTrack.album?.cover && firstTrack.album.cover.length > 0) {
+        const covers = firstTrack.album.cover;
+        const largeCover = covers.find((cover: any) => cover.width === 640);
+        const mediumCover = covers.find((cover: any) => cover.width === 300);
+        const smallCover = covers.find((cover: any) => cover.width === 64);
+        
+        return largeCover?.url || mediumCover?.url || smallCover?.url || null;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error searching Spotify for album cover:', error);
+    return null;
+  }
+}
+
 async function enrichSong(song: SongToEnrich): Promise<void> {
   console.log(`\n=== ENRICHING: ${song.title} by ${song.artist} ===`);
   console.log(`Current state:`);
   console.log(`  - audioUrl: ${song.audioUrl ? 'Present' : 'Missing'}`);
   console.log(`  - sdcldAudioUrl: ${song.sdcldAudioUrl ? 'Present' : 'Missing'}`);
   console.log(`  - duration: ${song.duration || 'Missing'}`);
+  console.log(`  - albumCover: ${song.albumCover ? 'Present' : 'Missing'}`);
 
   let needsUpdate = false;
   let updateData: any = {};
@@ -245,6 +287,22 @@ async function enrichSong(song: SongToEnrich): Promise<void> {
     }
   }
 
+  // Check if we need album cover
+  if (!song.albumCover) {
+    console.log(`Fetching album cover from Spotify...`);
+    const albumCover = await findSpotifyAlbumCover(song.title, song.artist);
+    
+    if (albumCover) {
+      updateData.albumCover = albumCover;
+      needsUpdate = true;
+      console.log(`✓ Added album cover`);
+    } else {
+      console.log(`✗ Could not find album cover`);
+    }
+  } else {
+    console.log(`Song already has album cover`);
+  }
+
   // Update database if needed
   if (needsUpdate) {
     try {
@@ -271,14 +329,17 @@ async function getSongsToEnrich(limit?: number): Promise<SongToEnrich[]> {
     artist: songs.artist,
     audioUrl: songs.audioUrl,
     sdcldAudioUrl: songs.sdcldAudioUrl,
-    duration: songs.duration
+    duration: songs.duration,
+    albumCover: songs.albumCover,
+    spotifyId: songs.spotifyId
   })
   .from(songs)
   .where(
     or(
       isNull(songs.audioUrl),
       isNull(songs.sdcldAudioUrl),
-      eq(songs.duration, 0)
+      eq(songs.duration, 0),
+      isNull(songs.albumCover)
     )
   );
 
