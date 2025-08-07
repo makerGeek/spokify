@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, ArrowLeft, Home, RotateCcw, Trophy } from "lucide-react";
 import { useLocation } from "wouter";
@@ -15,8 +15,14 @@ export default function ReviewSession() {
   const { user, databaseUser } = useAuth();
   const queryClient = useQueryClient();
 
+  // Get user's target language from preferences (same as in library and header)
+  const userPreferences = JSON.parse(
+    localStorage.getItem("userPreferences") || "{}"
+  );
+  const { targetLanguage = "es" } = userPreferences;
+
   // Fetch due vocabulary for spaced repetition
-  const { data: vocabulary, isLoading } = useQuery<Vocabulary[]>({
+  const { data: allDueVocabulary, isLoading } = useQuery<Vocabulary[]>({
     queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary", "due"] : [],
     queryFn: async () => {
       if (!databaseUser?.id) return [];
@@ -27,6 +33,12 @@ export default function ReviewSession() {
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
+
+  // Filter due vocabulary by selected language
+  const vocabulary = useMemo(() => {
+    if (!allDueVocabulary) return [];
+    return allDueVocabulary.filter(word => word.language === targetLanguage);
+  }, [allDueVocabulary, targetLanguage]);
 
   // Submit review mutation for spaced repetition
   const submitReviewMutation = useMutation({

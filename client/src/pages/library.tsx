@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Heart, BookOpen, Brain, Target, Zap, Trash2 } from 'lucide-react'
 import { useLocation } from 'wouter'
@@ -95,6 +95,42 @@ export default function Library() {
 
   // Use real bookmarked songs from the database
   const savedSongs = bookmarkedSongs
+
+  // Get user's target language from preferences (same as in app-header.tsx)
+  const userPreferences = JSON.parse(
+    localStorage.getItem("userPreferences") || "{}"
+  );
+  const { targetLanguage = "es" } = userPreferences;
+
+  // Filter vocabulary by the selected target language
+  const filteredVocabulary = useMemo(() => {
+    return vocabulary.filter(word => word.language === targetLanguage)
+  }, [vocabulary, targetLanguage])
+
+  // Calculate language-specific vocabulary stats
+  const languageSpecificStats = useMemo(() => {
+    if (!filteredVocabulary.length) {
+      return { totalWords: 0, dueCount: 0, masteredCount: 0, averageScore: 0, streak: 0 }
+    }
+
+    const now = new Date()
+    const dueWords = filteredVocabulary.filter(word => 
+      word.nextReviewDate && new Date(word.nextReviewDate) <= now
+    )
+    const masteredWords = filteredVocabulary.filter(word => 
+      word.memorizationScore >= 90
+    )
+    const totalScore = filteredVocabulary.reduce((sum, word) => sum + (word.memorizationScore || 50), 0)
+    const averageScore = Math.round(totalScore / filteredVocabulary.length)
+
+    return {
+      totalWords: filteredVocabulary.length,
+      dueCount: dueWords.length,
+      masteredCount: masteredWords.length,
+      averageScore: averageScore,
+      streak: vocabularyStats?.streak || 0 // Keep global streak
+    }
+  }, [filteredVocabulary, vocabularyStats])
 
   const handleSongClick = (songId: number) => {
     setLocation(`/lyrics/${songId}`)
@@ -343,43 +379,45 @@ export default function Library() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="spotify-heading-lg">Your Vocabulary</h2>
-                <p className="spotify-text-muted text-sm">{vocabulary.length} words</p>
+                <p className="spotify-text-muted text-sm">
+                  {filteredVocabulary.length} words
+                </p>
               </div>
-              {vocabularyStats && vocabularyStats.dueCount > 0 && (
+              {languageSpecificStats.dueCount > 0 && (
                 <button
                   onClick={() => setLocation('/review-session')}
                   className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition-colors"
                 >
                   <Brain className="h-4 w-4" />
-                  Review {vocabularyStats.dueCount} {vocabularyStats.dueCount === 1 ? 'due word' : 'due words'}
+                  Review {languageSpecificStats.dueCount} {languageSpecificStats.dueCount === 1 ? 'due word' : 'due words'}
                 </button>
               )}
             </div>
 
             {/* Stats Section */}
-            {vocabularyStats && vocabulary.length > 0 && (
+            {filteredVocabulary.length > 0 && (
               <div className="bg-spotify-card rounded-lg p-4 mb-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold spotify-text-primary">{vocabularyStats.masteredCount}</div>
+                    <div className="text-2xl font-bold spotify-text-primary">{languageSpecificStats.masteredCount}</div>
                     <div className="text-sm spotify-text-muted flex items-center justify-center gap-1">
                       <Target className="h-3 w-3" />
                       Mastered
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-orange-500">{vocabularyStats.dueCount}</div>
+                    <div className="text-2xl font-bold text-orange-500">{languageSpecificStats.dueCount}</div>
                     <div className="text-sm spotify-text-muted flex items-center justify-center gap-1">
                       <Brain className="h-3 w-3" />
                       Due for Review
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-spotify-accent">{vocabularyStats.averageScore}%</div>
+                    <div className="text-2xl font-bold text-spotify-accent">{languageSpecificStats.averageScore}%</div>
                     <div className="text-sm spotify-text-muted">Average Score</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-yellow-500">{vocabularyStats.streak}</div>
+                    <div className="text-2xl font-bold text-yellow-500">{languageSpecificStats.streak}</div>
                     <div className="text-sm spotify-text-muted flex items-center justify-center gap-1">
                       <Zap className="h-3 w-3" />
                       Day Streak
@@ -395,9 +433,15 @@ export default function Library() {
                 <h3 className="spotify-heading-md mb-2">No vocabulary yet</h3>
                 <p className="spotify-text-muted">Words you learn will appear here</p>
               </div>
+            ) : filteredVocabulary.length === 0 ? (
+              <div className="text-center py-12">
+                <BookOpen className="h-16 w-16 spotify-text-muted mx-auto mb-4" />
+                <h3 className="spotify-heading-md mb-2">No {targetLanguage.toUpperCase()} words yet</h3>
+                <p className="spotify-text-muted">Learn some {targetLanguage.toUpperCase()} songs to build your vocabulary</p>
+              </div>
             ) : (
               <div className="space-y-3 vocabulary">
-                {vocabulary.map((word, index) => (
+                {filteredVocabulary.map((word, index) => (
                   <VocabularyItem key={word.id} word={word} index={index} />
                 ))}
               </div>
