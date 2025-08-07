@@ -85,7 +85,11 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/home" component={Home} />
-        <Route path="/search" component={SearchPage} />
+        <Route path="/search">
+          <AuthenticatedOnly contextMessage="Login to search and discover new music to learn from">
+            <SearchPage />
+          </AuthenticatedOnly>
+        </Route>
         <Route path="/artist/:artistId" component={ArtistPage} />
         <Route path="/album/:albumId" component={AlbumPage} />
         <Route path="/lyrics/:id" component={Home} />
