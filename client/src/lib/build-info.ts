@@ -1,23 +1,9 @@
 // Build information utilities
 export function getBuildVersion(): string {
-  // Try to get build date from environment variable (if available)
-  const buildDate = (globalThis as any).__BUILD_DATE__ || import.meta.env.VITE_BUILD_DATE;
-  
-  if (buildDate) {
-    return new Date(buildDate).toLocaleString('ja-JP', {
-      year: '2-digit',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).replace(/\//g, '').replace(/:/g, '').replace(' ', '-');
-  }
-  
-  // Fallback to package.json version or current date
   try {
-    // Use import timestamp as build indicator
-    const now = new Date();
-    return now.toLocaleString('ja-JP', {
+    // Use build timestamp injected by Vite
+    const buildDate = new Date(__BUILD_TIMESTAMP__);
+    return buildDate.toLocaleString('ja-JP', {
       year: '2-digit',
       month: '2-digit',
       day: '2-digit',
@@ -25,6 +11,7 @@ export function getBuildVersion(): string {
       minute: '2-digit'
     }).replace(/\//g, '').replace(/:/g, '').replace(' ', '-');
   } catch {
+    // Fallback for development
     return 'dev-build';
   }
 }
