@@ -342,8 +342,13 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
                 onClick={() => handleLineClick(line)}
               >
                 <span className="text-lg leading-snug block text-center break-words w-full">{line.text}</span>
-                {showTranslationMode && line.translation && (
-                  <div className="text-sm text-spotify-muted mt-1 italic text-center break-words w-full">
+                {line.translation && (
+                  <div className={`text-sm text-spotify-muted mt-1 italic text-center break-words w-full transition-all duration-700 ease-out ${
+                    showTranslationMode 
+                      ? 'opacity-100 max-h-96' 
+                      : 'opacity-0 scale-y-0 max-h-0 overflow-hidden'
+                  }`}
+                  style={{ transformOrigin: 'top' }}>
                     {line.translation}
                   </div>
                 )}
