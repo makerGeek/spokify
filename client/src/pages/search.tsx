@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PremiumModal } from "@/components/premium-modal";
 import { AuthModal } from "@/components/auth-modal";
+import { ImportProgressBadge } from "@/components/import-progress";
 import { api } from "../lib/api-client";
 import { useDebounce } from "../hooks/use-debounce";
 import { useLocation } from "wouter";
@@ -65,6 +66,8 @@ interface ComprehensiveSearchResults {
 }
 
 type TabType = 'all' | 'tracks' | 'artists' | 'albums';
+
+
 
 export function SearchPage() {
   const [query, setQuery] = useState('');
@@ -170,6 +173,8 @@ export function SearchPage() {
     setLocation(`/lyrics/${song.id}`);
   };
 
+
+
   const handleImportSong = async (item: UnifiedResult) => {
     // Create a unique key for this result
     const itemKey = item.spotifyId || item.youtubeId || `${item.title}-${item.artist}`;
@@ -198,6 +203,12 @@ export function SearchPage() {
       if (response.success && response.song) {
         setImportedItems(prev => new Map(prev).set(itemKey, response.song.id));
         console.log('Song imported successfully:', response.song);
+        
+        // Show success toast
+        toast({
+          title: "Song Imported Successfully",
+          description: `"${item.title}" by ${item.artist} is now available in Spokify.`,
+        });
       } else {
         const errorMessage = response.error || 'Import failed';
         setImportErrors(prev => new Map(prev).set(itemKey, errorMessage));
@@ -232,6 +243,8 @@ export function SearchPage() {
       });
     }
   };
+
+  
 
   const renderTrackCard = (item: UnifiedResult, isLarge: boolean = false) => {
     const itemKey = item.spotifyId || item.youtubeId || `${item.title}-${item.artist}`;
@@ -292,6 +305,14 @@ export function SearchPage() {
               {item.artist}
               {item.album && ` • ${item.album}`}
             </p>
+            
+            {/* Progress Badge */}
+            <div className="mt-2">
+              <ImportProgressBadge 
+                itemKey={itemKey}
+                isImporting={isImporting}
+              />
+            </div>
             
             {!isLarge && (
               <div className="flex items-center space-x-2 mt-1">
@@ -454,12 +475,11 @@ export function SearchPage() {
               placeholder="What do you want to learn?"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-full pl-10 pr-4 py-3 spotify-text-primary focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+              className="w-full rounded-full pl-10 pr-4 py-3 spotify-text-primary focus:outline-none focus:ring-2 focus:ring-spotify-green focus:ring-opacity-50 transition-all"
               style={{ 
                 backgroundColor: 'var(--spotify-light-gray)',
                 border: '1px solid var(--spotify-border)',
-                color: 'var(--spotify-text-primary)',
-                focusRing: '2px solid var(--spotify-green)'
+                color: 'var(--spotify-text-primary)'
               }}
             />
             {isLoading && (
@@ -656,12 +676,13 @@ export function SearchPage() {
       {/* Auth Modal for Authentication Required */}
       {showAuthModal && (
         <AuthModal
-          isOpen={showAuthModal}
           onClose={() => {
             setShowAuthModal(false);
             setSelectedSong(null);
           }}
-        />
+        >
+          <div></div>
+        </AuthModal>
       )}
     </div>
   );

@@ -5,8 +5,10 @@ import { useLocation } from "wouter";
 import BottomNavigation from "../components/bottom-navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ImportProgressBadge } from "@/components/import-progress";
 import { useMarquee } from "@/hooks/use-marquee";
 import { api } from "../lib/api-client";
+import { useToast } from "@/hooks/use-toast";
 
 interface SpotifyTrackResult {
   type: 'spotify';
@@ -61,6 +63,7 @@ export function AlbumPage() {
   const [importingItems, setImportingItems] = useState<Set<string>>(new Set());
   const [importedItems, setImportedItems] = useState<Map<string, number>>(new Map());
   const [importErrors, setImportErrors] = useState<Map<string, string>>(new Map());
+  const { toast } = useToast();
 
   const albumId = params?.albumId;
 
@@ -132,6 +135,12 @@ export function AlbumPage() {
       if (response.success && response.song) {
         setImportedItems(prev => new Map(prev).set(itemKey, response.song.id));
         console.log('Song imported successfully:', response.song);
+        
+        // Show success toast
+        toast({
+          title: "Song Imported Successfully",
+          description: `"${track.title}" by ${track.artist} is now available in Spokify.`,
+        });
       } else {
         setImportErrors(prev => new Map(prev).set(itemKey, response.error || 'Import failed'));
       }
@@ -196,6 +205,15 @@ export function AlbumPage() {
             <p className="text-spotify-muted text-xs sm:text-sm truncate">
               {track.artist}
             </p>
+            
+            {/* Progress Badge */}
+            <div className="mt-2">
+              <ImportProgressBadge 
+                itemKey={itemKey}
+                isImporting={isImporting}
+              />
+            </div>
+            
             <div className="flex items-center space-x-2 mt-1">
               <span className="text-xs text-spotify-muted">
                 {track.duration > 0 ? formatDuration(track.duration) : 'Duration unknown'}
