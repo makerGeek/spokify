@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { ArrowDown, Bookmark, BookmarkCheck, Languages, RotateCcw, Share2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Bookmark, BookmarkCheck, Languages, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -269,7 +269,10 @@ export default function LyricsOverlay({ songId, isVisible, onClose }: LyricsOver
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center space-x-2 bg-spotify-card rounded-full px-3 py-1">
-                    <RotateCcw size={14} className="text-spotify-muted" />
+                    <div className="flex flex-col items-center">
+                      <ArrowUp size={8} className="text-spotify-muted -mb-0.5" />
+                      <ArrowDown size={8} className="text-spotify-muted" />
+                    </div>
                     <Switch
                       checked={autoScroll}
                       onCheckedChange={setAutoScroll}

@@ -53,10 +53,17 @@ export default function SongCard({ song, onClick, onPremiumRequested, onActivati
       return;
     }
     
-    // User has access - play the song
+    // For new songs, do the same as card click: set song + auto-play + open lyrics
+    // Track song view and play events
+    trackSongView(song.id, song.title, song.artist, song.genre, song.language);
     trackEvent('song_played', 'music', song.title, song.id);
-    // Note: detailed song play tracking happens in use-audio.tsx when play actually starts
-    setCurrentSong(song, true); // Second parameter indicates auto-play
+    trackEvent('lyrics_opened', 'music', song.title, song.id);
+    
+    // Set as current song with auto-play
+    setCurrentSong(song, true);
+    
+    // Open lyrics overlay (same as card click)
+    onClick();
   };
 
   const handleCardClick = () => {
