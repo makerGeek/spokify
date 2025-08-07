@@ -149,6 +149,12 @@ export const api = {
   search: {
     music: (query: string, limit?: number) =>
       api.get(`/search?query=${encodeURIComponent(query)}&limit=${limit || 20}`),
+    comprehensive: (query: string, limit?: number) =>
+      api.get(`/search?query=${encodeURIComponent(query)}&limit=${limit || 20}&type=comprehensive`),
+    artistAlbums: (artistId: string, type?: 'album' | 'single') =>
+      api.get(`/search/artist/${artistId}/albums${type ? `?type=${type}` : ''}`),
+    albumTracks: (albumId: string) =>
+      api.get(`/search/album/${albumId}/tracks`),
   },
 };
 

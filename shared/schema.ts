@@ -45,6 +45,9 @@ export const songs = pgTable("songs", {
   youtubeId: text("youtube_id"),
   keyWords: jsonb("key_words"), // Object with key vocabulary translations
   isFree: boolean("is_free").notNull().default(false),
+  isDuplicate: boolean("is_duplicate").notNull().default(false), // Marks songs that are duplicates with different spotifyId
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const userProgress = pgTable("user_progress", {

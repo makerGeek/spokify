@@ -47,27 +47,70 @@ export interface SongImportData {
   albumCover: string | null;
 }
 
-export async function checkSongExists(title: string, artist: string, spotifyId?: string, youtubeId?: string): Promise<boolean> {
+export async function checkSongExists(title: string, artist: string, spotifyId?: string, youtubeId?: string): Promise<{
+  exists: boolean;
+  exactMatch: boolean;
+  isDuplicateWithDifferentId: boolean;
+  existingSong?: any;
+}> {
   try {
-    const conditions = [
-      and(eq(songs.title, title), eq(songs.artist, artist))
-    ];
-    
-    // Also check by Spotify ID if provided
+    // Check for exact Spotify ID match first
     if (spotifyId) {
-      conditions.push(eq(songs.spotifyId, spotifyId));
+      const exactSpotifyMatch = await db.select().from(songs).where(eq(songs.spotifyId, spotifyId)).limit(1);
+      if (exactSpotifyMatch.length > 0) {
+        return {
+          exists: true,
+          exactMatch: true,
+          isDuplicateWithDifferentId: false,
+          existingSong: exactSpotifyMatch[0]
+        };
+      }
     }
     
-    // Also check by YouTube ID if provided
+    // Check for exact YouTube ID match
     if (youtubeId) {
-      conditions.push(eq(songs.youtubeId, youtubeId));
+      const exactYouTubeMatch = await db.select().from(songs).where(eq(songs.youtubeId, youtubeId)).limit(1);
+      if (exactYouTubeMatch.length > 0) {
+        return {
+          exists: true,
+          exactMatch: true,
+          isDuplicateWithDifferentId: false,
+          existingSong: exactYouTubeMatch[0]
+        };
+      }
     }
     
-    const existingSong = await db.select().from(songs).where(or(...conditions)).limit(1);
-    return existingSong.length > 0;
+    // Check for title + artist match (potential duplicate with different IDs)
+    const titleArtistMatch = await db.select().from(songs).where(
+      and(eq(songs.title, title), eq(songs.artist, artist))
+    ).limit(1);
+    
+    if (titleArtistMatch.length > 0) {
+      const existing = titleArtistMatch[0];
+      // It's a duplicate if it has a different Spotify ID or no Spotify ID when we have one
+      const isDifferentSpotifyId = spotifyId && existing.spotifyId && existing.spotifyId !== spotifyId;
+      const isNewSpotifyId = spotifyId && !existing.spotifyId;
+      
+      return {
+        exists: true,
+        exactMatch: false,
+        isDuplicateWithDifferentId: isDifferentSpotifyId || isNewSpotifyId,
+        existingSong: existing
+      };
+    }
+    
+    return {
+      exists: false,
+      exactMatch: false,
+      isDuplicateWithDifferentId: false
+    };
   } catch (error) {
     console.error('Error checking if song exists:', error);
-    return false;
+    return {
+      exists: false,
+      exactMatch: false,
+      isDuplicateWithDifferentId: false
+    };
   }
 }
 
@@ -313,7 +356,7 @@ export async function uploadAudioToS3(audioUrl: string, title: string, artist: s
   return null;
 }
 
-export async function saveSongToDatabase(songData: SongImportData) {
+export async function saveSongToDatabase(songData: SongImportData & { isDuplicate?: boolean }) {
   try {
     // Convert lyrics with translations to the format expected by the database
     const formattedLyrics = songData.translatedLyrics || songData.lyrics.map(line => ({
@@ -340,7 +383,8 @@ export async function saveSongToDatabase(songData: SongImportData) {
       lyrics: formattedLyrics,
       spotifyId: songData.spotifyId,
       youtubeId: songData.youtubeId,
-      keyWords: songData.difficultyResult?.key_words || null
+      keyWords: songData.difficultyResult?.key_words || null,
+      isDuplicate: songData.isDuplicate || false
     };
 
     const [savedSong] = await db.insert(songs).values(songRecord).returning();
@@ -366,10 +410,15 @@ export async function importSpotifySong(spotifyData: {
   
   try {
     // Check if song already exists in database
-    const songExists = await checkSongExists(spotifyData.title, spotifyData.artist, spotifyData.spotifyId);
+    const existsResult = await checkSongExists(spotifyData.title, spotifyData.artist, spotifyData.spotifyId);
     
-    if (songExists) {
-      return { success: false, error: 'Song already exists in database' };
+    if (existsResult.exactMatch) {
+      return { success: false, error: 'Song already exists in database with the same Spotify ID' };
+    }
+    
+    const isDuplicate = existsResult.isDuplicateWithDifferentId;
+    if (isDuplicate) {
+      warnings.push(`Song "${spotifyData.title}" by "${spotifyData.artist}" already exists with different Spotify ID, importing as duplicate`);
     }
     
     // Fetch lyrics using Spotify track ID
@@ -421,8 +470,19 @@ export async function importSpotifySong(spotifyData: {
       }
     }
     
+    // Check if we already have this YouTube ID in database to avoid duplicate translation work
+    let existingYouTubeSong = null;
+    if (bestYouTubeId) {
+      const youtubeExistsResult = await checkSongExists('', '', undefined, bestYouTubeId);
+      if (youtubeExistsResult.exactMatch && youtubeExistsResult.existingSong) {
+        existingYouTubeSong = youtubeExistsResult.existingSong;
+        console.log(`🔄 Found existing YouTube match: copying translations from song ID ${existingYouTubeSong.id}`);
+        warnings.push(`Found YouTube match already in database - copying existing translations`);
+      }
+    }
+    
     // Fetch SoundCloud audio URL and duration
-    const soundcloudData = await fetchSoundCloudTrack(spotifyData.title, spotifyData.artist);
+    let soundcloudData = await fetchSoundCloudTrack(spotifyData.title, spotifyData.artist);
     
     if (!soundcloudData) {
       warnings.push('No SoundCloud audio found');
@@ -440,20 +500,36 @@ export async function importSpotifySong(spotifyData: {
     let translatedLyrics = null;
     let difficultyResult = null;
     
-    // Convert lyrics to string format for translation
-    const lyricsString = JSON.stringify(lyrics);
-    try {
-      translatedLyrics = await translateLyrics(lyricsString, "English");
-    } catch (error) {
-      warnings.push('Failed to translate lyrics');
-      console.error('Translation error:', error);
-    }
+    // If we found an existing song with same YouTube ID, copy its translations
+    if (existingYouTubeSong) {
+      translatedLyrics = existingYouTubeSong.lyrics;
+      difficultyResult = {
+        difficulty: existingYouTubeSong.difficulty,
+        genre: existingYouTubeSong.genre,
+        language: existingYouTubeSong.language,
+        key_words: existingYouTubeSong.keyWords
+      };
+      // Override SoundCloud duration with existing duration if not found
+      if (!soundcloudData && existingYouTubeSong.duration) {
+        soundcloudData = { audioUrl: '', duration: existingYouTubeSong.duration };
+      }
+      console.log(`📋 Copied translations and metadata from existing song`);
+    } else {
+      // Only translate if we don't have existing translations
+      const lyricsString = JSON.stringify(lyrics);
+      try {
+        translatedLyrics = await translateLyrics(lyricsString, "English");
+      } catch (error) {
+        warnings.push('Failed to translate lyrics');
+        console.error('Translation error:', error);
+      }
 
-    try {
-      difficultyResult = await assessLyricsDifficulty(lyrics, spotifyData.title, spotifyData.artist);
-    } catch (error) {
-      warnings.push('Failed to assess difficulty');
-      console.error('Difficulty assessment error:', error);
+      try {
+        difficultyResult = await assessLyricsDifficulty(lyrics, spotifyData.title, spotifyData.artist);
+      } catch (error) {
+        warnings.push('Failed to assess difficulty');
+        console.error('Difficulty assessment error:', error);
+      }
     }
     
     // Save to database
@@ -467,7 +543,8 @@ export async function importSpotifySong(spotifyData: {
       difficultyResult,
       soundcloudData,
       s3AudioUrl,
-      albumCover: spotifyData.albumCover
+      albumCover: spotifyData.albumCover,
+      isDuplicate
     });
     
     return {
@@ -502,10 +579,15 @@ export async function importSong(songName: string): Promise<{
     }
 
     // Check if song already exists in database
-    const songExists = await checkSongExists(spotifyResult.title, spotifyResult.artist, spotifyResult.spotifyId);
+    const existsResult = await checkSongExists(spotifyResult.title, spotifyResult.artist, spotifyResult.spotifyId);
     
-    if (songExists) {
-      return { success: false, error: 'Song already exists in database' };
+    if (existsResult.exactMatch) {
+      return { success: false, error: 'Song already exists in database with the same Spotify ID' };
+    }
+    
+    const isDuplicate = existsResult.isDuplicateWithDifferentId;
+    if (isDuplicate) {
+      warnings.push(`Song "${spotifyResult.title}" by "${spotifyResult.artist}" already exists with different Spotify ID, importing as duplicate`);
     }
     
     // Use Spotify track info for YouTube search to get better results
@@ -515,13 +597,15 @@ export async function importSong(songName: string): Promise<{
     if (!youtubeId) {
       warnings.push('No YouTube video found');
     }
-
-    // Check again if song exists with YouTube ID
+    
+    // Check if we already have this YouTube ID in database to avoid duplicate translation work
+    let existingYouTubeSong = null;
     if (youtubeId) {
-      const songExistsWithYouTube = await checkSongExists(spotifyResult.title, spotifyResult.artist, spotifyResult.spotifyId, youtubeId);
-      
-      if (songExistsWithYouTube) {
-        return { success: false, error: 'Song already exists in database with YouTube ID' };
+      const youtubeExistsResult = await checkSongExists('', '', undefined, youtubeId);
+      if (youtubeExistsResult.exactMatch && youtubeExistsResult.existingSong) {
+        existingYouTubeSong = youtubeExistsResult.existingSong;
+        console.log(`🔄 Found existing YouTube match: copying translations from song ID ${existingYouTubeSong.id}`);
+        warnings.push(`Found YouTube match already in database - copying existing translations`);
       }
     }
     
@@ -533,7 +617,7 @@ export async function importSong(songName: string): Promise<{
     }
     
     // Fetch SoundCloud audio URL and duration
-    const soundcloudData = await fetchSoundCloudTrack(spotifyResult.title, spotifyResult.artist);
+    let soundcloudData = await fetchSoundCloudTrack(spotifyResult.title, spotifyResult.artist);
     
     if (!soundcloudData) {
       warnings.push('No SoundCloud audio found');
@@ -551,20 +635,36 @@ export async function importSong(songName: string): Promise<{
     let translatedLyrics = null;
     let difficultyResult = null;
     
-    // Convert lyrics to string format for translation
-    const lyricsString = JSON.stringify(lyrics);
-    try {
-      translatedLyrics = await translateLyrics(lyricsString, "English");
-    } catch (error) {
-      warnings.push('Failed to translate lyrics');
-      console.error('Translation error:', error);
-    }
+    // If we found an existing song with same YouTube ID, copy its translations
+    if (existingYouTubeSong) {
+      translatedLyrics = existingYouTubeSong.lyrics;
+      difficultyResult = {
+        difficulty: existingYouTubeSong.difficulty,
+        genre: existingYouTubeSong.genre,
+        language: existingYouTubeSong.language,
+        key_words: existingYouTubeSong.keyWords
+      };
+      // Override SoundCloud duration with existing duration if not found
+      if (!soundcloudData && existingYouTubeSong.duration) {
+        soundcloudData = { audioUrl: '', duration: existingYouTubeSong.duration };
+      }
+      console.log(`📋 Copied translations and metadata from existing song`);
+    } else {
+      // Only translate if we don't have existing translations
+      const lyricsString = JSON.stringify(lyrics);
+      try {
+        translatedLyrics = await translateLyrics(lyricsString, "English");
+      } catch (error) {
+        warnings.push('Failed to translate lyrics');
+        console.error('Translation error:', error);
+      }
 
-    try {
-      difficultyResult = await assessLyricsDifficulty(lyrics, spotifyResult.title, spotifyResult.artist);
-    } catch (error) {
-      warnings.push('Failed to assess difficulty');
-      console.error('Difficulty assessment error:', error);
+      try {
+        difficultyResult = await assessLyricsDifficulty(lyrics, spotifyResult.title, spotifyResult.artist);
+      } catch (error) {
+        warnings.push('Failed to assess difficulty');
+        console.error('Difficulty assessment error:', error);
+      }
     }
     
     // Save to database
@@ -578,7 +678,8 @@ export async function importSong(songName: string): Promise<{
       difficultyResult,
       soundcloudData,
       s3AudioUrl,
-      albumCover: spotifyResult.albumCover
+      albumCover: spotifyResult.albumCover,
+      isDuplicate
     });
     
     return {

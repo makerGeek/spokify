@@ -150,7 +150,6 @@ async function processSong(song: any) {
   // Search for the track on Spotify
   const spotifyTrackId = await searchSpotifyTrack(song.title, song.artist);
   if (!spotifyTrackId) {
-    console.log('Could not find track on Spotify');
     return;
   }
   

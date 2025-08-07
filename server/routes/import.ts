@@ -53,6 +53,7 @@ router.post('/song', authenticateToken, async (req, res) => {
           albumCover: result.song.albumCover,
           spotifyId: result.song.spotifyId,
           youtubeId: result.song.youtubeId,
+          isDuplicate: result.song.isDuplicate,
           lyricsCount: result.song.lyrics?.length || 0,
           keyWordsCount: result.song.keyWords ? Object.keys(result.song.keyWords).length : 0
         },

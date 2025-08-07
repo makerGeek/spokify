@@ -14,6 +14,8 @@ import SmartRedirect from "@/components/smart-redirect";
 import LanguageSelection from "@/pages/language-selection";
 import Home from "@/pages/home";
 import { SearchPage } from "@/pages/search";
+import { ArtistPage } from "@/pages/artist";
+import { AlbumPage } from "@/pages/album";
 import Profile from "@/pages/profile";
 import Login from "@/pages/login";
 import ForgotPassword from "@/pages/forgot-password";
@@ -84,6 +86,8 @@ function Router() {
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/home" component={Home} />
         <Route path="/search" component={SearchPage} />
+        <Route path="/artist/:artistId" component={ArtistPage} />
+        <Route path="/album/:albumId" component={AlbumPage} />
         <Route path="/lyrics/:id" component={Home} />
         <Route path="/library">
           <AuthenticatedOnly contextMessage="Login to see your favorite songs and learned vocabulary">
