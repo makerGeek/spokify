@@ -1,4 +1,4 @@
-import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, dmcaRequests, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark, type DmcaRequest, type InsertDmcaRequest } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, dmcaRequests, contactSubmissions, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark, type DmcaRequest, type InsertDmcaRequest, type ContactSubmission, type InsertContactSubmission } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -47,6 +47,9 @@ export interface IStorage {
   getAllFeatureFlags(): Promise<FeatureFlag[]>;
   createFeatureFlag(featureFlag: InsertFeatureFlag): Promise<FeatureFlag>;
   updateFeatureFlag(name: string, updates: Partial<FeatureFlag>): Promise<FeatureFlag>;
+
+  // Contact submission methods
+  createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
 
 
 
@@ -697,6 +700,15 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return request;
+  }
+
+  // Contact submission methods implementation
+  async createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission> {
+    const [contactSubmission] = await db
+      .insert(contactSubmissions)
+      .values(submission)
+      .returning();
+    return contactSubmission;
   }
 
 }

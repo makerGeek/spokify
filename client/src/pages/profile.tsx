@@ -10,12 +10,15 @@ import {
   Download,
   Smartphone,
   Crown,
-
   Copy,
   Settings,
   Gift,
+  Mail,
+  Send,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 import { type User, type Vocabulary, type UserProgress } from "@shared/schema";
@@ -36,6 +39,12 @@ export default function Profile() {
     const saved = localStorage.getItem("reviewAutoNext");
     return saved ? JSON.parse(saved) : false;
   });
+
+  // Contact form state
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactSubject, setContactSubject] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
   // Use the user data from auth context instead of making another API call
   const userData = databaseUser;
@@ -192,6 +201,62 @@ export default function Profile() {
 
   const getInitials = (email: string) => {
     return email.charAt(0).toUpperCase();
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!contactSubject.trim() || !contactMessage.trim()) {
+      toast({
+        title: "Required Fields",
+        description: "Please fill in both subject and message.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (contactSubject.length > 200) {
+      toast({
+        title: "Subject Too Long",
+        description: "Subject must be less than 200 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (contactMessage.length > 2000) {
+      toast({
+        title: "Message Too Long",
+        description: "Message must be less than 2000 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmittingContact(true);
+
+    try {
+      await api.contact.submit(contactSubject.trim(), contactMessage.trim());
+      
+      toast({
+        title: "Message Sent!",
+        description: "We've received your message and will get back to you soon.",
+      });
+      
+      // Reset form
+      setContactSubject("");
+      setContactMessage("");
+      setShowContactForm(false);
+      
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.error || "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingContact(false);
+    }
   };
 
   const wordsLearned = vocabulary.length;
@@ -357,6 +422,96 @@ export default function Profile() {
               className="data-[state=checked]:bg-[var(--spotify-green)]"
             />
           </div>
+        </div>
+
+        {/* Contact Us Section */}
+        <div className="spotify-card-nohover p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Mail className="h-6 w-6 text-[var(--spotify-green)]" />
+              <div>
+                <h3 className="spotify-heading-md">Contact Us</h3>
+                <p className="spotify-text-secondary text-sm">
+                  Get in touch with our team
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {!showContactForm ? (
+            <Button
+              className="spotify-btn-primary w-full"
+              onClick={() => setShowContactForm(true)}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Send us a message
+            </Button>
+          ) : (
+            <form onSubmit={handleContactSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="subject" className="block text-sm font-medium spotify-text-primary mb-2">
+                  Subject
+                </label>
+                <Input
+                  id="subject"
+                  type="text"
+                  value={contactSubject}
+                  onChange={(e) => setContactSubject(e.target.value)}
+                  placeholder="What can we help you with?"
+                  maxLength={200}
+                  className="w-full bg-[var(--spotify-light-gray)] border-[var(--spotify-border)] spotify-text-primary"
+                />
+                <p className="text-xs spotify-text-muted mt-1">
+                  {contactSubject.length}/200 characters
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium spotify-text-primary mb-2">
+                  Message
+                </label>
+                <Textarea
+                  id="message"
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  placeholder="Tell us more about your question or feedback..."
+                  maxLength={2000}
+                  rows={5}
+                  className="w-full bg-[var(--spotify-light-gray)] border-[var(--spotify-border)] spotify-text-primary resize-none"
+                />
+                <p className="text-xs spotify-text-muted mt-1">
+                  {contactMessage.length}/2000 characters
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button
+                  type="submit"
+                  disabled={isSubmittingContact}
+                  className="spotify-btn-primary flex-1"
+                >
+                  {isSubmittingContact ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
+                  {isSubmittingContact ? 'Sending...' : 'Send Message'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowContactForm(false);
+                    setContactSubject("");
+                    setContactMessage("");
+                  }}
+                  className="spotify-btn-secondary px-6"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* Sign Out Section */}

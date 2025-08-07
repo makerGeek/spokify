@@ -128,6 +128,11 @@ export const api = {
 
   translate: (text: string, targetLanguage: string, fromLanguage: string = "es", songId?: number) => 
     api.post('/translate', { text, fromLanguage, toLanguage: targetLanguage, songId }),
+    
+  contact: {
+    submit: (subject: string, message: string) =>
+      api.post('/contact', { subject, message }),
+  },
 };
 
 export default apiClient;

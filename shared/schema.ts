@@ -87,6 +87,17 @@ export const featureFlags = pgTable("feature_flags", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const contactSubmissions = pgTable("contact_submissions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userEmail: text("user_email").notNull(),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  status: text("status").notNull().default("new"), // new, in_progress, resolved, closed
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 
 
 
@@ -191,6 +202,13 @@ export const insertBookmarkSchema = createInsertSchema(bookmarks).pick({
   songId: true,
 });
 
+export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).pick({
+  userId: true,
+  userEmail: true,
+  subject: true,
+  message: true,
+});
+
 // Review result schema for spaced repetition
 export const reviewResultSchema = z.object({
   answer: z.string().min(1), // User's selected answer
@@ -207,6 +225,8 @@ export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type UserProgress = typeof userProgress.$inferSelect;
 export type InsertVocabulary = z.infer<typeof insertVocabularySchema>;
 export type Vocabulary = typeof vocabulary.$inferSelect;
+export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
 export type FeatureFlag = typeof featureFlags.$inferSelect;
 

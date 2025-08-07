@@ -1088,6 +1088,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ received: true });
   });
 
+  // Contact submission endpoint
+  app.post('/api/contact', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const { subject, message } = req.body;
+      
+      if (!subject || !message) {
+        return res.status(400).json({ 
+          error: 'Subject and message are required' 
+        });
+      }
+
+      if (subject.length > 200) {
+        return res.status(400).json({ 
+          error: 'Subject must be less than 200 characters' 
+        });
+      }
+
+      if (message.length > 2000) {
+        return res.status(400).json({ 
+          error: 'Message must be less than 2000 characters' 
+        });
+      }
+
+      // Get the database user
+      const user = await storage.getUserByUsername(req.user.email);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Create the contact submission
+      await storage.createContactSubmission({
+        userId: user.id,
+        userEmail: user.email,
+        subject: subject.trim(),
+        message: message.trim()
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Your message has been sent successfully. We\'ll get back to you soon!' 
+      });
+
+    } catch (error: any) {
+      console.error('Contact submission error:', error);
+      res.status(500).json({ 
+        error: { 
+          message: error.message || 'Failed to submit contact form'
+        } 
+      });
+    }
+  });
+
 
   const httpServer = createServer(app);
   return httpServer;
