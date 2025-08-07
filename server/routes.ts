@@ -6,6 +6,8 @@ import { translateText } from "./services/gemini";
 import { insertUserSchema, insertUserProgressSchema, insertVocabularySchema, insertFeatureFlagSchema, insertBookmarkSchema, reviewResultSchema, insertDmcaRequestSchema } from "@shared/schema";
 import { authenticateToken, optionalAuth, rateLimit, requireAdmin, AuthenticatedRequest } from "./middleware/auth";
 import authRoutes from "./routes/auth";
+import importRoutes from "./routes/import";
+import searchRoutes from "./routes/search";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -71,6 +73,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Use new secure authentication routes
   app.use('/api/auth', authRoutes);
+  app.use('/api/import', importRoutes);
+  app.use('/api/search', searchRoutes);
   
   // User routes
   app.post("/api/users", async (req, res) => {

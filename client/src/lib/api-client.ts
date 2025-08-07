@@ -133,6 +133,23 @@ export const api = {
     submit: (subject: string, message: string) =>
       api.post('/contact', { subject, message }),
   },
+  
+  import: {
+    song: (songName: string) =>
+      api.post('/import/song', { songName }),
+    spotifySong: (data: {
+      spotifyId: string;
+      title: string;
+      artist: string;
+      albumCover?: string | null;
+    }) =>
+      api.post('/import/song', data),
+  },
+
+  search: {
+    music: (query: string, limit?: number) =>
+      api.get(`/search?query=${encodeURIComponent(query)}&limit=${limit || 20}`),
+  },
 };
 
 export default apiClient;
