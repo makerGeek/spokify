@@ -267,7 +267,7 @@ export async function getArtistAlbums(artistId: string, type: string = 'album'):
       // Filter out albums with no name or "Unknown Artist"
       const hasValidName = album.name && album.name.trim().length > 0;
       const hasValidArtist = album.artists?.[0]?.name && album.artists[0].name !== 'Unknown Artist';
-      return hasValidName && hasValidArtist;
+      return hasValidName || hasValidArtist;
     });
     
     console.log(`After filtering: ${validAlbums.length} valid albums`);

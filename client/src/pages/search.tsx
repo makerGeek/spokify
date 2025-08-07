@@ -3,10 +3,15 @@ import { Search as SearchIcon, Music, Loader2, Download, Play, AlertCircle, User
 import BottomNavigation from "../components/bottom-navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PremiumModal } from "@/components/premium-modal";
+import { AuthModal } from "@/components/auth-modal";
 import { api } from "../lib/api-client";
 import { useDebounce } from "../hooks/use-debounce";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
+import { useSongAccess } from "@/hooks/use-song-access";
+import { type Song } from "@shared/schema";
 
 interface UnifiedResult {
   title: string;
@@ -70,8 +75,13 @@ export function SearchPage() {
   const [importingItems, setImportingItems] = useState<Set<string>>(new Set());
   const [importedItems, setImportedItems] = useState<Map<string, number>>(new Map()); // Store item key -> song ID
   const [importErrors, setImportErrors] = useState<Map<string, string>>(new Map());
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { checkSongAccess } = useSongAccess();
   
   const debouncedQuery = useDebounce(query, 500);
 
@@ -140,6 +150,24 @@ export function SearchPage() {
     } catch {
       return dateString; // Fallback to original string if parsing fails
     }
+  };
+
+  const handleSongPlay = (song: Song) => {
+    const accessResult = checkSongAccess(song);
+    
+    if (!accessResult.canAccess) {
+      setSelectedSong(song);
+      
+      if (accessResult.requiresAuth) {
+        setShowAuthModal(true);
+      } else if (accessResult.requiresPremium) {
+        setShowPremiumModal(true);
+      }
+      return;
+    }
+
+    // User has access - navigate to lyrics
+    setLocation(`/lyrics/${song.id}`);
   };
 
   const handleImportSong = async (item: UnifiedResult) => {
@@ -215,11 +243,25 @@ export function SearchPage() {
     return (
       <Card 
         className={`song-card bg-spotify-card border-spotify-card cursor-pointer hover:bg-spotify-light-gray transition-colors ${isLarge ? 'p-6' : 'p-3'}`}
-        onClick={() => {
+        onClick={async () => {
           if (item.available && item.songId) {
-            setLocation(`/lyrics/${item.songId}`);
+            try {
+              // Fetch the full song object to check access
+              const song = await api.songs.getById(item.songId);
+              handleSongPlay(song);
+            } catch (error) {
+              console.error('Error fetching song:', error);
+              setLocation(`/lyrics/${item.songId}`);
+            }
           } else if (isImported && songId) {
-            setLocation(`/lyrics/${songId}`);
+            try {
+              // Fetch the full song object to check access
+              const song = await api.songs.getById(songId);
+              handleSongPlay(song);
+            } catch (error) {
+              console.error('Error fetching song:', error);
+              setLocation(`/lyrics/${songId}`);
+            }
           } else {
             handleImportSong(item);
           }
@@ -319,9 +361,16 @@ export function SearchPage() {
         <Button
           size="sm"
           className="w-10 h-10 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors p-0"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            setLocation(`/lyrics/${item.songId}`);
+            try {
+              // Fetch the full song object to check access
+              const song = await api.songs.getById(item.songId!);
+              handleSongPlay(song);
+            } catch (error) {
+              console.error('Error fetching song:', error);
+              setLocation(`/lyrics/${item.songId}`);
+            }
           }}
           title="Play song in Spokify"
         >
@@ -336,9 +385,16 @@ export function SearchPage() {
         <Button
           size="sm"
           className="w-10 h-10 bg-spotify-green rounded-full hover:bg-spotify-accent transition-colors p-0"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            setLocation(`/lyrics/${songId}`);
+            try {
+              // Fetch the full song object to check access
+              const song = await api.songs.getById(songId);
+              handleSongPlay(song);
+            } catch (error) {
+              console.error('Error fetching song:', error);
+              setLocation(`/lyrics/${songId}`);
+            }
           }}
           title="Play song in Spokify"
         >
@@ -584,6 +640,29 @@ export function SearchPage() {
       </div>
 
       <BottomNavigation currentPage="search" />
+
+      {/* Premium Modal for Premium Songs */}
+      {showPremiumModal && selectedSong && (
+        <PremiumModal
+          isOpen={showPremiumModal}
+          onClose={() => {
+            setShowPremiumModal(false);
+            setSelectedSong(null);
+          }}
+          song={selectedSong}
+        />
+      )}
+
+      {/* Auth Modal for Authentication Required */}
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => {
+            setShowAuthModal(false);
+            setSelectedSong(null);
+          }}
+        />
+      )}
     </div>
   );
 }
