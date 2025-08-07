@@ -537,21 +537,26 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Build Version */}
-        <div className="text-center pb-4">
-          <p className="text-xs text-spotify-muted opacity-60">
-            Build: {getBuildVersion()}
-          </p>
-        </div>
-
         {/* Logo */}
-        <div className="text-center pb-8">
+        <div className="text-center pb-4">
           <img
             src="/logo.png"
             alt="Spokify Logo"
             className="mx-auto"
             style={{ width: "40vw", maxWidth: "250px" }}
           />
+        </div>
+        {/* Build Version */}
+        <div className="text-center pb-4">
+          <p className="text-xs text-spotify-muted opacity-60">
+            Build: {getBuildVersion()}
+          </p>
+        </div>
+        {/* Made in France */}
+        <div className="text-center pb-8">
+          <p className="text-xs text-spotify-muted opacity-60">
+            Made in France
+          </p>
         </div>
       </div>
     </div>
