@@ -10,6 +10,7 @@ import { useMarquee } from "@/hooks/use-marquee";
 import { api } from "../lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 
+// Use the interface that matches the backend response
 interface SpotifyTrackResult {
   type: 'spotify';
   id: string;
@@ -22,6 +23,8 @@ interface SpotifyTrackResult {
   explicit: boolean;
   shareUrl: string;
   artists: any[];
+  songId?: number; // Database song ID if exists
+  available?: boolean; // True if song exists in our database
 }
 
 interface AlbumData {
@@ -167,7 +170,8 @@ export function AlbumPage() {
     const itemKey = track.id;
     const isImporting = importingItems.has(itemKey);
     const isImported = importedItems.has(itemKey);
-    const songId = importedItems.get(itemKey);
+    const songId = importedItems.get(itemKey) || track.songId;
+    const isAvailable = track.available || isImported;
     const hasError = importErrors.has(itemKey);
     const { textRef: titleRef, containerRef } = useMarquee({ text: track.title });
 
@@ -175,7 +179,7 @@ export function AlbumPage() {
       <Card 
         className="song-card bg-spotify-card border-spotify-card cursor-pointer hover:bg-spotify-light-gray transition-colors p-3"
         onClick={() => {
-          if (isImported && songId) {
+          if (isAvailable && songId) {
             setLocation(`/lyrics/${songId}`);
           } else {
             handleImportSong(track);
@@ -222,15 +226,15 @@ export function AlbumPage() {
           </div>
           
           <div className="flex items-center flex-shrink-0">
-            {renderActionButton(track, itemKey, isImporting, isImported, hasError, songId)}
+            {renderActionButton(track, itemKey, isImporting, isAvailable, hasError, songId)}
           </div>
         </CardContent>
       </Card>
     );
   };
 
-  const renderActionButton = (track: SpotifyTrackResult, itemKey: string, isImporting: boolean, isImported: boolean, hasError: boolean, songId?: number) => {
-    if (isImported && songId) {
+  const renderActionButton = (track: SpotifyTrackResult, itemKey: string, isImporting: boolean, isAvailable: boolean, hasError: boolean, songId?: number) => {
+    if (isAvailable && songId) {
       return (
         <Button
           size="sm"

@@ -70,9 +70,19 @@ type TabType = 'all' | 'tracks' | 'artists' | 'albums';
 
 
 export function SearchPage() {
-  const [query, setQuery] = useState('');
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { checkSongAccess } = useSongAccess();
+  
+  // Get URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q') || '';
+  const initialTab = (urlParams.get('tab') as TabType) || 'all';
+  
+  const [query, setQuery] = useState(initialQuery);
   const [searchResults, setSearchResults] = useState<ComprehensiveSearchResults | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('all');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importingItems, setImportingItems] = useState<Set<string>>(new Set());
@@ -81,12 +91,22 @@ export function SearchPage() {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const { checkSongAccess } = useSongAccess();
   
   const debouncedQuery = useDebounce(query, 500);
+
+  // Function to update URL parameters
+  const updateURL = useCallback((newQuery: string, newTab?: TabType) => {
+    const params = new URLSearchParams();
+    if (newQuery.trim()) {
+      params.set('q', newQuery.trim());
+    }
+    if (newTab && newTab !== 'all') {
+      params.set('tab', newTab);
+    }
+    
+    const newUrl = params.toString() ? `/search?${params.toString()}` : '/search';
+    window.history.replaceState(null, '', newUrl);
+  }, []);
 
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -123,6 +143,19 @@ export function SearchPage() {
     }
   }, []);
 
+  // Custom setter for query that updates URL
+  const setQueryWithURL = useCallback((newQuery: string) => {
+    setQuery(newQuery);
+    updateURL(newQuery, activeTab);
+  }, [activeTab, updateURL]);
+
+  // Custom setter for active tab that updates URL
+  const setActiveTabWithURL = useCallback((newTab: TabType) => {
+    setActiveTab(newTab);
+    updateURL(query, newTab);
+  }, [query, updateURL]);
+
+  // Effect to perform search when debounced query changes
   useEffect(() => {
     if (debouncedQuery) {
       performSearch(debouncedQuery);
@@ -130,6 +163,13 @@ export function SearchPage() {
       setSearchResults(null);
     }
   }, [debouncedQuery, performSearch]);
+
+  // Effect to perform search on initial load if query exists
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      performSearch(initialQuery.trim());
+    }
+  }, [initialQuery, performSearch]);
 
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -474,7 +514,7 @@ export function SearchPage() {
               type="text"
               placeholder="What do you want to learn?"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => setQueryWithURL(e.target.value)}
               className="w-full rounded-full pl-10 pr-4 py-3 spotify-text-primary focus:outline-none focus:ring-2 focus:ring-spotify-green focus:ring-opacity-50 transition-all"
               style={{ 
                 backgroundColor: 'var(--spotify-light-gray)',
@@ -511,7 +551,7 @@ export function SearchPage() {
               ].map(tab => (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key as TabType)}
+                  onClick={() => setActiveTabWithURL(tab.key as TabType)}
                   className={`pb-3 px-1 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
                     activeTab === tab.key
                       ? 'text-spotify-text border-spotify-green'
@@ -643,7 +683,7 @@ export function SearchPage() {
                 ].map((category) => (
                   <div
                     key={category.name}
-                    onClick={() => setQuery(category.name)}
+                    onClick={() => setQueryWithURL(category.name)}
                     className="rounded-lg aspect-square flex items-end p-4 cursor-pointer relative overflow-hidden transition-all hover:scale-105"
                     style={{ background: category.color }}
                   >
