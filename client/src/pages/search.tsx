@@ -541,29 +541,33 @@ export function SearchPage() {
 
         {query && !isLoading && searchResults && (
           <div className="max-w-6xl mx-auto">
-            {/* Tab Navigation */}
-            <div className="flex space-x-6 mb-6 border-b border-spotify-border overflow-x-auto">
-              {[
-                { key: 'all', label: 'All', count: searchResults.totalTracks + searchResults.totalAlbums + searchResults.totalArtists },
-                { key: 'tracks', label: 'Songs', count: searchResults.totalTracks },
-                { key: 'artists', label: 'Artists', count: searchResults.totalArtists },
-                { key: 'albums', label: 'Albums', count: searchResults.totalAlbums }
-              ].map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTabWithURL(tab.key as TabType)}
-                  className={`pb-3 px-1 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
-                    activeTab === tab.key
-                      ? 'text-spotify-text border-spotify-green'
-                      : 'text-spotify-muted border-transparent hover:text-spotify-text'
-                  }`}
-                >
-                  {tab.label}
-                  {tab.count > 0 && (
-                    <span className="ml-1 text-xs opacity-60">({tab.count})</span>
-                  )}
-                </button>
-              ))}
+            {/* Filter Pills */}
+            <div className="mb-6">
+              <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+                {[
+                  { key: 'all', label: 'All', count: searchResults.totalTracks + searchResults.totalAlbums + searchResults.totalArtists },
+                  { key: 'tracks', label: 'Songs', count: searchResults.totalTracks },
+                  { key: 'artists', label: 'Artists', count: searchResults.totalArtists },
+                  { key: 'albums', label: 'Albums', count: searchResults.totalAlbums }
+                ].map(tab => (
+                  <Button
+                    key={tab.key}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setActiveTabWithURL(tab.key as TabType)}
+                    className={`${
+                      activeTab === tab.key
+                        ? "genre-chip text-spotify-green" 
+                        : "bg-spotify-card text-spotify-muted hover:text-spotify-text"
+                    } whitespace-nowrap transition-colors`}
+                  >
+                    {tab.label}
+                    {tab.count > 0 && (
+                      <span className="ml-1 text-xs opacity-60">({tab.count})</span>
+                    )}
+                  </Button>
+                ))}
+              </div>
             </div>
 
             {/* All Tab - Show everything in sections */}
