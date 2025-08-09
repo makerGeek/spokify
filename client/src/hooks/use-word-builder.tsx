@@ -301,7 +301,16 @@ export function useWordBuilder({
   };
 
   const handleDrop = (word: string) => {
-    if (!currentSentence?.scrambledWords.includes(word) || builtSentence.includes(word)) return;
+    if (!currentSentence?.scrambledWords.includes(word)) return;
+    
+    // Count how many times this word appears in scrambledWords vs builtSentence
+    const availableCount = currentSentence.scrambledWords.filter(w => w === word).length;
+    const usedCount = builtSentence.filter(w => w === word).length;
+    
+    console.log('Drop word:', word, 'available:', availableCount, 'used:', usedCount);
+    
+    // Only allow if we haven't used all instances of this word
+    if (usedCount >= availableCount) return;
     
     setBuiltSentence(prev => [...prev, word]);
     setIsCorrect(null);
@@ -319,10 +328,40 @@ export function useWordBuilder({
     setIsCorrect(null);
   };
 
-  // Get available words (not yet used in built sentence)
+  // Get available words (considering word counts)
   const getAvailableWords = () => {
     if (!currentSentence) return [];
-    return currentSentence.scrambledWords.filter(word => !builtSentence.includes(word));
+    
+    // Create a list showing each available instance
+    const available: string[] = [];
+    const wordCounts: Record<string, { total: number; used: number }> = {};
+    
+    // Count total instances of each word
+    currentSentence.scrambledWords.forEach(word => {
+      if (!wordCounts[word]) {
+        wordCounts[word] = { total: 0, used: 0 };
+      }
+      wordCounts[word].total++;
+    });
+    
+    // Count used instances
+    builtSentence.forEach(word => {
+      if (wordCounts[word]) {
+        wordCounts[word].used++;
+      }
+    });
+    
+    // Add available instances to the list
+    Object.entries(wordCounts).forEach(([word, counts]) => {
+      const availableInstances = counts.total - counts.used;
+      for (let i = 0; i < availableInstances; i++) {
+        available.push(word);
+      }
+    });
+    
+    console.log('Available words calculation:', { wordCounts, available });
+    
+    return available;
   };
 
   // Check if built sentence is correct

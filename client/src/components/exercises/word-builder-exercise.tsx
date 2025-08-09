@@ -118,16 +118,26 @@ export function WordBuilderExercise({ vocabulary, targetLanguage, maxSentences =
               Available words:
             </h3>
             <div className="flex flex-wrap justify-center gap-3">
-              {availableWords.map((word, index) => (
-                <WordTile
-                  key={`${word}-${index}`}
-                  word={word}
-                  isDragging={draggedWord === word}
-                  onDragStart={() => handleDragStart(word)}
-                  onDragEnd={handleDragEnd}
-                  onClick={() => handleWordClick(word)}
-                />
-              ))}
+              {currentSentence?.scrambledWords.map((word, index) => {
+                // For each word position, check if this specific instance should be available
+                // We'll make words unavailable in order (first instances get used first)
+                const sameWords = currentSentence.scrambledWords
+                  .map((w, i) => ({ word: w, index: i }))
+                  .filter(item => item.word === word);
+                
+                const currentWordPosition = sameWords.findIndex(item => item.index === index);
+                const usedCount = builtSentence.filter(w => w === word).length;
+                const isAvailable = currentWordPosition < (sameWords.length - usedCount);
+                
+                return (
+                  <WordTile
+                    key={`${word}-${index}`}
+                    word={word}
+                    onClick={() => isAvailable ? handleWordClick(word) : undefined}
+                    disabled={!isAvailable}
+                  />
+                );
+              })}
             </div>
           </div>
 

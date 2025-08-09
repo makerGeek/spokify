@@ -3,29 +3,15 @@ import { X } from "lucide-react";
 
 interface DropZoneProps {
   words: string[];
-  onDrop: (word: string) => void;
   onRemoveWord: (index: number) => void;
   isCorrect: boolean | null;
 }
 
 export function DropZone({
   words,
-  onDrop,
   onRemoveWord,
   isCorrect
 }: DropZoneProps) {
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const word = e.dataTransfer.getData("text/plain");
-    if (word) {
-      onDrop(word);
-    }
-  };
 
   return (
     <div
@@ -41,12 +27,10 @@ export function DropZone({
         // Wrong answer
         isCorrect === false && "border-red-500 bg-red-500/10"
       )}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
     >
       {words.length === 0 ? (
         <div className="w-full text-center spotify-text-muted text-sm">
-          Drag words here or tap them to build your sentence
+          Tap words to build your sentence
         </div>
       ) : (
         words.map((word, index) => (

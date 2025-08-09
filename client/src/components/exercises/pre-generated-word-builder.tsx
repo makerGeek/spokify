@@ -18,7 +18,17 @@ interface PreGeneratedWordBuilderProps {
 export function PreGeneratedWordBuilder({ exerciseData, targetLanguage, onComplete }: PreGeneratedWordBuilderProps) {
   const [builtSentence, setBuiltSentence] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [draggedWord, setDraggedWord] = useState<string | null>(null);
+  
+  // Create word counts from scrambled words
+  const [wordCounts, setWordCounts] = useState<Record<string, number>>(() => {
+    console.log('Initializing wordCounts from scrambledWords:', exerciseData.scrambledWords);
+    const counts: Record<string, number> = {};
+    exerciseData.scrambledWords.forEach(word => {
+      counts[word] = (counts[word] || 0) + 1;
+    });
+    console.log('Initial wordCounts:', counts);
+    return counts;
+  });
 
   const correctSoundRef = useRef<HTMLAudioElement | null>(null);
   const wrongSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -98,30 +108,46 @@ export function PreGeneratedWordBuilder({ exerciseData, targetLanguage, onComple
     }
   };
 
-  // Get available words (not yet used in built sentence)
-  const availableWords = exerciseData.scrambledWords.filter(word => !builtSentence.includes(word));
-
-  const handleDragStart = (word: string) => {
-    setDraggedWord(word);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedWord(null);
-  };
-
-  const handleDrop = (word: string) => {
-    if (!exerciseData.scrambledWords.includes(word) || builtSentence.includes(word)) return;
+  const handleWordClick = (word: string) => {
+    console.log('Clicked word:', word);
+    console.log('Current wordCounts:', wordCounts);
+    console.log('Available count for this word:', wordCounts[word]);
     
-    setBuiltSentence(prev => [...prev, word]);
+    // Check if we have this word available
+    if (wordCounts[word] <= 0) {
+      console.log('Word not available, count is:', wordCounts[word]);
+      return;
+    }
+    
+    // Add word to built sentence and decrease its count
+    setBuiltSentence(prev => {
+      console.log('Adding to built sentence. Previous:', prev);
+      const newSentence = [...prev, word];
+      console.log('New built sentence:', newSentence);
+      return newSentence;
+    });
+    
+    setWordCounts(prev => {
+      console.log('Updating word counts. Previous:', prev);
+      const newCounts = {
+        ...prev,
+        [word]: prev[word] - 1
+      };
+      console.log('New word counts:', newCounts);
+      return newCounts;
+    });
+    
     setIsCorrect(null);
   };
 
-  const handleWordClick = (word: string) => {
-    handleDrop(word);
-  };
-
   const handleRemoveWord = (index: number) => {
+    // Get the word being removed and increase its count
+    const removedWord = builtSentence[index];
     setBuiltSentence(prev => prev.filter((_, i) => i !== index));
+    setWordCounts(prev => ({
+      ...prev,
+      [removedWord]: prev[removedWord] + 1
+    }));
     setIsCorrect(null);
   };
 
@@ -147,6 +173,12 @@ export function PreGeneratedWordBuilder({ exerciseData, targetLanguage, onComple
 
   const tryAgain = () => {
     setBuiltSentence([]);
+    // Reset word counts to original state
+    const counts: Record<string, number> = {};
+    exerciseData.scrambledWords.forEach(word => {
+      counts[word] = (counts[word] || 0) + 1;
+    });
+    setWordCounts(counts);
     setIsCorrect(null);
   };
 
@@ -182,7 +214,6 @@ export function PreGeneratedWordBuilder({ exerciseData, targetLanguage, onComple
         </h3>
         <DropZone
           words={builtSentence}
-          onDrop={handleDrop}
           onRemoveWord={handleRemoveWord}
           isCorrect={isCorrect}
         />
@@ -194,16 +225,30 @@ export function PreGeneratedWordBuilder({ exerciseData, targetLanguage, onComple
           Available words:
         </h3>
         <div className="flex flex-wrap justify-center gap-3">
-          {availableWords.map((word, index) => (
-            <WordTile
-              key={`${word}-${index}`}
-              word={word}
-              isDragging={draggedWord === word}
-              onDragStart={() => handleDragStart(word)}
-              onDragEnd={handleDragEnd}
-              onClick={() => handleWordClick(word)}
-            />
-          ))}
+          {Object.entries(wordCounts).map(([word, count]) => {
+            // Render each instance of the word
+            const usedCount = builtSentence.filter(w => w === word).length;
+            const totalToRender = count + usedCount;
+            console.log(`Rendering word "${word}": available=${count}, used=${usedCount}, total=${totalToRender}`);
+            
+            return Array.from({ length: totalToRender }, (_, index) => {
+              const isAvailable = index < count;
+              return (
+                <div key={`${word}-${index}`} className="inline-block">
+                  {isAvailable ? (
+                    <WordTile
+                      word={word}
+                      onClick={() => handleWordClick(word)}
+                    />
+                  ) : (
+                    <div className="px-4 py-2 rounded-lg border-2 border-dashed border-gray-600 text-transparent select-none cursor-default">
+                      {word}
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })}
         </div>
       </div>
 
