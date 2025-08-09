@@ -21,11 +21,12 @@ import Login from "@/pages/login";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Library from "@/pages/library";
-import Review from "@/pages/review";
+import Review from "@/pages/exercises/review";
 import ReviewSession from "@/pages/review-session";
-import ExerciseMatch from "@/pages/exercise-match";
-import ExerciseWordBuilder from "@/pages/exercise-word-builder";
-import ExerciseFillBlanks from "@/pages/exercise-fill-blanks";
+import ExerciseMatch from "@/pages/exercises/match";
+import ExerciseWordBuilder from "@/pages/exercises/word-builder";
+import ExerciseFillBlanks from "@/pages/exercises/fill-blanks";
+import ExerciseMix from "@/pages/exercises/mix";
 
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
@@ -68,7 +69,7 @@ function Router() {
     if (location === '/home') return 'home';
     if (location === '/search') return 'search';
     if (location === '/library') return 'library';
-    if (location === '/review' || location === '/review-session') return 'review';
+    if (location === '/exercise/review' || location === '/review-session') return 'review';
     if (location === '/profile') return 'profile';
     if (location.startsWith('/lyrics/')) return 'home'; // Lyrics player belongs to home flow
     return 'home';
@@ -101,7 +102,7 @@ function Router() {
             <Library />
           </AuthenticatedOnly>
         </Route>
-        <Route path="/review">
+        <Route path="/exercise/review">
           <AuthenticatedOnly contextMessage="Login to practice vocabulary with interactive quizzes">
             <Review />
           </AuthenticatedOnly>
@@ -124,6 +125,11 @@ function Router() {
         <Route path="/exercise/fill-blanks">
           <AuthenticatedOnly contextMessage="Login to play fill-in-the-blanks exercises">
             <ExerciseFillBlanks />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/exercise/mix">
+          <AuthenticatedOnly contextMessage="Login to play mixed exercise sessions">
+            <ExerciseMix />
           </AuthenticatedOnly>
         </Route>
         <Route path="/profile">

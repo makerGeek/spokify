@@ -42,6 +42,11 @@ export function useFillBlanks({
 
   // Initialize session with vocabulary that has good context
   const initializeGame = async () => {
+    console.log('🎮 INITIALIZE GAME:', { 
+      vocabularyCount: vocabulary?.length || 0, 
+      maxExercises 
+    });
+    
     if (!vocabulary || vocabulary.length === 0) return;
     
     setIsLoading(true);
@@ -55,6 +60,12 @@ export function useFillBlanks({
         vocab.songName
       );
       
+      console.log('🔍 VOCABULARY FILTERING:', {
+        totalVocab: vocabulary.length,
+        usableVocab: usableVocab.length,
+        usableItems: usableVocab.map(v => ({ word: v.word, song: v.songName }))
+      });
+      
       if (usableVocab.length === 0) {
         setIsLoading(false);
         return;
@@ -63,9 +74,25 @@ export function useFillBlanks({
       const shuffled = [...usableVocab].sort(() => Math.random() - 0.5);
       const selected = shuffled.slice(0, Math.min(maxExercises, usableVocab.length));
       
+      console.log('📝 SELECTED VOCABULARY:', selected.map(v => ({ 
+        word: v.word, 
+        song: v.songName, 
+        context: v.context?.substring(0, 50) + '...' 
+      })));
+      
       // Create exercises from vocabulary
       const exercisePromises = selected.map(vocab => createExercise(vocab));
       const exercises = (await Promise.all(exercisePromises)).filter(Boolean) as ExerciseData[];
+      
+      console.log('🏗️ EXERCISES CREATED:', {
+        requestedCount: selected.length,
+        createdCount: exercises.length,
+        exercises: exercises.map(ex => ({
+          song: ex.songName,
+          blanksCount: ex.blanks.length,
+          hintsCount: ex.hints.length
+        }))
+      });
       
       setSessionExercises(exercises);
       setCurrentExerciseIndex(0);
@@ -187,12 +214,32 @@ export function useFillBlanks({
 
   // Create exercise data from vocabulary by fetching song lyrics
   const createExercise = async (vocab: Vocabulary): Promise<ExerciseData | null> => {
-    if (!vocab.songId) return null;
+    console.log('🔨 CREATE EXERCISE START:', { 
+      word: vocab.word, 
+      songId: vocab.songId, 
+      songName: vocab.songName,
+      contextPreview: vocab.context?.substring(0, 50) + '...'
+    });
+    
+    if (!vocab.songId) {
+      console.log('❌ NO SONG ID:', { word: vocab.word });
+      return null;
+    }
     
     try {
       // Fetch the song with lyrics and translations
       const song = await api.songs.getById(vocab.songId);
-      if (!song.lyrics || !Array.isArray(song.lyrics)) return null;
+      console.log('🎵 SONG FETCHED:', { 
+        songId: vocab.songId, 
+        hasLyrics: !!song.lyrics, 
+        lyricsType: typeof song.lyrics, 
+        lyricsLength: Array.isArray(song.lyrics) ? song.lyrics.length : 'not array'
+      });
+      
+      if (!song.lyrics || !Array.isArray(song.lyrics)) {
+        console.log('❌ INVALID LYRICS:', { songId: vocab.songId, lyrics: song.lyrics });
+        return null;
+      }
       
       // Find the lyric line that contains our vocabulary context
       const contextLine = song.lyrics.find((lyric: any) => 
@@ -200,7 +247,18 @@ export function useFillBlanks({
         lyric.text.toLowerCase().includes(vocab.context.toLowerCase().substring(0, 15))
       );
       
-      if (!contextLine || !contextLine.translation) return null;
+      console.log('🔍 CONTEXT SEARCH:', {
+        searchFor: vocab.context?.substring(0, 15),
+        totalLyrics: song.lyrics.length,
+        foundLine: !!contextLine,
+        foundText: contextLine?.text,
+        foundTranslation: contextLine?.translation
+      });
+      
+      if (!contextLine || !contextLine.translation) {
+        console.log('❌ NO MATCHING CONTEXT LINE:', { word: vocab.word, context: vocab.context });
+        return null;
+      }
       
       // Use target language lyrics as the base text
       const targetSentence = contextLine.text;
@@ -259,14 +317,38 @@ export function useFillBlanks({
         }
       }
       
-      // Create hints: include correct answers + distractors
+      // Create hints: ensure at least 4 total choices in word bank
+      const minTotalChoices = 4;
+      const targetDistractorCount = Math.max(minTotalChoices - blanks.length, 3);
+      
+      // Get distractor words from vocabulary
       const distractorWords = vocabulary
         .filter(v => v.id !== vocab.id && v.language === vocab.language)
         .map(v => v.word)
         .filter(word => !blanks.includes(word))
-        .slice(0, Math.max(3, blanks.length * 2));
+        .slice(0, targetDistractorCount);
       
-      const hints = [...blanks, ...distractorWords].sort(() => Math.random() - 0.5);
+      // If we don't have enough distractors from vocabulary, add words from the same sentence
+      let additionalDistractors: string[] = [];
+      if (distractorWords.length < targetDistractorCount) {
+        const remainingNeeded = targetDistractorCount - distractorWords.length;
+        additionalDistractors = targetWords
+          .filter((word, index) => !wordsToBlank.has(index) && word.length > 2)
+          .filter(word => !blanks.includes(word) && !distractorWords.includes(word))
+          .slice(0, remainingNeeded);
+      }
+      
+      const allDistractors = [...distractorWords, ...additionalDistractors];
+      const hints = [...blanks, ...allDistractors].sort(() => Math.random() - 0.5);
+      
+      console.log('✅ EXERCISE CREATED SUCCESS:', {
+        word: vocab.word,
+        blanksCount: blanks.length,
+        hintsCount: hints.length,
+        blanks,
+        hints,
+        songName: vocab.songName || song.title || "Unknown Song"
+      });
       
       return {
         textWithBlanks,
@@ -278,7 +360,12 @@ export function useFillBlanks({
       };
       
     } catch (error) {
-      console.error('Failed to create fill-blanks exercise:', error);
+      console.error('❌ EXERCISE CREATION ERROR:', error);
+      console.log('🔍 ERROR CONTEXT:', { 
+        word: vocab.word, 
+        songId: vocab.songId, 
+        context: vocab.context 
+      });
       return null;
     }
   };
@@ -287,6 +374,16 @@ export function useFillBlanks({
   useEffect(() => {
     if (sessionExercises.length > 0 && currentExerciseIndex < sessionExercises.length) {
       const exerciseData = sessionExercises[currentExerciseIndex];
+      
+      console.log('🎯 EXERCISE LOADED:', {
+        exerciseIndex: currentExerciseIndex,
+        songName: exerciseData.songName,
+        blanksCount: exerciseData.blanks.length,
+        hintsCount: exerciseData.hints.length,
+        blanks: exerciseData.blanks,
+        hints: exerciseData.hints
+      });
+      
       setCurrentExercise(exerciseData);
       setUserAnswers({});
       setShowResults(false);
@@ -301,15 +398,33 @@ export function useFillBlanks({
 
   // Handle answer change
   const handleAnswerChange = (blankIndex: number, value: string) => {
-    setUserAnswers(prev => ({
-      ...prev,
-      [blankIndex]: value
-    }));
+    console.log('🔤 ANSWER CHANGE:', {
+      blankIndex,
+      value,
+      currentExerciseIndex,
+      exerciseName: currentExercise?.songName
+    });
+    
+    setUserAnswers(prev => {
+      const newAnswers = {
+        ...prev,
+        [blankIndex]: value
+      };
+      console.log('📝 USER ANSWERS UPDATED:', newAnswers);
+      return newAnswers;
+    });
   };
 
   // Submit answers and check results
   const handleSubmit = () => {
     if (!currentExercise) return;
+    
+    console.log('🚀 SUBMIT TRIGGERED:', {
+      currentExerciseIndex,
+      userAnswers,
+      totalBlanks: currentExercise.blanks.length,
+      exerciseName: currentExercise.songName
+    });
     
     const results: Record<number, boolean> = {};
     let correctCount = 0;
@@ -320,6 +435,15 @@ export function useFillBlanks({
         const correctAnswer = part.answer.toLowerCase().replace(/[^\w\u00C0-\u017F]/g, '');
         const isAnswerCorrect = userAnswer === correctAnswer;
         
+        console.log('🔍 ANSWER CHECK:', {
+          blankIndex: part.blankIndex,
+          userAnswer: userAnswers[part.blankIndex],
+          userAnswerProcessed: userAnswer,
+          correctAnswer: part.answer,
+          correctAnswerProcessed: correctAnswer,
+          isCorrect: isAnswerCorrect
+        });
+        
         results[part.blankIndex] = isAnswerCorrect;
         if (isAnswerCorrect) correctCount++;
       }
@@ -327,13 +451,29 @@ export function useFillBlanks({
     
     const allCorrect = correctCount === currentExercise.blanks.length;
     
+    console.log('📊 SUBMIT RESULTS:', {
+      results,
+      correctCount,
+      totalBlanks: currentExercise.blanks.length,
+      allCorrect,
+      currentProgress: completedExercises.size
+    });
+    
     setCorrectAnswers(results);
     setShowResults(true);
     setIsCorrect(allCorrect);
     
     // Mark exercise as completed when correct
     if (allCorrect) {
-      setCompletedExercises(prev => new Set([...prev, currentExerciseIndex]));
+      setCompletedExercises(prev => {
+        const newCompleted = new Set([...prev, currentExerciseIndex]);
+        console.log('✅ EXERCISE COMPLETED:', {
+          currentExerciseIndex,
+          completedBefore: prev.size,
+          completedAfter: newCompleted.size
+        });
+        return newCompleted;
+      });
     }
     
     playSound(allCorrect);
@@ -341,13 +481,32 @@ export function useFillBlanks({
 
   // Move to next exercise
   const nextExercise = () => {
+    console.log('➡️ NEXT EXERCISE:', {
+      currentIndex: currentExerciseIndex,
+      totalExercises: sessionExercises.length,
+      canMoveNext: currentExerciseIndex + 1 < sessionExercises.length
+    });
+    
     if (currentExerciseIndex + 1 < sessionExercises.length) {
-      setCurrentExerciseIndex(prev => prev + 1);
+      setCurrentExerciseIndex(prev => {
+        const newIndex = prev + 1;
+        console.log('🔄 EXERCISE INDEX CHANGED:', {
+          from: prev,
+          to: newIndex,
+          nextExerciseSong: sessionExercises[newIndex]?.songName
+        });
+        return newIndex;
+      });
     }
   };
 
   // Try again (reset current attempt)
   const tryAgain = () => {
+    console.log('🔄 TRY AGAIN:', {
+      currentExerciseIndex,
+      previousAnswers: userAnswers
+    });
+    
     setUserAnswers({});
     setShowResults(false);
     setCorrectAnswers({});
@@ -368,6 +527,14 @@ export function useFillBlanks({
     current: completedExercises.size,
     total: sessionExercises.length
   };
+  
+  console.log('📈 PROGRESS UPDATE:', {
+    currentExerciseIndex,
+    completedCount: completedExercises.size,
+    totalExercises: sessionExercises.length,
+    isComplete,
+    completedExercises: Array.from(completedExercises)
+  });
 
   return {
     currentExercise,

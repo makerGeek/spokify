@@ -36,7 +36,15 @@ export function useWordBuilder({
 
   // Initialize session by fetching song data and creating sentence pairs
   const initializeGame = async () => {
-    if (!vocabulary || vocabulary.length === 0) return;
+    console.log('🎮 WORD-BUILDER INIT START:', {
+      vocabularyCount: vocabulary?.length || 0,
+      maxSentences
+    });
+
+    if (!vocabulary || vocabulary.length === 0) {
+      console.log('❌ WORD-BUILDER: No vocabulary provided');
+      return;
+    }
     
     setIsLoading(true);
     
@@ -46,7 +54,18 @@ export function useWordBuilder({
         vocab.songId && vocab.context && vocab.context.length > 10
       );
       
+      console.log('🔍 WORD-BUILDER: Vocabulary filtering', {
+        totalVocab: vocabulary.length,
+        usableVocab: usableVocab.length,
+        usableItems: usableVocab.map(v => ({ 
+          word: v.word, 
+          songId: v.songId, 
+          contextLength: v.context?.length || 0 
+        }))
+      });
+      
       if (usableVocab.length === 0) {
+        console.log('❌ WORD-BUILDER: No usable vocabulary found');
         setIsLoading(false);
         return;
       }
@@ -54,9 +73,26 @@ export function useWordBuilder({
       const shuffled = [...usableVocab].sort(() => Math.random() - 0.5);
       const selected = shuffled.slice(0, Math.min(maxSentences, usableVocab.length));
       
+      console.log('📝 WORD-BUILDER: Selected vocabulary for sentences', {
+        selectedCount: selected.length,
+        maxSentences,
+        selected: selected.map(v => ({ word: v.word, songId: v.songId }))
+      });
+      
       // Create sentence data from vocabulary with song translations
       const sentencePromises = selected.map(vocab => createSentenceFromVocab(vocab));
       const sentences = (await Promise.all(sentencePromises)).filter(Boolean) as SentenceData[];
+      
+      console.log('🏗️ WORD-BUILDER: Sentences created', {
+        requestedCount: selected.length,
+        createdCount: sentences.length,
+        sentences: sentences.map(s => ({
+          gameMode: s.gameMode,
+          englishLength: s.englishSentence?.length || 0,
+          targetLength: s.targetSentence?.length || 0,
+          scrambledWordsCount: s.scrambledWords?.length || 0
+        }))
+      });
       
       setSessionSentences(sentences);
       setCurrentSentenceIndex(0);
@@ -64,7 +100,7 @@ export function useWordBuilder({
       setBuiltSentence([]);
       setIsCorrect(null);
     } catch (error) {
-      console.error('Failed to initialize word builder game:', error);
+      console.error('❌ WORD-BUILDER: Failed to initialize game:', error);
     } finally {
       setIsLoading(false);
     }
@@ -326,9 +362,20 @@ export function useWordBuilder({
     initializeGame();
   };
 
-  // Check if game is complete
-  const isComplete = (completedSentences.size === sessionSentences.length && sessionSentences.length > 0) || 
-                     (currentSentenceIndex >= sessionSentences.length && completedSentences.size === sessionSentences.length);
+  // Check if game is complete - only when we have sentences and they're all completed
+  const isComplete = sessionSentences.length > 0 && 
+                     completedSentences.size === sessionSentences.length;
+  
+  // Log completion state changes
+  useEffect(() => {
+    console.log('📊 WORD-BUILDER: Completion state update', {
+      sessionSentencesLength: sessionSentences.length,
+      completedSentencesSize: completedSentences.size,
+      currentSentenceIndex,
+      isComplete,
+      completedIds: Array.from(completedSentences)
+    });
+  }, [isComplete, sessionSentences.length, completedSentences.size, currentSentenceIndex]);
   
   // Calculate progress
   const progress = {
