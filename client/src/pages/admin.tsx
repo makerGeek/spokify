@@ -284,7 +284,7 @@ export default function Admin() {
                   <Card className="bg-spotify-bg border-spotify-muted">
                     <CardHeader>
                       <CardTitle className="text-spotify-text text-lg">
-                        Modified Timestamps {previewMode && <span className="text-spotify-green">(Preview)</span>}
+                        Modified Timestamps {previewMode && <span>(Preview)</span>}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -292,7 +292,7 @@ export default function Admin() {
                         {modifiedLyrics.slice(0, 10).map((line: any, index: number) => (
                           <div key={index} className="flex items-center justify-between p-2 bg-spotify-card rounded">
                             <span className="text-spotify-text text-sm flex-1 mr-2">{line.text}</span>
-                            <span className={`text-xs font-mono ${previewMode ? 'text-spotify-green' : 'text-spotify-muted'}`}>
+                            <span className={`text-xs font-mono text-spotify-muted`}>
                               {formatTime(line.timestamp)}
                             </span>
                           </div>

@@ -24,7 +24,7 @@ export default function LyricsOverlayIOS({ songId, isVisible, onClose }: LyricsO
   const [showTranslation, setShowTranslation] = useState(false);
   const [selectedLine, setSelectedLine] = useState<any>(null);
   const [showTranslationMode, setShowTranslationMode] = useState(true);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [autoScroll, setAutoScroll] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldSlideUp, setShouldSlideUp] = useState(false);
   const [youtubeContainerId, setYoutubeContainerId] = useState<string | null>(null);

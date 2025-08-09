@@ -58,7 +58,7 @@ export function WordBuilderExercise({ vocabulary, targetLanguage, maxSentences =
       {!mixMode && !hideHeader && (
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="spotify-heading-lg">Word Builder</h1>
+            <h1 className="spotify-heading-lg">Phrase Builder</h1>
           </div>
         </div>
       )}

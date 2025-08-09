@@ -101,7 +101,7 @@ export default function ExerciseWordBuilder() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="text-center">
-              <h1 className="spotify-heading-lg">Word Builder</h1>
+              <h1 className="spotify-heading-lg">Phrase Builder</h1>
             </div>
             <div className="w-8"></div>
           </div>

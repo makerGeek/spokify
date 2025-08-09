@@ -29,8 +29,8 @@ export default function ExerciseSelection() {
     },
     {
       id: "word-builder",
-      name: "Word Builder",
-      description: "Build words or sentences from scrambled letters.",
+      name: "Phrase Builder",
+      description: "Build phrases or sentences from scrambled words.",
       icon: SpellCheck,
       path: "/exercise/word-builder",
     },
