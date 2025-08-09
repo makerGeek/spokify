@@ -199,7 +199,11 @@ async function importSongs(filePath: string, options: ImportOptions = {}) {
               // Only include fields that exist in the current schema
               Object.keys(songData).forEach(key => {
                 if (key in songs && key !== 'id') {
-                  updateData[key] = songData[key];
+                  let value = songData[key];
+                  if ((key === 'createdAt' || key === 'updatedAt') && typeof value === 'string') {
+                    value = new Date(value);
+                  }
+                  updateData[key] = value;
                 }
               });
               
@@ -230,7 +234,11 @@ async function importSongs(filePath: string, options: ImportOptions = {}) {
           
           Object.keys(songData).forEach(key => {
             if (key in songs && key !== 'id') {
-              insertData[key] = songData[key];
+              let value = songData[key];
+              if ((key === 'createdAt' || key === 'updatedAt') && typeof value === 'string') {
+                value = new Date(value);
+              }
+              insertData[key] = value;
             }
           });
           
