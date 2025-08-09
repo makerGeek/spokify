@@ -173,14 +173,6 @@ export default function ReviewSession() {
                 <p className="spotify-text-muted text-sm max-h-[870px]:text-xs">Review due vocabulary</p>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-[var(--spotify-green)] font-semibold text-lg">
-                {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
-              </div>
-              <div className="text-xs max-h-[870px]:text-[11px] spotify-text-muted">
-                {score.correct}/{score.total} correct
-              </div>
-            </div>
           </div>
 
           {/* Progress Bar */}
@@ -210,26 +202,6 @@ export default function ReviewSession() {
                 <Trophy className="mx-auto spotify-text-accent mb-4 max-h-[870px]:mb-3" size={64} />
                 <h2 className="spotify-heading-md max-h-[870px]:text-lg max-h-[870px]:font-bold mb-4 max-h-[870px]:mb-3">Session Complete!</h2>
                 
-                {/* Stats */}
-                <div className="mb-6 max-h-[870px]:mb-4">
-                  <div className="text-4xl max-h-[870px]:text-3xl font-bold text-[var(--spotify-green)] mb-2 max-h-[870px]:mb-1">
-                    {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
-                  </div>
-                  <div className="spotify-text-muted mb-4 max-h-[870px]:mb-3 text-sm max-h-[870px]:text-xs">
-                    {score.correct} out of {score.total} correct
-                  </div>
-                  
-                  {/* Performance message */}
-                  <div className="spotify-text-muted text-sm max-h-[870px]:text-xs">
-                    {score.total > 0 && (
-                      <>
-                        {Math.round((score.correct / score.total) * 100) >= 80 && "Excellent work! 🎉"}
-                        {Math.round((score.correct / score.total) * 100) >= 60 && Math.round((score.correct / score.total) * 100) < 80 && "Good job! Keep it up! 👍"}
-                        {Math.round((score.correct / score.total) * 100) < 60 && "Keep practicing, you're getting there! 💪"}
-                      </>
-                    )}
-                  </div>
-                </div>
 
                 {/* Action buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 max-h-[870px]:gap-2 justify-center">

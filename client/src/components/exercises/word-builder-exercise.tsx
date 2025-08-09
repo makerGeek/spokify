@@ -12,9 +12,10 @@ interface WordBuilderExerciseProps {
   maxSentences?: number;
   mixMode?: boolean;
   onMixComplete?: () => void;
+  hideHeader?: boolean;
 }
 
-export function WordBuilderExercise({ vocabulary, targetLanguage, maxSentences = 5, mixMode = false, onMixComplete }: WordBuilderExerciseProps) {
+export function WordBuilderExercise({ vocabulary, targetLanguage, maxSentences = 5, mixMode = false, onMixComplete, hideHeader = false }: WordBuilderExerciseProps) {
   const [, setLocation] = useLocation();
 
   const {
@@ -54,18 +55,22 @@ export function WordBuilderExercise({ vocabulary, targetLanguage, maxSentences =
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header - only show in regular mode */}
-      {!mixMode && (
+      {!mixMode && !hideHeader && (
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="spotify-heading-lg">Word Builder</h1>
           </div>
-          <div className="text-right">
-            <div className="text-[var(--spotify-green)] font-semibold text-lg">
-              {progress.current}/{progress.total}
-            </div>
-            <div className="text-xs spotify-text-muted">
-              completed
-            </div>
+        </div>
+      )}
+
+      {/* Progress Bar - only show in regular mode and when not complete */}
+      {!mixMode && !isComplete && (
+        <div className="mb-6">
+          <div className="w-full bg-[var(--spotify-light-gray)] rounded-full h-2">
+            <div 
+              className="bg-[var(--spotify-green)] h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${(progress.current / progress.total) * 100}%` }}
+            />
           </div>
         </div>
       )}
@@ -202,11 +207,11 @@ export function WordBuilderExercise({ vocabulary, targetLanguage, maxSentences =
                 <span>Play Again</span>
               </button>
               <button
-                onClick={() => setLocation("/home")}
+                onClick={() => window.history.back()}
                 className="flex items-center justify-center space-x-2 spotify-btn-secondary"
               >
                 <Home className="h-4 w-4" />
-                <span>Back to Home</span>
+                <span>Back</span>
               </button>
             </div>
           </div>

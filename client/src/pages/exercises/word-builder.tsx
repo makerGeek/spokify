@@ -61,7 +61,7 @@ export default function ExerciseWordBuilder() {
             {/* Header with back button */}
             <div className="flex items-center justify-between mb-6">
               <button
-                onClick={() => setLocation('/home')}
+                onClick={() => window.history.back()}
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -76,7 +76,7 @@ export default function ExerciseWordBuilder() {
                 You need vocabulary words with context (from song lyrics) to play the sentence builder game. Learn more songs to unlock this exercise!
               </p>
               <button
-                onClick={() => setLocation('/home')}
+                onClick={() => window.history.back()}
                 className="spotify-btn-primary"
               >
                 Discover Songs
@@ -95,17 +95,22 @@ export default function ExerciseWordBuilder() {
           {/* Header with back button */}
           <div className="flex items-center justify-between mb-6">
             <button
-              onClick={() => setLocation('/home')}
+              onClick={() => window.history.back()}
               className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
+            <div className="text-center">
+              <h1 className="spotify-heading-lg">Word Builder</h1>
+            </div>
+            <div className="w-8"></div>
           </div>
 
           <WordBuilderExercise 
             vocabulary={vocabulary} 
             targetLanguage={targetLanguage} 
             maxSentences={5} 
+            hideHeader
           />
         </div>
       </div>

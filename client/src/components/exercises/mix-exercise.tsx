@@ -2,7 +2,7 @@ import { MatchExercise } from "./match-exercise";
 import { PreGeneratedReview } from "./pre-generated-review";
 import { PreGeneratedWordBuilder } from "./pre-generated-word-builder";
 import { PreGeneratedFillBlanks } from "./pre-generated-fill-blanks";
-import { type PreGeneratedExercise, type ExerciseType } from "@/hooks/use-mix-session";
+import { type PreGeneratedExercise } from "@/hooks/use-mix-session";
 
 interface MixExerciseProps {
   exercise: PreGeneratedExercise;
@@ -13,9 +13,10 @@ interface MixExerciseProps {
     total: number;
     percentage: number;
   };
+  hideInternalProgress?: boolean;
 }
 
-export function MixExerciseComponent({ exercise, targetLanguage, onComplete, progress }: MixExerciseProps) {
+export function MixExerciseComponent({ exercise, targetLanguage, onComplete, progress, hideInternalProgress = false }: MixExerciseProps) {
   // Handle completion immediately without delay since exercises are pre-generated
   const handleExerciseComplete = () => {
     console.log('🎯 MIX EXERCISE: Exercise completed', {
@@ -31,8 +32,8 @@ export function MixExerciseComponent({ exercise, targetLanguage, onComplete, pro
   const renderProgressBar = () => (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm spotify-text-muted">Mixed Exercise Session</span>
-        <span className="text-sm spotify-text-muted">{progress.current + 1}/{progress.total}</span>
+        <span className="text-sm spotify-text-muted"></span>
+        <span className="text-sm spotify-text-muted"></span>
       </div>
       <div className="w-full bg-[var(--spotify-light-gray)] rounded-full h-2">
         <div 
@@ -48,7 +49,7 @@ export function MixExerciseComponent({ exercise, targetLanguage, onComplete, pro
       case 'review':
         return (
           <div className="max-w-4xl mx-auto">
-            {renderProgressBar()}
+            {!hideInternalProgress && renderProgressBar()}
             <PreGeneratedReview 
               key={exercise.id} // Force new component instance for each exercise
               exerciseData={exercise.data}
@@ -60,7 +61,7 @@ export function MixExerciseComponent({ exercise, targetLanguage, onComplete, pro
       case 'match':
         return (
           <div className="max-w-4xl mx-auto">
-            {renderProgressBar()}
+            {!hideInternalProgress && renderProgressBar()}
             <PreGeneratedMatchExercise 
               key={exercise.id} // Force new component instance for each exercise
               exerciseData={exercise.data}
@@ -73,7 +74,7 @@ export function MixExerciseComponent({ exercise, targetLanguage, onComplete, pro
       case 'word-builder':
         return (
           <div className="max-w-4xl mx-auto">
-            {renderProgressBar()}
+            {!hideInternalProgress && renderProgressBar()}
             <PreGeneratedWordBuilder 
               key={exercise.id} // Force new component instance for each exercise
               exerciseData={exercise.data}
@@ -86,12 +87,13 @@ export function MixExerciseComponent({ exercise, targetLanguage, onComplete, pro
       case 'fill-blanks':
         return (
           <div className="max-w-4xl mx-auto">
-            {renderProgressBar()}
+            {!hideInternalProgress && renderProgressBar()}
             <PreGeneratedFillBlanks 
               key={exercise.id} // Force new component instance for each exercise
               exerciseData={exercise.data}
               targetLanguage={targetLanguage}
               onComplete={handleExerciseComplete}
+              vocabulary={exercise.vocabulary}
             />
           </div>
         );

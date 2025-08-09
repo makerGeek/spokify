@@ -11,9 +11,10 @@ interface ReviewExerciseProps {
   maxQuestions?: number;
   mixMode?: boolean;
   onMixComplete?: () => void;
+  hideHeader?: boolean;
 }
 
-export function ReviewExercise({ vocabulary, maxQuestions = 10, mixMode = false, onMixComplete }: ReviewExerciseProps) {
+export function ReviewExercise({ vocabulary, maxQuestions = 10, mixMode = false, onMixComplete, hideHeader = false }: ReviewExerciseProps) {
   const [, setLocation] = useLocation();
 
   const {
@@ -49,30 +50,24 @@ export function ReviewExercise({ vocabulary, maxQuestions = 10, mixMode = false,
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header - only show in regular mode */}
-      {!mixMode && (
-        <>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="spotify-heading-lg">Vocabulary Review</h1>
-              <p className="spotify-text-muted">Test your knowledge</p>
-            </div>
-            <div className="text-right">
-              <div className="text-[var(--spotify-green)] font-semibold text-lg">
-                {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
-              </div>
-              <div className="text-xs spotify-text-muted">
-                {score.correct}/{score.total} correct
-              </div>
-            </div>
+      {!mixMode && !hideHeader && (
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="spotify-heading-lg">Vocabulary Review</h1>
           </div>
+          <div className="text-right"></div>
+        </div>
+      )}
 
-          {/* Progress Bar */}
+      {/* Progress Bar - show when not in mix mode, positioned right after header */}
+      {!mixMode && (
+        <div className="mb-6">
           <ReviewProgress 
             current={progress.current} 
             total={progress.total} 
-            className="mb-6" 
           />
-        </>
+          {/* Stats section when header is hidden removed per request */}
+        </div>
       )}
 
       {/* Question Card */}
@@ -97,9 +92,6 @@ export function ReviewExercise({ vocabulary, maxQuestions = 10, mixMode = false,
             
             {/* Stats */}
             <div className="mb-6">
-              <div className="text-4xl font-bold text-[var(--spotify-green)] mb-2">
-                {score.total > 0 ? `${Math.round((score.correct / score.total) * 100)}%` : "0%"}
-              </div>
               <div className="spotify-text-muted mb-4">
                 {score.correct} out of {score.total} correct
               </div>
@@ -126,11 +118,11 @@ export function ReviewExercise({ vocabulary, maxQuestions = 10, mixMode = false,
                 <span>Start Another Session</span>
               </button>
               <button
-                onClick={() => setLocation("/home")}
+                onClick={() => window.history.back()}
                 className="flex items-center justify-center space-x-2 spotify-btn-secondary"
               >
                 <Home className="h-4 w-4" />
-                <span>Back to Home</span>
+                <span>Back</span>
               </button>
             </div>
           </div>

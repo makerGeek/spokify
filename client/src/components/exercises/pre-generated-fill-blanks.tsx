@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { CheckCircle, Music } from "lucide-react";
 import { BlankInput } from "@/components/exercise/blank-input";
+import { type Vocabulary } from "@shared/schema";
 
 interface PreGeneratedFillBlanksProps {
   exerciseData: {
@@ -12,9 +13,10 @@ interface PreGeneratedFillBlanksProps {
   };
   targetLanguage: string;
   onComplete: () => void;
+  vocabulary?: Vocabulary[];
 }
 
-export function PreGeneratedFillBlanks({ exerciseData, targetLanguage, onComplete }: PreGeneratedFillBlanksProps) {
+export function PreGeneratedFillBlanks({ exerciseData, targetLanguage, onComplete, vocabulary }: PreGeneratedFillBlanksProps) {
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -142,18 +144,23 @@ export function PreGeneratedFillBlanks({ exerciseData, targetLanguage, onComplet
     setIsCorrect(false);
   };
 
+  const difficulty = vocabulary && vocabulary.length > 0 ? vocabulary[0].difficulty : 'A1';
+
   return (
     <div>
-      {/* Song info */}
-      <div className="flex items-center justify-center mb-6">
-        <div className="flex items-center space-x-2 spotify-text-muted text-sm">
-          <Music size={18} className="text-[var(--spotify-green)]" />
-          <span>From: {exerciseData.songName}</span>
-        </div>
-      </div>
-
-      {/* Exercise card */}
+      {/* Exercise card with header row like Review */}
       <div className="spotify-card p-6 mb-8">
+        {/* Header row: song left, level right */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <Music size={18} className="text-[var(--spotify-green)]" />
+            <span className="spotify-text-muted text-sm">From: {exerciseData.songName}</span>
+          </div>
+          <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-xs font-medium">
+            {difficulty}
+          </div>
+        </div>
+
         <div className="text-center mb-6">
           <p className="spotify-text-muted text-sm mb-2">
             Complete the {targetLanguage === 'es' ? 'Spanish' : targetLanguage === 'fr' ? 'French' : targetLanguage === 'de' ? 'German' : 'target language'} lyrics:
@@ -222,35 +229,21 @@ export function PreGeneratedFillBlanks({ exerciseData, targetLanguage, onComplet
         </div>
       )}
 
-      {/* Results */}
+      {/* Results section */}
       {showResults && (
         <div className="text-center mb-6">
-          {isCorrect ? (
-            <div className="text-green-400 mb-4">
-              <CheckCircle className="mx-auto mb-2" size={32} />
-              <p className="spotify-text-primary font-semibold">Excellent! All correct!</p>
-            </div>
-          ) : (
-            <div className="text-orange-400 mb-4">
-              <p className="spotify-text-primary font-semibold">
-                {Object.values(correctAnswers).filter(Boolean).length} out of {exerciseData.blanks.length} correct
-              </p>
-            </div>
-          )}
-          
-          {/* English translation */}
-          <div className="mb-6 p-4 bg-[var(--spotify-light-gray)] rounded-lg">
-            <p className="spotify-text-muted text-sm mb-2">English translation:</p>
-            <p className="spotify-text-primary italic">"{exerciseData.englishTranslation}"</p>
+          <div className="flex items-center justify-center mb-4">
+            {isCorrect ? (
+              <>
+                <CheckCircle className="text-green-500 mr-2" />
+                <span className="spotify-text-primary font-semibold">All blanks correct! 🎉</span>
+              </>
+            ) : (
+              <span className="spotify-text-muted">Some answers are incorrect. Try again!</span>
+            )}
           </div>
-          
           {!isCorrect && (
-            <button
-              onClick={tryAgain}
-              className="spotify-btn-secondary"
-            >
-              Try Again
-            </button>
+            <button onClick={tryAgain} className="spotify-btn-secondary">Try Again</button>
           )}
         </div>
       )}

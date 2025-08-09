@@ -44,7 +44,7 @@ export default function Review() {
             {/* Header with back button */}
             <div className="flex items-center justify-between mb-6">
               <button
-                onClick={() => setLocation('/home')}
+                onClick={() => window.history.back()}
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -76,16 +76,20 @@ export default function Review() {
       <div className="min-h-screen spotify-bg pb-20">
         <div className="p-6">
           {/* Header with back button */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => setLocation('/home')}
+              onClick={() => window.history.back()}
               className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
+            <div className="text-center">
+              <h1 className="spotify-heading-lg">Vocabulary Review</h1>
+            </div>
+            <div className="w-8"></div> {/* Spacer for centering */}
           </div>
 
-          <ReviewExercise vocabulary={vocabulary} maxQuestions={10} />
+          <ReviewExercise vocabulary={vocabulary} maxQuestions={10} hideHeader />
         </div>
       </div>
     </AuthenticatedOnly>

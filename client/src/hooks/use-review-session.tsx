@@ -237,7 +237,7 @@ export function useReviewSession({
     if (autoNext) {
       timeoutRef.current = setTimeout(() => {
         handleNextQuestion();
-      }, 2000);
+      }, 1000);
     }
   };
 

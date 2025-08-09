@@ -190,9 +190,6 @@ export function PreGeneratedReview({ exerciseData, onComplete }: PreGeneratedRev
               )}
               
               <div className="flex flex-col items-center">
-                <div className="spotify-text-muted text-sm max-h-[870px]:text-xs mb-2 max-h-[870px]:mb-1">
-                  Next exercise in 1.5s...
-                </div>
                 <div className="w-24 max-h-[870px]:w-20 h-1 bg-[var(--spotify-light-gray)] rounded-full overflow-hidden">
                   <div className="h-full bg-[var(--spotify-green)] animate-[progress_1.5s_linear_forwards]"></div>
                 </div>

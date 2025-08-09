@@ -76,7 +76,7 @@ export default function ExerciseMix() {
             {/* Header with back button */}
             <div className="flex items-center justify-between mb-6">
               <button
-                onClick={() => setLocation('/home')}
+                onClick={() => window.history.back()}
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -91,7 +91,7 @@ export default function ExerciseMix() {
                 You need at least 5 vocabulary words to start a mixed exercise session. Learn more songs to unlock this feature!
               </p>
               <button
-                onClick={() => setLocation('/home')}
+                onClick={() => window.history.back()}
                 className="spotify-btn-primary"
               >
                 Discover Songs
@@ -111,7 +111,7 @@ export default function ExerciseMix() {
             {/* Header with back button */}
             <div className="flex items-center justify-between mb-6">
               <button
-                onClick={() => setLocation('/home')}
+                onClick={() => window.history.back()}
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -126,7 +126,7 @@ export default function ExerciseMix() {
                 Your vocabulary doesn't meet the requirements for mixed exercises. Try learning more songs with different types of content!
               </p>
               <button
-                onClick={() => setLocation('/home')}
+                onClick={() => window.history.back()}
                 className="spotify-btn-primary"
               >
                 Back to Home
@@ -143,21 +143,34 @@ export default function ExerciseMix() {
       <div className="min-h-screen spotify-bg pb-20">
         <div className="p-6">
           {/* Header with back button */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => setLocation('/home')}
+              onClick={() => window.history.back()}
               className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="text-center">
               <h1 className="spotify-heading-lg">Mixed Exercises</h1>
-              <p className="spotify-text-muted text-sm">
-                Exercise {currentExerciseIndex + 1} of {exercises.length}
-              </p>
             </div>
             <div className="w-8"></div> {/* Spacer for centering */}
           </div>
+
+          {/* Top progress (page-level) */}
+          {!isSessionComplete && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm spotify-text-muted"></span>
+                <span className="text-sm spotify-text-muted"></span>
+              </div>
+              <div className="w-full bg-[var(--spotify-light-gray)] rounded-full h-2">
+                <div
+                  className="bg-[var(--spotify-green)] h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress.percentage}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
 
           {/* Current Exercise */}
           {currentExercise && !isSessionComplete && (
@@ -166,6 +179,7 @@ export default function ExerciseMix() {
               targetLanguage={targetLanguage}
               onComplete={completeCurrentExercise}
               progress={progress}
+              hideInternalProgress
             />
           )}
 
@@ -178,7 +192,7 @@ export default function ExerciseMix() {
                 
                 <div className="mb-6">
                   <div className="text-4xl font-bold text-[var(--spotify-green)] mb-2">
-                    {progress.current}/{progress.total}
+                    Complete
                   </div>
                   <div className="spotify-text-muted mb-4">
                     exercises completed
