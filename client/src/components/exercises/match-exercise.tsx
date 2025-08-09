@@ -63,7 +63,7 @@ export function MatchExercise({ vocabulary, targetLanguage, mixMode = false, onM
       {/* Game Content */}
       {!isGameComplete && (
         <div className="spotify-card p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-8 max-w-2xl mx-auto">
             {/* Left Column - Foreign Language */}
             <div className="space-y-3">
               <h3 className="text-center spotify-text-muted text-sm font-medium mb-4">
