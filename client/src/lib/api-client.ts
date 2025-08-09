@@ -156,6 +156,15 @@ export const api = {
     albumTracks: (albumId: string) =>
       api.get(`/search/album/${albumId}/tracks`),
   },
+
+  activity: {
+    getStreak: () => api.get('/activity/streak'),
+    trackActivity: (data: {
+      date: string;
+      songsLearned?: number;
+      vocabularyReviewed?: number;
+    }) => api.post('/activity/track', data),
+  },
 };
 
 export default apiClient;

@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   weeklyGoal: integer("weekly_goal").default(50),
   wordsLearned: integer("words_learned").notNull().default(0),
   streak: integer("streak").notNull().default(0),
+  bestStreak: integer("best_streak").notNull().default(0),
   lastActiveDate: timestamp("last_active_date").defaultNow(),
   isAdmin: boolean("is_admin").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
@@ -130,6 +131,19 @@ export const bookmarks = pgTable("bookmarks", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const userDailyActivity = pgTable("user_daily_activity", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD format
+  songsLearned: integer("songs_learned").notNull().default(0),
+  vocabularyReviewed: integer("vocabulary_reviewed").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Composite unique index to prevent duplicate entries for same user/date
+  userDateIdx: index("user_daily_activity_user_date_idx").on(table.userId, table.date),
+}));
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   supabaseId: true,
@@ -205,6 +219,13 @@ export const insertBookmarkSchema = createInsertSchema(bookmarks).pick({
   songId: true,
 });
 
+export const insertUserDailyActivitySchema = createInsertSchema(userDailyActivity).pick({
+  userId: true,
+  date: true,
+  songsLearned: true,
+  vocabularyReviewed: true,
+});
+
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).pick({
   userId: true,
   userEmail: true,
@@ -238,6 +259,8 @@ export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 export type Translation = typeof translations.$inferSelect;
 export type InsertBookmark = z.infer<typeof insertBookmarkSchema>;
 export type Bookmark = typeof bookmarks.$inferSelect;
+export type InsertUserDailyActivity = z.infer<typeof insertUserDailyActivitySchema>;
+export type UserDailyActivity = typeof userDailyActivity.$inferSelect;
 
 // DMCA takedown requests table
 export const dmcaRequests = pgTable("dmca_requests", {

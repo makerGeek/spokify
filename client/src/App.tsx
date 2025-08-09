@@ -23,6 +23,9 @@ import ResetPassword from "@/pages/reset-password";
 import Library from "@/pages/library";
 import Review from "@/pages/review";
 import ReviewSession from "@/pages/review-session";
+import ExerciseMatch from "@/pages/exercise-match";
+import ExerciseWordBuilder from "@/pages/exercise-word-builder";
+import ExerciseFillBlanks from "@/pages/exercise-fill-blanks";
 
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
@@ -106,6 +109,21 @@ function Router() {
         <Route path="/review-session">
           <AuthenticatedOnly contextMessage="Login to start vocabulary review session">
             <ReviewSession />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/exercise/match">
+          <AuthenticatedOnly contextMessage="Login to play matching exercises">
+            <ExerciseMatch />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/exercise/word-builder">
+          <AuthenticatedOnly contextMessage="Login to play word building exercises">
+            <ExerciseWordBuilder />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/exercise/fill-blanks">
+          <AuthenticatedOnly contextMessage="Login to play fill-in-the-blanks exercises">
+            <ExerciseFillBlanks />
           </AuthenticatedOnly>
         </Route>
         <Route path="/profile">

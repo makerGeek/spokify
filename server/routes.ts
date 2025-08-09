@@ -8,6 +8,7 @@ import { authenticateToken, optionalAuth, rateLimit, requireAdmin, Authenticated
 import authRoutes from "./routes/auth";
 import importRoutes from "./routes/import";
 import searchRoutes from "./routes/search";
+import activityRoutes from "./routes/activity";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -75,6 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
   app.use('/api/import', importRoutes);
   app.use('/api/search', searchRoutes);
+  app.use('/api/activity', activityRoutes);
   
   // User routes
   app.post("/api/users", async (req, res) => {

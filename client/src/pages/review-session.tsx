@@ -7,6 +7,7 @@ import { ReviewProgress } from "@/components/review/review-progress";
 import { ReviewQuestionCard } from "@/components/review/review-question-card";
 import { useReviewSession } from "@/hooks/use-review-session";
 import { useAuth } from "@/contexts/auth-context";
+import { useActivityTracking } from "@/hooks/use-activity-tracking";
 import { api } from "@/lib/api-client";
 import { type Vocabulary } from "@shared/schema";
 
@@ -14,6 +15,7 @@ export default function ReviewSession() {
   const [, setLocation] = useLocation();
   const { user, databaseUser } = useAuth();
   const queryClient = useQueryClient();
+  const { trackVocabularyReview } = useActivityTracking();
 
   // Get user's target language from preferences (same as in library and header)
   const userPreferences = JSON.parse(
@@ -52,6 +54,8 @@ export default function ReviewSession() {
   // Handle answer submission for spaced repetition
   const handleAnswerSubmit = async (vocabularyId: number, answer: string) => {
     await submitReviewMutation.mutateAsync({ vocabularyId, answer });
+    // Track vocabulary review activity for streak
+    await trackVocabularyReview(1);
   };
 
   // Use review session hook with 10 word limit
@@ -102,6 +106,8 @@ export default function ReviewSession() {
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary", "stats"] });
         queryClient.invalidateQueries({ queryKey: ["/api/users", databaseUser.id, "vocabulary"] });
+        // Invalidate streak data to update streak counter
+        queryClient.invalidateQueries({ queryKey: ["/api/activity/streak"] });
         // Don't invalidate the "due" query to prevent resetting the session
       }, 100);
     }

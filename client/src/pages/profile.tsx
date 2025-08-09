@@ -27,6 +27,7 @@ import { api } from "@/lib/api-client";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useFeatureFlag } from "@/hooks/use-feature-flags";
+import { StreakCounter } from "@/components/streak-counter";
 
 export default function Profile() {
   const { user, databaseUser, signOut } = useAuth();
@@ -72,6 +73,23 @@ export default function Profile() {
     staleTime: 60 * 1000, // Cache for 1 minute to prevent rapid refetches  
     refetchOnWindowFocus: false, // Don't refetch on window focus
   });
+
+  const { data: streakData } = useQuery<{
+    streak: number;
+    bestStreak: number;
+    lastActiveDate: string | null;
+  }>({
+    queryKey: ["/api/activity/streak"],
+    queryFn: async () => {
+      const response = await api.activity.getStreak();
+      return response.data;
+    },
+    retry: false,
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
 
   // PWA Install functionality
   useEffect(() => {
@@ -337,7 +355,18 @@ export default function Profile() {
         {/* Stats Section */}
         <div className="mb-8">
           <h2 className="spotify-heading-lg mb-6">Your Progress</h2>
-          <div className="grid grid-cols-1 gap-4">
+          
+          {/* Streak Counter */}
+          {streakData && (
+            <StreakCounter 
+              currentStreak={streakData.streak}
+              bestStreak={streakData.bestStreak}
+              lastActiveDate={streakData.lastActiveDate}
+              className="mb-4"
+            />
+          )}
+
+          <div className="grid grid-cols-1 gap-4 mb-6">
             <div className="spotify-card-nohover p-6">
               <div className="flex items-center justify-between mb-3">
                 <Trophy className="h-6 w-6 text-[var(--spotify-green)]" />
@@ -350,6 +379,7 @@ export default function Profile() {
               </p>
             </div>
           </div>
+
         </div>
 
 
