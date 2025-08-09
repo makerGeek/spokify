@@ -65,7 +65,7 @@ export default function ExerciseWordBuilder() {
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                <span>Back to Home</span>
+                
               </button>
             </div>
 

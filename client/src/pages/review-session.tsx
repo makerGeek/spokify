@@ -217,7 +217,7 @@ export default function ReviewSession() {
                     className="flex items-center justify-center space-x-2 spotify-btn-secondary text-sm max-h-[870px]:text-xs px-4 max-h-[870px]:px-3 py-2 max-h-[870px]:py-1.5"
                   >
                     <Home className="h-4 w-4 max-h-[870px]:h-3 max-h-[870px]:w-3" />
-                    <span>Back to Home</span>
+                    
                   </button>
                 </div>
               </div>

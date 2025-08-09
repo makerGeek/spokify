@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Music, ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
+import { useMemo } from "react";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import { ReviewExercise } from "@/components/exercises/review-exercise";
 import { useAuth } from "@/contexts/auth-context";
@@ -11,7 +12,13 @@ export default function Review() {
   const [, setLocation] = useLocation();
   const { user, databaseUser } = useAuth();
 
-  const { data: vocabulary, isLoading } = useQuery<Vocabulary[]>({
+  // Get user's target language from preferences
+  const userPreferences = JSON.parse(
+    localStorage.getItem("userPreferences") || "{}"
+  );
+  const { targetLanguage = "es" } = userPreferences;
+
+  const { data: allVocabulary, isLoading } = useQuery<Vocabulary[]>({
     queryKey: databaseUser?.id ? ["/api/users", databaseUser.id, "vocabulary"] : [],
     queryFn: async () => {
       if (!databaseUser?.id) return [];
@@ -22,6 +29,12 @@ export default function Review() {
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
+
+  // Filter vocabulary by selected language
+  const vocabulary = useMemo(() => {
+    if (!allVocabulary) return [];
+    return allVocabulary.filter(word => word.language === targetLanguage);
+  }, [allVocabulary, targetLanguage]);
 
   if (isLoading) {
     return (
@@ -48,7 +61,7 @@ export default function Review() {
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                <span>Back to Home</span>
+                
               </button>
             </div>
 

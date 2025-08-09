@@ -80,7 +80,7 @@ export default function ExerciseMix() {
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                <span>Back to Home</span>
+                
               </button>
             </div>
 
@@ -115,7 +115,7 @@ export default function ExerciseMix() {
                 className="flex items-center space-x-2 spotify-text-muted hover:spotify-text-primary transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                <span>Back to Home</span>
+                
               </button>
             </div>
 
@@ -233,7 +233,7 @@ export default function ExerciseMix() {
                     className="flex items-center justify-center space-x-2 spotify-btn-secondary"
                   >
                     <Home className="h-4 w-4" />
-                    <span>Back to Home</span>
+                    
                   </button>
                 </div>
               </div>
