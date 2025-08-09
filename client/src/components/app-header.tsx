@@ -9,6 +9,8 @@ const languageFlags = {
   fr: "/flags/fr.png",
   de: "/flags/de.png",
   it: "/flags/it.png",
+  nl: "/flags/nl.png",
+  pt: "/flags/pt.png",
 };
 
 export default function AppHeader() {

@@ -8,6 +8,8 @@ const targetLanguages = [
   { code: "fr", name: "French", flagImage: "/flags/fr.png" },
   { code: "de", name: "German", flagImage: "/flags/de.png" },
   { code: "it", name: "Italian", flagImage: "/flags/it.png" },
+  { code: "nl", name: "Dutch", flagImage: "/flags/nl.png" },
+  { code: "pt", name: "Portuguese", flagImage: "/flags/pt.png" },
 ];
 
 export default function LanguageSelection() {
