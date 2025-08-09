@@ -4,6 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dumbbell, BookOpen, Puzzle, Type, Shuffle, FileText, Brain, SpellCheck, Play } from "lucide-react";
 
 export default function ExerciseSelection() {
+  const exerciseColors = [
+    "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)", // Purple to Pink
+    "linear-gradient(135deg, #ef4444 0%, #f97316 100%)", // Red to Orange
+    "linear-gradient(135deg, #eab308 0%, #ef4444 100%)", // Yellow to Red
+    "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)", // Blue to Purple
+    "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)", // Green to Blue
+  ];
+
   const exerciseTypes = [
     {
       id: "review",
@@ -46,11 +54,14 @@ export default function ExerciseSelection() {
     <div className="container mx-auto p-4 pt-10 pb-10">
       <h1 className="spotify-heading-lg text-center mb-8">Choose Your Exercise</h1>
       <div className="grid grid-cols-1 gap-4">
-        {exerciseTypes.map((exercise) => (
+        {exerciseTypes.map((exercise, index) => (
           <Link key={exercise.id} href={exercise.path}>
             <Card className="spotify-card bg-spotify-card border-spotify-card cursor-pointer" >
               <CardContent className="p-4 flex items-center space-x-4">
-                <div className="flex-shrink-0 rounded-lg bg-spotify-green p-3">
+                <div 
+                  className="flex-shrink-0 rounded-lg p-3"
+                  style={{ background: exerciseColors[index % exerciseColors.length] }}
+                >
                   <exercise.icon className="h-10 w-10 text-spotify-black" />
                 </div>
                 
@@ -60,7 +71,7 @@ export default function ExerciseSelection() {
                       {exercise.name}
                     </h3>
                     {exercise.id === 'mix' && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white bg-spotify-black free-badge text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white bg-spotify-black free-badge">
                         ALL IN ONE
                       </span>
                     )}

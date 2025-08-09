@@ -13,7 +13,7 @@ export default function BottomNavigation({ currentPage }: BottomNavigationProps)
     { id: "home", label: "Home", icon: Home, path: "/home" },
     { id: "search", label: "Search", icon: Search, path: "/search" },
     { id: "library", label: "Library", icon: BookOpen, path: "/library" },
-    { id: "exercise", label: "Exercise", icon: GamepadIcon, path: "/exercise/review" },
+    { id: "exercise", label: "Exercise", icon: GamepadIcon, path: "/exercise" },
     { id: "profile", label: "Profile", icon: User, path: "/profile" },
   ];
 
