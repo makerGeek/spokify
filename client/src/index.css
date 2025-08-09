@@ -325,7 +325,7 @@
   text-transform: uppercase;
   color: #fff;
   letter-spacing: 0.05em;
-
+  white-space: nowrap;
   background: linear-gradient(45deg, #b91c1c, #065f46, #0f766e, #7e22ce, #b91c1c);
   background-size: 600% 600%;
   animation: gradient-shift 3s ease infinite;

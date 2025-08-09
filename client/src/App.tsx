@@ -27,6 +27,7 @@ import ExerciseMatch from "@/pages/exercises/match";
 import ExerciseWordBuilder from "@/pages/exercises/word-builder";
 import ExerciseFillBlanks from "@/pages/exercises/fill-blanks";
 import ExerciseMix from "@/pages/exercises/mix";
+import ExerciseSelection from "@/pages/exercise";
 
 import NotFound from "@/pages/not-found";
 import Admin from "@/pages/admin";
@@ -69,7 +70,8 @@ function Router() {
     if (location === '/home') return 'home';
     if (location === '/search') return 'search';
     if (location === '/library') return 'library';
-    if (location === '/exercise/review' || location === '/review-session') return 'review';
+    if (location === '/exercise') return 'exercise';
+    if (location.startsWith('/exercise')) return 'exercise';
     if (location === '/profile') return 'profile';
     if (location.startsWith('/lyrics/')) return 'home'; // Lyrics player belongs to home flow
     return 'home';
@@ -89,6 +91,11 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/home" component={Home} />
+        <Route path="/exercise">
+          <AuthenticatedOnly contextMessage="Login to choose your exercise">
+            <ExerciseSelection />
+          </AuthenticatedOnly>
+        </Route>
         <Route path="/search">
           <AuthenticatedOnly contextMessage="Login to search and discover new music to learn from">
             <SearchPage />
