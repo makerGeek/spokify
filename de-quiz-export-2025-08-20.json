@@ -1,0 +1,1403 @@
+{
+  "language": "German",
+  "languageCode": "de",
+  "totalQuestions": 93,
+  "exportedAt": "2025-08-20T15:12:01.937Z",
+  "questions": [
+    {
+      "language": "German",
+      "song": "Eins Zwei Polizei",
+      "artist": "Mo-Do",
+      "level": "A2",
+      "question": "What does \"Keks\" mean?",
+      "context": "Context: \"Fünf, sechs, alte Keks\"",
+      "options": [
+        "to talk",
+        "friend",
+        "to play",
+        "biscuit"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Sowieso",
+      "artist": "Mark Forster",
+      "level": "A2",
+      "question": "What does \"Verläuft\" mean?",
+      "context": "Context: \"Verläuft auf Seitenwegen\"",
+      "options": [
+        "to sing",
+        "to read",
+        "bad",
+        "runs / proceeds"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Sowieso",
+      "artist": "Mark Forster",
+      "level": "A2",
+      "question": "What does \"Seitenwegen\" mean?",
+      "context": "Context: \"Verläuft auf Seitenwegen\"",
+      "options": [
+        "side paths",
+        "breathe in",
+        "feel (from spüren)",
+        "sad"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"ferngesteuert\" mean?",
+      "context": "Context: \"Atemlos und ferngesteuert\"",
+      "options": [
+        "behind",
+        "love",
+        "remote-controlled",
+        "paralyzes/cripples"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"sorgenschwer\" mean?",
+      "context": "Context: \"Abgestumpft und sorgenschwer\"",
+      "options": [
+        "slow",
+        "again",
+        "Full of worries",
+        "behind"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"weggetret'n\" mean?",
+      "context": "Context: \"Ich bin völlig weggetret'n\"",
+      "options": [
+        "money",
+        "to work",
+        "beats",
+        "spaced out / out of it (colloquial)"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"spür'\" mean?",
+      "context": "Context: \"Ich spür' mich selbst nicht mehr\"",
+      "options": [
+        "Full of worries",
+        "anywhere",
+        "to study",
+        "feel (from spüren)"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"wieder\" mean?",
+      "context": "Context: \"Damit ich wieder merk'\"",
+      "options": [
+        "slow",
+        "until, to",
+        "Even if",
+        "again"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"merk'\" mean?",
+      "context": "Context: \"Damit ich wieder merk'\"",
+      "options": [
+        "remember",
+        "behind",
+        "beats",
+        "worries"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"nach vorne\" mean?",
+      "context": "Context: \"Ich geh' nach vorne, bis zum Rand\"",
+      "options": [
+        "old",
+        "forward",
+        "torment",
+        "beats"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"bis zum\" mean?",
+      "context": "Context: \"Ich geh' nach vorne, bis zum Rand\"",
+      "options": [
+        "until, to",
+        "new",
+        "never",
+        "music"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Rand\" mean?",
+      "context": "Context: \"Ich geh' nach vorne, bis zum Rand\"",
+      "options": [
+        "to let go",
+        "to play",
+        "love",
+        "edge"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"atme ein\" mean?",
+      "context": "Context: \"Ich atme ein und lass mich fall'n\"",
+      "options": [
+        "breathe in",
+        "to let go",
+        "Full of worries",
+        "take"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"spüre\" mean?",
+      "context": "Context: \"Ich spüre jeden Teil von mir\"",
+      "options": [
+        "feel",
+        "cold",
+        "again",
+        "beats"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Teil\" mean?",
+      "context": "Context: \"Ich spüre jeden Teil von mir\"",
+      "options": [
+        "to let go",
+        "everyone",
+        "part",
+        "wall"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"schwerelos\" mean?",
+      "context": "Context: \"Ich bin völlig schwerelos\"",
+      "options": [
+        "weightless",
+        "bad",
+        "new",
+        "water"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Auch wenn\" mean?",
+      "context": "Context: \"Auch wenn mich tausend Sorgen quäl'n\"",
+      "options": [
+        "friend",
+        "Even if",
+        "worries",
+        "to talk"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Sorgen\" mean?",
+      "context": "Context: \"Auch wenn mich tausend Sorgen quäl'n\"",
+      "options": [
+        "new",
+        "torment",
+        "to study",
+        "worries"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"quäl'n\" mean?",
+      "context": "Context: \"Auch wenn mich tausend Sorgen quäl'n\"",
+      "options": [
+        "torment",
+        "to walk",
+        "young",
+        "friend"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"nach unten\" mean?",
+      "context": "Context: \"Und sie mich nach unten zieh'n\"",
+      "options": [
+        "down",
+        "breathe in",
+        "something",
+        "beautiful"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"zieh'n\" mean?",
+      "context": "Context: \"Und sie mich nach unten zieh'n\"",
+      "options": [
+        "pull",
+        "house",
+        "sometimes",
+        "car"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"loszulassen\" mean?",
+      "context": "Context: \"Es ist besser loszulassen\"",
+      "options": [
+        "feel (from spüren)",
+        "slow",
+        "to drink",
+        "to let go"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"nehme\" mean?",
+      "context": "Context: \"Ich nehme, was mir Angst macht\"",
+      "options": [
+        "bad",
+        "pull",
+        "to talk",
+        "take"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Angst\" mean?",
+      "context": "Context: \"Ich nehme, was mir Angst macht\"",
+      "options": [
+        "friend",
+        "torment",
+        "runs / proceeds",
+        "fear"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"zünd' an\" mean?",
+      "context": "Context: \"Ich zünd' es an und lass' es brenn'\"",
+      "options": [
+        "beats",
+        "feel (from spüren)",
+        "friend",
+        "light, ignite"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"brenn'\" mean?",
+      "context": "Context: \"Ich zünd' es an und lass' es brenn'\"",
+      "options": [
+        "runs / proceeds",
+        "feel (from spüren)",
+        "burn",
+        "small"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"hinter\" mean?",
+      "context": "Context: \"Ich lass' es hinter mir\"",
+      "options": [
+        "behind",
+        "hot",
+        "water",
+        "everyone"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"um mich herum\" mean?",
+      "context": "Context: \"Alles um mich herum pulsiert\"",
+      "options": [
+        "breathe in",
+        "around me",
+        "something",
+        "remote-controlled"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Schmerz\" mean?",
+      "context": "Context: \"Ich spür' den Schmerz nicht mehr\"",
+      "options": [
+        "pain",
+        "book",
+        "behind",
+        "remote-controlled"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Wand\" mean?",
+      "context": "Context: \"Der Boden, die Wand, der Raum vibriert\"",
+      "options": [
+        "to eat",
+        "take",
+        "book",
+        "wall"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"wieder\" mean?",
+      "context": "Context: \"Ich bin wieder unbeschwert\"",
+      "options": [
+        "to read",
+        "feel (from spüren)",
+        "everyone",
+        "again"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"unbeschwert\" mean?",
+      "context": "Context: \"Ich bin wieder unbeschwert\"",
+      "options": [
+        "again",
+        "carefree",
+        "new",
+        "to work"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"runterzieht\" mean?",
+      "context": "Context: \"Alles, was dich runterzieht\"",
+      "options": [
+        "food",
+        "gets down",
+        "new",
+        "nobody"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"lahmlegt\" mean?",
+      "context": "Context: \"Alles, was dein Herz lahmlegt\"",
+      "options": [
+        "to sleep",
+        "feel (from spüren)",
+        "to play",
+        "paralyzes/cripples"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Dann schlägt dein Herz",
+      "artist": "Olli Schulz",
+      "level": "A2",
+      "question": "What does \"schlägt\" mean?",
+      "context": "Context: \"Und dann schlägt dein Herz\"",
+      "options": [
+        "again",
+        "to study",
+        "sometimes",
+        "beats"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "99 Luftballons",
+      "artist": "Nena",
+      "level": "A2",
+      "question": "What does \"Fliegerstaffel\" mean?",
+      "context": "Context: \"'Ne Fliegerstaffel hinterher\"",
+      "options": [
+        "squadron",
+        "nothing",
+        "money",
+        "house"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Luftballons",
+      "artist": "Nena",
+      "level": "A2",
+      "question": "What does \"Staffel\" mean?",
+      "context": "Context: \"'Ne Fliegerstaffel hinterher\"",
+      "options": [
+        "squadron",
+        "worries",
+        "behind",
+        "to drink"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Luftballons",
+      "artist": "Nena",
+      "level": "A2",
+      "question": "What does \"Flieger\" mean?",
+      "context": "Context: \"'Ne Fliegerstaffel hinterher\"",
+      "options": [
+        "happy",
+        "young",
+        "again",
+        "fliers"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "99 Luftballons",
+      "artist": "Nena",
+      "level": "A2",
+      "question": "What does \"hinterher\" mean?",
+      "context": "Context: \"'Ne Fliegerstaffel hinterher\"",
+      "options": [
+        "to let go",
+        "to sing",
+        "somewhere",
+        "after"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "99 Luftballons",
+      "artist": "Nena",
+      "level": "A2",
+      "question": "What does \"Neunundneunzig\" mean?",
+      "context": "Context: \"Neunundneunzig Düsenflieger\"",
+      "options": [
+        "ninety-nine",
+        "torment",
+        "to sing",
+        "to let go"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Luftballons",
+      "artist": "Nena",
+      "level": "A2",
+      "question": "What does \"Düsen\" mean?",
+      "context": "Context: \"Neunundneunzig Düsenflieger\"",
+      "options": [
+        "jet",
+        "take",
+        "water",
+        "until, to"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Luftballons",
+      "artist": "Nena",
+      "level": "A2",
+      "question": "What does \"Flieger\" mean?",
+      "context": "Context: \"Neunundneunzig Düsenflieger\"",
+      "options": [
+        "never",
+        "planes",
+        "music",
+        "new"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Damit\" mean?",
+      "context": "Context: \"Damit ich wieder merk'\"",
+      "options": [
+        "so that",
+        "everyone",
+        "bad",
+        "house"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"wieder\" mean?",
+      "context": "Context: \"Damit ich wieder merk'\"",
+      "options": [
+        "again",
+        "to run",
+        "behind",
+        "house"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"merk'\" mean?",
+      "context": "Context: \"Damit ich wieder merk'\"",
+      "options": [
+        "water",
+        "remember",
+        "small",
+        "music"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"bis zum\" mean?",
+      "context": "Context: \"Ich geh' nach vorne, bis zum Rand\"",
+      "options": [
+        "again",
+        "to walk",
+        "pull",
+        "until, to"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Ich geh'\" mean?",
+      "context": "Context: \"Ich geh' nach vorne, bis zum Rand\"",
+      "options": [
+        "I go",
+        "beats",
+        "big",
+        "cold"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Rand\" mean?",
+      "context": "Context: \"Ich geh' nach vorne, bis zum Rand\"",
+      "options": [
+        "runs / proceeds",
+        "to play",
+        "book",
+        "edge"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"nach vorne\" mean?",
+      "context": "Context: \"Ich geh' nach vorne, bis zum Rand\"",
+      "options": [
+        "forward",
+        "food",
+        "book",
+        "family"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Elektrisches\" mean?",
+      "context": "Context: \"Elektrisches Gefühl\"",
+      "options": [
+        "Electric",
+        "friend",
+        "beats",
+        "worries"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Elektrisches Gefühl",
+      "artist": "Juli",
+      "level": "A2",
+      "question": "What does \"Gefühl\" mean?",
+      "context": "Context: \"Elektrisches Gefühl\"",
+      "options": [
+        "Feeling",
+        "again",
+        "remote-controlled",
+        "everything"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"falsche\" mean?",
+      "context": "Context: \"Nur eine falsche Bewegung und ich lande im Gegenverkehr\"",
+      "options": [
+        "torment",
+        "beats",
+        "music",
+        "wrong"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"Bewegung\" mean?",
+      "context": "Context: \"Nur eine falsche Bewegung und ich lande im Gegenverkehr\"",
+      "options": [
+        "someone",
+        "movement",
+        "always",
+        "anywhere"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"lande\" mean?",
+      "context": "Context: \"Nur eine falsche Bewegung und ich lande im Gegenverkehr\"",
+      "options": [
+        "land/end up",
+        "to drink",
+        "to study",
+        "sad"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"Gegenverkehr\" mean?",
+      "context": "Context: \"Nur eine falsche Bewegung und ich lande im Gegenverkehr\"",
+      "options": [
+        "carefree",
+        "to eat",
+        "worries",
+        "oncoming"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"Doch\" mean?",
+      "context": "Context: \"Doch es gibt Phasen, in den'n ich mich immer wieder frag, wie es wär\"",
+      "options": [
+        "but",
+        "runs / proceeds",
+        "to play",
+        "someone"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"Phasen\" mean?",
+      "context": "Context: \"Doch es gibt Phasen, in den'n ich mich immer wieder frag, wie es wär\"",
+      "options": [
+        "phases",
+        "torment",
+        "nobody",
+        "beautiful"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"immer wieder\" mean?",
+      "context": "Context: \"Doch es gibt Phasen, in den'n ich mich immer wieder frag, wie es wär\"",
+      "options": [
+        "always",
+        "food",
+        "behind",
+        "torment"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"frag\" mean?",
+      "context": "Context: \"Doch es gibt Phasen, in den'n ich mich immer wieder frag, wie es wär\"",
+      "options": [
+        "feel (from spüren)",
+        "ask myself",
+        "to let go",
+        "to talk"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"wie es wär\" mean?",
+      "context": "Context: \"Doch es gibt Phasen, in den'n ich mich immer wieder frag, wie es wär\"",
+      "options": [
+        "time",
+        "hot",
+        "to dance",
+        "what it would be like"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"leichtesten\" mean?",
+      "context": "Context: \"Selbst die leichtesten Dinge sind plötzlich so schwer\"",
+      "options": [
+        "light",
+        "music",
+        "small",
+        "nothing"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"plötzlich\" mean?",
+      "context": "Context: \"Selbst die leichtesten Dinge sind plötzlich so schwer\"",
+      "options": [
+        "old",
+        "everyone",
+        "anywhere",
+        "suddenly"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"Dinge\" mean?",
+      "context": "Context: \"Selbst die leichtesten Dinge sind plötzlich so schwer\"",
+      "options": [
+        "happy",
+        "pull",
+        "things",
+        "forward"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"selbst\" mean?",
+      "context": "Context: \"Selbst die leichtesten Dinge sind plötzlich so schwer\"",
+      "options": [
+        "even",
+        "pull",
+        "to work",
+        "worries"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "99 Probleme",
+      "artist": "Madeline Juno",
+      "level": "A2",
+      "question": "What does \"schwer\" mean?",
+      "context": "Context: \"Selbst die leichtesten Dinge sind plötzlich so schwer\"",
+      "options": [
+        "difficult",
+        "slow",
+        "sometimes",
+        "to sleep"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"Schwimmst\" mean?",
+      "context": "Context: \"Schwimmst in unendlicher Musik, rosahimmelblauer Stille.\"",
+      "options": [
+        "feel (from spüren)",
+        "Even if",
+        "night",
+        "swimming"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"unendlicher\" mean?",
+      "context": "Context: \"Schwimmst in unendlicher Musik, rosahimmelblauer Stille.\"",
+      "options": [
+        "feel (from spüren)",
+        "infinite",
+        "life",
+        "torment"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"rosahimmelblauer\" mean?",
+      "context": "Context: \"Schwimmst in unendlicher Musik, rosahimmelblauer Stille.\"",
+      "options": [
+        "to read",
+        "worries",
+        "slow",
+        "pink-sky-blue"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"Stille\" mean?",
+      "context": "Context: \"Schwimmst in unendlicher Musik, rosahimmelblauer Stille.\"",
+      "options": [
+        "everyone",
+        "fast",
+        "to drink",
+        "silence"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"treibst\" mean?",
+      "context": "Context: \"Treibst sorglos in die Zukunft und weißt nichts von Vergangenheit.\"",
+      "options": [
+        "drift",
+        "pull",
+        "food",
+        "to let go"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"sorglos\" mean?",
+      "context": "Context: \"Treibst sorglos in die Zukunft und weißt nichts von Vergangenheit.\"",
+      "options": [
+        "forward",
+        "small",
+        "worries",
+        "carelessly"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"weißt\" mean?",
+      "context": "Context: \"Treibst sorglos in die Zukunft und weißt nichts von Vergangenheit.\"",
+      "options": [
+        "take",
+        "beats",
+        "to work",
+        "know"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"Zukunft\" mean?",
+      "context": "Context: \"Treibst sorglos in die Zukunft und weißt nichts von Vergangenheit.\"",
+      "options": [
+        "everyone",
+        "water",
+        "big",
+        "future"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Bleib wo du bist",
+      "artist": "Ton Steine Scherben",
+      "level": "A2",
+      "question": "What does \"Vergangenheit\" mean?",
+      "context": "Context: \"Treibst sorglos in die Zukunft und weißt nichts von Vergangenheit.\"",
+      "options": [
+        "again",
+        "past",
+        "new",
+        "to study"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Das Telefon sagt du",
+      "artist": "Andreas Dorau",
+      "level": "A2",
+      "question": "What does \"schickt\" mean?",
+      "context": "Context: \"Die Post schickt ihn durch's Telefon\"",
+      "options": [
+        "sends",
+        "to read",
+        "cold",
+        "to play"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Das Telefon sagt du",
+      "artist": "Andreas Dorau",
+      "level": "A2",
+      "question": "What does \"durch's\" mean?",
+      "context": "Context: \"Die Post schickt ihn durch's Telefon\"",
+      "options": [
+        "again",
+        "family",
+        "pull",
+        "through the"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Das Telefon sagt du",
+      "artist": "Andreas Dorau",
+      "level": "A2",
+      "question": "What does \"Telefon\" mean?",
+      "context": "Context: \"Die Post schickt ihn durch's Telefon\"",
+      "options": [
+        "telephone",
+        "remote-controlled",
+        "new",
+        "again"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Das Telefon sagt du",
+      "artist": "Andreas Dorau",
+      "level": "A2",
+      "question": "What does \"Telefon\" mean?",
+      "context": "Context: \"Und das Telefon sagt Du\"",
+      "options": [
+        "phone",
+        "book",
+        "fast",
+        "pull"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Das Telefon sagt du",
+      "artist": "Andreas Dorau",
+      "level": "A2",
+      "question": "What does \"sagt\" mean?",
+      "context": "Context: \"Und das Telefon sagt Du\"",
+      "options": [
+        "says",
+        "bad",
+        "slow",
+        "love"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Das Telefon sagt du",
+      "artist": "Andreas Dorau",
+      "level": "A2",
+      "question": "What does \"Dieses\" mean?",
+      "context": "Context: \"Dieses wunderschöne Uuuh\"",
+      "options": [
+        "this",
+        "house",
+        "to dance",
+        "take"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Das Telefon sagt du",
+      "artist": "Andreas Dorau",
+      "level": "A2",
+      "question": "What does \"wunderschöne\" mean?",
+      "context": "Context: \"Dieses wunderschöne Uuuh\"",
+      "options": [
+        "beautiful",
+        "paralyzes/cripples",
+        "money",
+        "friend"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"Mehr\" mean?",
+      "context": "Context: \"Mehr als die Summe der einzelnen Teile\"",
+      "options": [
+        "to run",
+        "More",
+        "to work",
+        "to play"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"Summe\" mean?",
+      "context": "Context: \"Mehr als die Summe der einzelnen Teile\"",
+      "options": [
+        "nothing",
+        "house",
+        "young",
+        "sum"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"einzelnen\" mean?",
+      "context": "Context: \"Mehr als die Summe der einzelnen Teile\"",
+      "options": [
+        "food",
+        "nothing",
+        "individual",
+        "love"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"Teile\" mean?",
+      "context": "Context: \"Mehr als die Summe der einzelnen Teile\"",
+      "options": [
+        "torment",
+        "carefree",
+        "remote-controlled",
+        "parts"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"unserer\" mean?",
+      "context": "Context: \"Der unserer Gegenwart vorauseilt\"",
+      "options": [
+        "hot",
+        "feel (from spüren)",
+        "small",
+        "ours"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"Gegenwart\" mean?",
+      "context": "Context: \"Der unserer Gegenwart vorauseilt\"",
+      "options": [
+        "torment",
+        "Even if",
+        "something",
+        "present"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"voreilt\" mean?",
+      "context": "Context: \"Der unserer Gegenwart vorauseilt\"",
+      "options": [
+        "to dance",
+        "new",
+        "rushes ahead",
+        "runs / proceeds"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"Unterwegs\" mean?",
+      "context": "Context: \"Unterwegs zur Musik\"",
+      "options": [
+        "house",
+        "on the way",
+        "to walk",
+        "to read"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"leben\" mean?",
+      "context": "Context: \"Wir leben von einem Glauben\"",
+      "options": [
+        "behind",
+        "until, to",
+        "live",
+        "remote-controlled"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"Glauben\" mean?",
+      "context": "Context: \"Wir leben von einem Glauben\"",
+      "options": [
+        "to eat",
+        "belief",
+        "Even if",
+        "behind"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"bringen\" mean?",
+      "context": "Context: \"Wir bringen sie zum klingen\"",
+      "options": [
+        "remote-controlled",
+        "bring",
+        "to sing",
+        "behind"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "German",
+      "song": "Die Summe Der Einzelnen Teile",
+      "artist": "Kante",
+      "level": "A2",
+      "question": "What does \"klingen\" mean?",
+      "context": "Context: \"Wir bringen sie zum klingen\"",
+      "options": [
+        "to drink",
+        "pull",
+        "friend",
+        "sound"
+      ],
+      "correct": 3
+    }
+  ]
+}

@@ -1,0 +1,1028 @@
+{
+  "language": "Spanish",
+  "languageCode": "es",
+  "totalQuestions": 68,
+  "exportedAt": "2025-08-20T16:00:24.391Z",
+  "questions": [
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"corazón\" mean?",
+      "context": "Context: \"Y mi corazón entero entregarte\"",
+      "options": [
+        "getting closer",
+        "young",
+        "I said/told",
+        "heart"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"pido\" mean?",
+      "context": "Context: \"A Dios le pido\"",
+      "options": [
+        "slow",
+        "I ask/I pray",
+        "something",
+        "never"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"dije\" mean?",
+      "context": "Context: \"Te lo dije bien clarito\"",
+      "options": [
+        "to talk",
+        "to sing",
+        "never",
+        "I said/told"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"bailar\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "to dance",
+        "to sleep",
+        "hot",
+        "something"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"hoy\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "today",
+        "beautiful",
+        "big",
+        "hot"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"contigo\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "fast",
+        "with you",
+        "happy",
+        "someone"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"Tengo\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "I have",
+        "old",
+        "someone",
+        "nobody"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"alma\" mean?",
+      "context": "Context: \"Que mi alma no descanse cuando de amarte se trate, mi cielo\"",
+      "options": [
+        "car",
+        "good",
+        "bad",
+        "soul"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"amarte\" mean?",
+      "context": "Context: \"Que mi alma no descanse cuando de amarte se trate, mi cielo\"",
+      "options": [
+        "to love you",
+        "you know",
+        "sad",
+        "I said/told"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"sabes\" mean?",
+      "context": "Context: \"Sí, sabes que ya llevo un rato mirándote\"",
+      "options": [
+        "old",
+        "fast",
+        "you know",
+        "today"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"rato\" mean?",
+      "context": "Context: \"Sí, sabes que ya llevo un rato mirándote\"",
+      "options": [
+        "a while",
+        "old",
+        "day",
+        "love"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"mirándote\" mean?",
+      "context": "Context: \"Sí, sabes que ya llevo un rato mirándote\"",
+      "options": [
+        "nobody",
+        "car",
+        "I said/told",
+        "looking at you"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"bailar\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "everyone",
+        "to dance",
+        "slow",
+        "new"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"contigo\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "with you",
+        "a while",
+        "cold",
+        "time"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"Tengo\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "I have",
+        "love",
+        "to walk",
+        "something"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"hoy\" mean?",
+      "context": "Context: \"Tengo que bailar contigo hoy (DY)\"",
+      "options": [
+        "hot",
+        "I ask/I pray",
+        "today",
+        "to love you"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"mirada\" mean?",
+      "context": "Context: \"Vi que tu mirada ya estaba llamándome\"",
+      "options": [
+        "everyone",
+        "gaze",
+        "music",
+        "new"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"estaba\" mean?",
+      "context": "Context: \"Vi que tu mirada ya estaba llamándome\"",
+      "options": [
+        "night",
+        "somewhere",
+        "love",
+        "was"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"llamándome\" mean?",
+      "context": "Context: \"Vi que tu mirada ya estaba llamándome\"",
+      "options": [
+        "with you",
+        "car",
+        "I said/told",
+        "calling me"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"acercando\" mean?",
+      "context": "Context: \"Me voy acercando y voy armando el plan\"",
+      "options": [
+        "always",
+        "getting closer",
+        "new",
+        "big"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"voy\" mean?",
+      "context": "Context: \"Me voy acercando y voy armando el plan\"",
+      "options": [
+        "good",
+        "going",
+        "to dance",
+        "book"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"armando\" mean?",
+      "context": "Context: \"Me voy acercando y voy armando el plan\"",
+      "options": [
+        "putting together",
+        "food",
+        "to read",
+        "going"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"plan\" mean?",
+      "context": "Context: \"Me voy acercando y voy armando el plan\"",
+      "options": [
+        "I said/told",
+        "plan",
+        "someone",
+        "beautiful"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"eres\" mean?",
+      "context": "Context: \"Tú, tú eres el imán y yo soy el metal\"",
+      "options": [
+        "music",
+        "anywhere",
+        "life",
+        "are"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"imán\" mean?",
+      "context": "Context: \"Tú, tú eres el imán y yo soy el metal\"",
+      "options": [
+        "magnet",
+        "to eat",
+        "to dance",
+        "always"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"metal\" mean?",
+      "context": "Context: \"Tú, tú eres el imán y yo soy el metal\"",
+      "options": [
+        "metal",
+        "sad",
+        "cold",
+        "to read"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"sin\" mean?",
+      "context": "Context: \"Esto hay que tomarlo sin ningún apuro\"",
+      "options": [
+        "without",
+        "getting closer",
+        "to read",
+        "water"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"ningún\" mean?",
+      "context": "Context: \"Esto hay que tomarlo sin ningún apuro\"",
+      "options": [
+        "any",
+        "heart",
+        "to drink",
+        "car"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"apuro\" mean?",
+      "context": "Context: \"Esto hay que tomarlo sin ningún apuro\"",
+      "options": [
+        "hurry",
+        "book",
+        "water",
+        "someone"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"te acuerdes\" mean?",
+      "context": "Context: \"Para que te acuerdes si no estás conmigo\"",
+      "options": [
+        "nobody",
+        "happy",
+        "music",
+        "you remember"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"conmigo\" mean?",
+      "context": "Context: \"Para que te acuerdes si no estás conmigo\"",
+      "options": [
+        "with me",
+        "night",
+        "everyone",
+        "never"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"respirar\" mean?",
+      "context": "Context: \"Quiero respirar tu cuello despacito\"",
+      "options": [
+        "to breathe",
+        "looking at you",
+        "sometimes",
+        "I said/told"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"cuello\" mean?",
+      "context": "Context: \"Quiero respirar tu cuello despacito\"",
+      "options": [
+        "neck",
+        "slow",
+        "beautiful",
+        "to sing"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Despacito",
+      "artist": "Luis Fonsi ft. Daddy Yankee",
+      "level": "A2",
+      "question": "What does \"Quiero\" mean?",
+      "context": "Context: \"Quiero respirar tu cuello despacito\"",
+      "options": [
+        "I want",
+        "to love you",
+        "I ask/I pray",
+        "I said/told"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"horas\" mean?",
+      "context": "Context: \"¿Qué horas son, mi corazón?\"",
+      "options": [
+        "hours",
+        "never",
+        "fast",
+        "with you"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"corazón\" mean?",
+      "context": "Context: \"¿Qué horas son, mi corazón?\"",
+      "options": [
+        "heart",
+        "friend",
+        "getting closer",
+        "calling me"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"son\" mean?",
+      "context": "Context: \"¿Qué horas son, mi corazón?\"",
+      "options": [
+        "are",
+        "bad",
+        "looking at you",
+        "to eat"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"escucha\" mean?",
+      "context": "Context: \"Permanece a la escucha\"",
+      "options": [
+        "I ask/I pray",
+        "to read",
+        "nothing",
+        "listening"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"dije\" mean?",
+      "context": "Context: \"Te lo dije bien clarito\"",
+      "options": [
+        "small",
+        "calling me",
+        "to work",
+        "I said/told"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"bien\" mean?",
+      "context": "Context: \"Te lo dije bien clarito\"",
+      "options": [
+        "Very",
+        "to study",
+        "I said/told",
+        "to dance"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"clarito\" mean?",
+      "context": "Context: \"Te lo dije bien clarito\"",
+      "options": [
+        "Clearly",
+        "heart",
+        "big",
+        "somewhere"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"doce\" mean?",
+      "context": "Context: \"Doce de la noche en La Habana, Cuba\"",
+      "options": [
+        "twelve",
+        "to sleep",
+        "to drink",
+        "with you"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"noche\" mean?",
+      "context": "Context: \"Doce de la noche en La Habana, Cuba\"",
+      "options": [
+        "food",
+        "love",
+        "night",
+        "house"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"Habana\" mean?",
+      "context": "Context: \"Doce de la noche en La Habana, Cuba\"",
+      "options": [
+        "Havana",
+        "are",
+        "big",
+        "you know"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"aviones\" mean?",
+      "context": "Context: \"Me gustan los aviones, me gustas tú\"",
+      "options": [
+        "airplanes",
+        "life",
+        "to love you",
+        "to drink"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"Me gustan\" mean?",
+      "context": "Context: \"Me gustan los aviones, me gustas tú\"",
+      "options": [
+        "I have",
+        "gaze",
+        "looking at you",
+        "I like"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"viajar\" mean?",
+      "context": "Context: \"Me gusta viajar, me gustas tú\"",
+      "options": [
+        "calling me",
+        "today",
+        "with you",
+        "to travel"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "Me Gustas Tu",
+      "artist": "Manu Chao",
+      "level": "A2",
+      "question": "What does \"mañana\" mean?",
+      "context": "Context: \"Me gusta la mañana, me gustas tú\"",
+      "options": [
+        "to eat",
+        "plan",
+        "heart",
+        "morning"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"Dios\" mean?",
+      "context": "Context: \"A Dios le pido\"",
+      "options": [
+        "I ask/I pray",
+        "God",
+        "gaze",
+        "old"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"pido\" mean?",
+      "context": "Context: \"A Dios le pido\"",
+      "options": [
+        "getting closer",
+        "I ask/I pray",
+        "to run",
+        "I have"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"quedes\" mean?",
+      "context": "Context: \"Que te quedes a mi lado y que más nunca te me vayas, mi vida\"",
+      "options": [
+        "to drink",
+        "to read",
+        "hot",
+        "stay"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"mi lado\" mean?",
+      "context": "Context: \"Que te quedes a mi lado y que más nunca te me vayas, mi vida\"",
+      "options": [
+        "going",
+        "slow",
+        "to walk",
+        "my side"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"más nunca\" mean?",
+      "context": "Context: \"Que te quedes a mi lado y que más nunca te me vayas, mi vida\"",
+      "options": [
+        "never again",
+        "to drink",
+        "you know",
+        "house"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"mi vida\" mean?",
+      "context": "Context: \"Que te quedes a mi lado y que más nunca te me vayas, mi vida\"",
+      "options": [
+        "happy",
+        "hot",
+        "I said/told",
+        "my life"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"muera\" mean?",
+      "context": "Context: \"Que mi madre no se muera y que mi padre me recuerde\"",
+      "options": [
+        "book",
+        "someone",
+        "die",
+        "everyone"
+      ],
+      "correct": 2
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"madre\" mean?",
+      "context": "Context: \"Que mi madre no se muera y que mi padre me recuerde\"",
+      "options": [
+        "mother",
+        "to work",
+        "happy",
+        "you know"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"padre\" mean?",
+      "context": "Context: \"Que mi madre no se muera y que mi padre me recuerde\"",
+      "options": [
+        "father",
+        "to sleep",
+        "gaze",
+        "to play"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"recuerde\" mean?",
+      "context": "Context: \"Que mi madre no se muera y que mi padre me recuerde\"",
+      "options": [
+        "remember",
+        "music",
+        "slow",
+        "nobody"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"segundo\" mean?",
+      "context": "Context: \"Un segundo más de vida para darte\"",
+      "options": [
+        "second",
+        "everyone",
+        "food",
+        "life"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"más\" mean?",
+      "context": "Context: \"Un segundo más de vida para darte\"",
+      "options": [
+        "somewhere",
+        "day",
+        "night",
+        "more"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"darte\" mean?",
+      "context": "Context: \"Un segundo más de vida para darte\"",
+      "options": [
+        "to give you",
+        "to love you",
+        "music",
+        "to read"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"corazón\" mean?",
+      "context": "Context: \"Y que de tu voz sea este corazón\"",
+      "options": [
+        "to sleep",
+        "something",
+        "today",
+        "heart"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"voz\" mean?",
+      "context": "Context: \"Y que de tu voz sea este corazón\"",
+      "options": [
+        "voice",
+        "are",
+        "calling me",
+        "beautiful"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"amor\" mean?",
+      "context": "Context: \"Que si me muero sea de amor\"",
+      "options": [
+        "plan",
+        "love",
+        "I said/told",
+        "book"
+      ],
+      "correct": 1
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"despierten\" mean?",
+      "context": "Context: \"Que mis ojos se despierten con la luz de tu mirada, yo\"",
+      "options": [
+        "awaken",
+        "music",
+        "car",
+        "someone"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"luz\" mean?",
+      "context": "Context: \"Que mis ojos se despierten con la luz de tu mirada, yo\"",
+      "options": [
+        "book",
+        "somewhere",
+        "car",
+        "light"
+      ],
+      "correct": 3
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"ojos\" mean?",
+      "context": "Context: \"Que mis ojos se despierten con la luz de tu mirada, yo\"",
+      "options": [
+        "eyes",
+        "calling me",
+        "I ask/I pray",
+        "sad"
+      ],
+      "correct": 0
+    },
+    {
+      "language": "Spanish",
+      "song": "A Dios Le Pido",
+      "artist": "Juanes",
+      "level": "A2",
+      "question": "What does \"mirada\" mean?",
+      "context": "Context: \"Que mis ojos se despierten con la luz de tu mirada, yo\"",
+      "options": [
+        "money",
+        "to work",
+        "never",
+        "gaze"
+      ],
+      "correct": 3
+    }
+  ]
+}
