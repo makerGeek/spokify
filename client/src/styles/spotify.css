@@ -398,6 +398,67 @@
   }
 }
 
+/* Lesson Icon Styles */
+.lesson-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  border: 4px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.lesson-icon-accessible {
+  background: linear-gradient(to bottom right, #60a5fa, #2563eb);
+  border-color: #93c5fd;
+  box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.3);
+}
+
+.lesson-icon-completed {
+  background: linear-gradient(to bottom right, #4ade80, #16a34a);
+  border-color: #86efac;
+  box-shadow: 0 25px 50px -12px rgba(22, 163, 74, 0.3);
+}
+
+.lesson-icon-locked {
+  background: linear-gradient(to bottom right, #93c5fd, #3b82f6);
+  border-color: #bfdbfe;
+  opacity: 0.5;
+}
+
+.lesson-icon-premium {
+  background: linear-gradient(to bottom right, #fbbf24, #d97706);
+  border-color: #fcd34d;
+  box-shadow: 0 25px 50px -12px rgba(217, 119, 6, 0.3);
+}
+
+.lesson-icon:hover.lesson-icon-accessible {
+  background: linear-gradient(to bottom right, #3b82f6, #1d4ed8);
+  transform: scale(1.1);
+}
+
+.lesson-icon:hover.lesson-icon-completed {
+  background: linear-gradient(to bottom right, #16a34a, #15803d);
+  transform: scale(1.05);
+}
+
+.lesson-icon:active.lesson-icon-accessible {
+  transform: scale(0.95);
+}
+
+.lesson-icon-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: 50%;
+  z-index: 10;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .spotify-heading-xl {

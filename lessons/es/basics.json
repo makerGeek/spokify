@@ -1,0 +1,123 @@
+{
+  "course": {
+    "language": "es",
+    "difficulty": "A1",
+    "title": "Spanish Basics",
+    "description": "Start your Spanish learning journey with essential words and phrases"
+  },
+  "lessons": [
+    {
+      "order": 1,
+      "isFree": true,
+      "title": "Saludos y Cortesía",
+      "description": "Learn how to greet people and be polite in Spanish",
+      "vocabulary": [
+        { "word": "hola", "translation": "hello" },
+        { "word": "buenos días", "translation": "good morning" },
+        { "word": "buenas tardes", "translation": "good afternoon" },
+        { "word": "buenas noches", "translation": "good evening" },
+        { "word": "adiós", "translation": "goodbye" },
+        { "word": "hasta luego", "translation": "see you later" },
+        { "word": "gracias", "translation": "thank you" },
+        { "word": "por favor", "translation": "please" },
+        { "word": "disculpe", "translation": "excuse me" },
+        { "word": "lo siento", "translation": "I'm sorry" }
+      ]
+    },
+    {
+      "order": 2,
+      "isFree": true,
+      "title": "Pronombres Personales",
+      "description": "Master the basic pronouns to build sentences",
+      "vocabulary": [
+        { "word": "yo", "translation": "I" },
+        { "word": "tú", "translation": "you (informal)" },
+        { "word": "él", "translation": "he" },
+        { "word": "ella", "translation": "she" },
+        { "word": "nosotros", "translation": "we (masculine)" },
+        { "word": "nosotras", "translation": "we (feminine)" },
+        { "word": "ellos", "translation": "they (masculine)" },
+        { "word": "ellas", "translation": "they (feminine)" },
+        { "word": "usted", "translation": "you (formal)" }
+      ]
+    },
+    {
+      "order": 3,
+      "isFree": true,
+      "title": "La Familia",
+      "description": "Talk about your family and relationships",
+      "vocabulary": [
+        { "word": "familia", "translation": "family" },
+        { "word": "madre", "translation": "mother" },
+        { "word": "padre", "translation": "father" },
+        { "word": "hijo", "translation": "son" },
+        { "word": "hija", "translation": "daughter" },
+        { "word": "hermano", "translation": "brother" },
+        { "word": "hermana", "translation": "sister" },
+        { "word": "abuelo", "translation": "grandfather" },
+        { "word": "abuela", "translation": "grandmother" },
+        { "word": "padres", "translation": "parents" },
+        { "word": "esposo", "translation": "husband" },
+        { "word": "esposa", "translation": "wife" }
+      ]
+    },
+    {
+      "order": 4,
+      "isFree": false,
+      "title": "Números del 1 al 20",
+      "description": "Learn essential numbers for everyday situations",
+      "vocabulary": [
+        { "word": "uno", "translation": "one" },
+        { "word": "dos", "translation": "two" },
+        { "word": "tres", "translation": "three" },
+        { "word": "cuatro", "translation": "four" },
+        { "word": "cinco", "translation": "five" },
+        { "word": "seis", "translation": "six" },
+        { "word": "siete", "translation": "seven" },
+        { "word": "ocho", "translation": "eight" },
+        { "word": "nueve", "translation": "nine" },
+        { "word": "diez", "translation": "ten" },
+        { "word": "veinte", "translation": "twenty" }
+      ]
+    },
+    {
+      "order": 5,
+      "isFree": false,
+      "title": "Colores y Adjetivos",
+      "description": "Describe the world around you with colors and basic adjectives",
+      "vocabulary": [
+        { "word": "rojo", "translation": "red" },
+        { "word": "azul", "translation": "blue" },
+        { "word": "verde", "translation": "green" },
+        { "word": "amarillo", "translation": "yellow" },
+        { "word": "negro", "translation": "black" },
+        { "word": "blanco", "translation": "white" },
+        { "word": "grande", "translation": "big" },
+        { "word": "pequeño", "translation": "small" },
+        { "word": "bonito", "translation": "pretty" },
+        { "word": "bueno", "translation": "good" },
+        { "word": "malo", "translation": "bad" }
+      ]
+    },
+    {
+      "order": 6,
+      "isFree": false,
+      "title": "Comida y Bebidas",
+      "description": "Order food and drinks like a local",
+      "vocabulary": [
+        { "word": "comida", "translation": "food" },
+        { "word": "bebida", "translation": "drink" },
+        { "word": "agua", "translation": "water" },
+        { "word": "pan", "translation": "bread" },
+        { "word": "carne", "translation": "meat" },
+        { "word": "pollo", "translation": "chicken" },
+        { "word": "pescado", "translation": "fish" },
+        { "word": "fruta", "translation": "fruit" },
+        { "word": "verdura", "translation": "vegetable" },
+        { "word": "leche", "translation": "milk" },
+        { "word": "café", "translation": "coffee" },
+        { "word": "cerveza", "translation": "beer" }
+      ]
+    }
+  ]
+}

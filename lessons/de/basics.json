@@ -1,0 +1,155 @@
+{
+  "course": {
+    "language": "de",
+    "difficulty": "A1",
+    "title": "German Basics",
+    "description": "Start your German learning journey with essential words and phrases"
+  },
+  "lessons": [
+    {
+      "order": 1,
+      "isFree": true,
+      "title": "Greetings & Politeness",
+      "description": "Learn how to greet people and be polite in German",
+      "vocabulary": [
+        { "word": "hallo", "translation": "hello" },
+        { "word": "guten Tag", "translation": "good day" },
+        { "word": "guten Morgen", "translation": "good morning" },
+        { "word": "guten Abend", "translation": "good evening" },
+        { "word": "auf Wiedersehen", "translation": "goodbye" },
+        { "word": "danke", "translation": "thank you" },
+        { "word": "bitte", "translation": "please" },
+        { "word": "entschuldigung", "translation": "excuse me" },
+        { "word": "tschüss", "translation": "bye" }
+      ]
+    },
+    {
+      "order": 2,
+      "isFree": true,
+      "title": "Personal Pronouns",
+      "description": "Master the basic pronouns to build sentences",
+      "vocabulary": [
+        { "word": "ich", "translation": "I" },
+        { "word": "du", "translation": "you (informal)" },
+        { "word": "er", "translation": "he" },
+        { "word": "sie", "translation": "she" },
+        { "word": "es", "translation": "it" },
+        { "word": "wir", "translation": "we" },
+        { "word": "ihr", "translation": "you (plural)" },
+        { "word": "Sie", "translation": "you (formal)" }
+      ]
+    },
+    {
+      "order": 3,
+      "isFree": true,
+      "title": "Family Members",
+      "description": "Talk about your family and relationships",
+      "vocabulary": [
+        { "word": "Familie", "translation": "family" },
+        { "word": "Mutter", "translation": "mother" },
+        { "word": "Vater", "translation": "father" },
+        { "word": "Sohn", "translation": "son" },
+        { "word": "Tochter", "translation": "daughter" },
+        { "word": "Bruder", "translation": "brother" },
+        { "word": "Schwester", "translation": "sister" },
+        { "word": "Großmutter", "translation": "grandmother" },
+        { "word": "Großvater", "translation": "grandfather" },
+        { "word": "Eltern", "translation": "parents" }
+      ]
+    },
+    {
+      "order": 4,
+      "isFree": false,
+      "title": "Numbers 1-20",
+      "description": "Learn essential numbers for everyday situations",
+      "vocabulary": [
+        { "word": "eins", "translation": "one" },
+        { "word": "zwei", "translation": "two" },
+        { "word": "drei", "translation": "three" },
+        { "word": "vier", "translation": "four" },
+        { "word": "fünf", "translation": "five" },
+        { "word": "sechs", "translation": "six" },
+        { "word": "sieben", "translation": "seven" },
+        { "word": "acht", "translation": "eight" },
+        { "word": "neun", "translation": "nine" },
+        { "word": "zehn", "translation": "ten" },
+        { "word": "zwanzig", "translation": "twenty" }
+      ]
+    },
+    {
+      "order": 5,
+      "isFree": false,
+      "title": "Colors & Adjectives",
+      "description": "Describe the world around you with colors and basic adjectives",
+      "vocabulary": [
+        { "word": "rot", "translation": "red" },
+        { "word": "blau", "translation": "blue" },
+        { "word": "grün", "translation": "green" },
+        { "word": "gelb", "translation": "yellow" },
+        { "word": "schwarz", "translation": "black" },
+        { "word": "weiß", "translation": "white" },
+        { "word": "groß", "translation": "big" },
+        { "word": "klein", "translation": "small" },
+        { "word": "schön", "translation": "beautiful" },
+        { "word": "gut", "translation": "good" }
+      ]
+    },
+    {
+      "order": 6,
+      "isFree": false,
+      "title": "Food & Drinks",
+      "description": "Order food and drinks like a local",
+      "vocabulary": [
+        { "word": "Essen", "translation": "food" },
+        { "word": "trinken", "translation": "to drink" },
+        { "word": "Wasser", "translation": "water" },
+        { "word": "Brot", "translation": "bread" },
+        { "word": "Fleisch", "translation": "meat" },
+        { "word": "Gemüse", "translation": "vegetables" },
+        { "word": "Obst", "translation": "fruit" },
+        { "word": "Milch", "translation": "milk" },
+        { "word": "Kaffee", "translation": "coffee" },
+        { "word": "Bier", "translation": "beer" },
+        { "word": "Wein", "translation": "wine" }
+      ]
+    },
+    {
+      "order": 7,
+      "isFree": false,
+      "title": "House & Home",
+      "description": "Vocabulary for talking about where you live",
+      "vocabulary": [
+        { "word": "Haus", "translation": "house" },
+        { "word": "Wohnung", "translation": "apartment" },
+        { "word": "Zimmer", "translation": "room" },
+        { "word": "Küche", "translation": "kitchen" },
+        { "word": "Badezimmer", "translation": "bathroom" },
+        { "word": "Schlafzimmer", "translation": "bedroom" },
+        { "word": "Wohnzimmer", "translation": "living room" },
+        { "word": "Tür", "translation": "door" },
+        { "word": "Fenster", "translation": "window" },
+        { "word": "Tisch", "translation": "table" }
+      ]
+    },
+    {
+      "order": 8,
+      "isFree": false,
+      "title": "Time & Days",
+      "description": "Talk about time, days of the week, and make plans",
+      "vocabulary": [
+        { "word": "Zeit", "translation": "time" },
+        { "word": "Tag", "translation": "day" },
+        { "word": "Woche", "translation": "week" },
+        { "word": "Montag", "translation": "Monday" },
+        { "word": "Dienstag", "translation": "Tuesday" },
+        { "word": "Mittwoch", "translation": "Wednesday" },
+        { "word": "Donnerstag", "translation": "Thursday" },
+        { "word": "Freitag", "translation": "Friday" },
+        { "word": "Samstag", "translation": "Saturday" },
+        { "word": "Sonntag", "translation": "Sunday" },
+        { "word": "heute", "translation": "today" },
+        { "word": "morgen", "translation": "tomorrow" }
+      ]
+    }
+  ]
+}

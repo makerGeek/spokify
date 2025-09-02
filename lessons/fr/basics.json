@@ -1,0 +1,122 @@
+{
+  "course": {
+    "language": "fr",
+    "difficulty": "A1",
+    "title": "French Basics",
+    "description": "Start your French learning journey with essential words and phrases"
+  },
+  "lessons": [
+    {
+      "order": 1,
+      "isFree": true,
+      "title": "Salutations et Politesse",
+      "description": "Learn how to greet people and be polite in French",
+      "vocabulary": [
+        { "word": "bonjour", "translation": "hello" },
+        { "word": "bonsoir", "translation": "good evening" },
+        { "word": "salut", "translation": "hi/bye (informal)" },
+        { "word": "au revoir", "translation": "goodbye" },
+        { "word": "à bientôt", "translation": "see you soon" },
+        { "word": "merci", "translation": "thank you" },
+        { "word": "s'il vous plaît", "translation": "please (formal)" },
+        { "word": "s'il te plaît", "translation": "please (informal)" },
+        { "word": "excusez-moi", "translation": "excuse me" },
+        { "word": "pardon", "translation": "sorry" }
+      ]
+    },
+    {
+      "order": 2,
+      "isFree": true,
+      "title": "Pronoms Personnels",
+      "description": "Master the basic pronouns to build sentences",
+      "vocabulary": [
+        { "word": "je", "translation": "I" },
+        { "word": "tu", "translation": "you (informal)" },
+        { "word": "il", "translation": "he" },
+        { "word": "elle", "translation": "she" },
+        { "word": "nous", "translation": "we" },
+        { "word": "vous", "translation": "you (formal/plural)" },
+        { "word": "ils", "translation": "they (masculine)" },
+        { "word": "elles", "translation": "they (feminine)" }
+      ]
+    },
+    {
+      "order": 3,
+      "isFree": true,
+      "title": "La Famille",
+      "description": "Talk about your family and relationships",
+      "vocabulary": [
+        { "word": "famille", "translation": "family" },
+        { "word": "mère", "translation": "mother" },
+        { "word": "père", "translation": "father" },
+        { "word": "fils", "translation": "son" },
+        { "word": "fille", "translation": "daughter" },
+        { "word": "frère", "translation": "brother" },
+        { "word": "sœur", "translation": "sister" },
+        { "word": "grand-mère", "translation": "grandmother" },
+        { "word": "grand-père", "translation": "grandfather" },
+        { "word": "parents", "translation": "parents" },
+        { "word": "mari", "translation": "husband" },
+        { "word": "femme", "translation": "wife" }
+      ]
+    },
+    {
+      "order": 4,
+      "isFree": false,
+      "title": "Les Nombres 1-20",
+      "description": "Learn essential numbers for everyday situations",
+      "vocabulary": [
+        { "word": "un", "translation": "one" },
+        { "word": "deux", "translation": "two" },
+        { "word": "trois", "translation": "three" },
+        { "word": "quatre", "translation": "four" },
+        { "word": "cinq", "translation": "five" },
+        { "word": "six", "translation": "six" },
+        { "word": "sept", "translation": "seven" },
+        { "word": "huit", "translation": "eight" },
+        { "word": "neuf", "translation": "nine" },
+        { "word": "dix", "translation": "ten" },
+        { "word": "vingt", "translation": "twenty" }
+      ]
+    },
+    {
+      "order": 5,
+      "isFree": false,
+      "title": "Couleurs et Adjectifs",
+      "description": "Describe the world around you with colors and basic adjectives",
+      "vocabulary": [
+        { "word": "rouge", "translation": "red" },
+        { "word": "bleu", "translation": "blue" },
+        { "word": "vert", "translation": "green" },
+        { "word": "jaune", "translation": "yellow" },
+        { "word": "noir", "translation": "black" },
+        { "word": "blanc", "translation": "white" },
+        { "word": "grand", "translation": "big" },
+        { "word": "petit", "translation": "small" },
+        { "word": "beau", "translation": "beautiful" },
+        { "word": "bon", "translation": "good" },
+        { "word": "mauvais", "translation": "bad" }
+      ]
+    },
+    {
+      "order": 6,
+      "isFree": false,
+      "title": "Nourriture et Boissons",
+      "description": "Order food and drinks like a local",
+      "vocabulary": [
+        { "word": "nourriture", "translation": "food" },
+        { "word": "boisson", "translation": "drink" },
+        { "word": "eau", "translation": "water" },
+        { "word": "pain", "translation": "bread" },
+        { "word": "viande", "translation": "meat" },
+        { "word": "poisson", "translation": "fish" },
+        { "word": "légume", "translation": "vegetable" },
+        { "word": "fruit", "translation": "fruit" },
+        { "word": "lait", "translation": "milk" },
+        { "word": "café", "translation": "coffee" },
+        { "word": "vin", "translation": "wine" },
+        { "word": "bière", "translation": "beer" }
+      ]
+    }
+  ]
+}

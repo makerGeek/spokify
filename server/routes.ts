@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth";
 import importRoutes from "./routes/import";
 import searchRoutes from "./routes/search";
 import activityRoutes from "./routes/activity";
+import lessonsRoutes from "./routes/lessons";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -77,6 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/import', importRoutes);
   app.use('/api/search', searchRoutes);
   app.use('/api/activity', activityRoutes);
+  app.use('/api/lessons', lessonsRoutes);
   
   // User routes
   app.post("/api/users", async (req, res) => {

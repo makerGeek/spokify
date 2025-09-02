@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Home, Search, BookOpen, GamepadIcon, User } from "lucide-react";
+import { Home, Search, BookOpen, GamepadIcon, User, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BottomNavigationProps {
@@ -12,8 +12,8 @@ export default function BottomNavigation({ currentPage }: BottomNavigationProps)
   const navItems = [
     { id: "home", label: "Home", icon: Home, path: "/home" },
     { id: "search", label: "Search", icon: Search, path: "/search" },
+    { id: "lessons", label: "Lessons", icon: GraduationCap, path: "/lessons" },
     { id: "library", label: "Library", icon: BookOpen, path: "/library" },
-    { id: "exercise", label: "Exercise", icon: GamepadIcon, path: "/exercise" },
     { id: "profile", label: "Profile", icon: User, path: "/profile" },
   ];
 

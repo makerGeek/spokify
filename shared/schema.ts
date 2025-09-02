@@ -316,3 +316,51 @@ export const insertDmcaRequestSchema = createInsertSchema(dmcaRequests).pick({
 
 export type InsertDmcaRequest = z.infer<typeof insertDmcaRequestSchema>;
 export type DmcaRequest = typeof dmcaRequests.$inferSelect;
+
+export const lessons = pgTable("lessons", {
+  id: serial("id").primaryKey(),
+  language: text("language").notNull(),
+  difficulty: text("difficulty").notNull(),
+  order: integer("order").notNull(),
+  isFree: boolean("is_free").notNull().default(true),
+  title: text("title").notNull(),
+  songId: integer("song_id").references(() => songs.id, { onDelete: "cascade" }),
+  vocabulary: jsonb("vocabulary").notNull(), // Array of {word, translation}
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Index for lesson ordering by language and difficulty
+  lessonOrderIdx: index("lesson_order_idx").on(table.language, table.difficulty, table.order),
+}));
+
+export const learnedLessons = pgTable("learned_lessons", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  lessonId: integer("lesson_id").notNull().references(() => lessons.id, { onDelete: "cascade" }),
+  completedAt: timestamp("completed_at").defaultNow(),
+  score: integer("score").notNull(), // 0-100 percentage
+}, (table) => ({
+  // Unique constraint to prevent duplicate lesson completions
+  userLessonIdx: index("user_lesson_idx").on(table.userId, table.lessonId),
+}));
+
+export const insertLessonSchema = createInsertSchema(lessons).pick({
+  language: true,
+  difficulty: true,
+  order: true,
+  isFree: true,
+  title: true,
+  songId: true,
+  vocabulary: true,
+});
+
+export const insertLearnedLessonSchema = createInsertSchema(learnedLessons).pick({
+  userId: true,
+  lessonId: true,
+  score: true,
+});
+
+export type InsertLesson = z.infer<typeof insertLessonSchema>;
+export type Lesson = typeof lessons.$inferSelect;
+export type InsertLearnedLesson = z.infer<typeof insertLearnedLessonSchema>;
+export type LearnedLesson = typeof learnedLessons.$inferSelect;

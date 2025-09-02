@@ -1,4 +1,4 @@
-import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, dmcaRequests, contactSubmissions, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark, type DmcaRequest, type InsertDmcaRequest, type ContactSubmission, type InsertContactSubmission } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, dmcaRequests, contactSubmissions, lessons, learnedLessons, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark, type DmcaRequest, type InsertDmcaRequest, type ContactSubmission, type InsertContactSubmission, type Lesson, type InsertLesson, type LearnedLesson, type InsertLearnedLesson } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -81,6 +81,26 @@ export interface IStorage {
   getDmcaRequest(id: number): Promise<DmcaRequest | undefined>;
   getAllDmcaRequests(): Promise<DmcaRequest[]>;
   updateDmcaRequestStatus(id: number, status: string, adminNotes?: string, processedBy?: number): Promise<DmcaRequest>;
+
+  // Lesson methods
+  getLessons(language: string, difficulty: string): Promise<Lesson[]>;
+  getLesson(id: number): Promise<Lesson | undefined>;
+  createLesson(lesson: InsertLesson): Promise<Lesson>;
+  updateLesson(id: number, updates: Partial<Lesson>): Promise<Lesson>;
+  deleteLesson(id: number): Promise<void>;
+  
+  // Learned lesson methods
+  getUserCompletedLessons(userId: number): Promise<LearnedLesson[]>;
+  completeLesson(completion: InsertLearnedLesson): Promise<LearnedLesson>;
+  isLessonUnlocked(userId: number, lessonId: number): Promise<boolean>;
+  getUserLessonStats(userId: number): Promise<{
+    totalCompleted: number;
+    averageScore: number;
+    totalWordsLearned: number;
+  }>;
+  
+  // User stats update
+  updateUserWordsLearned(userId: number, additionalWords: number): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -709,6 +729,170 @@ export class DatabaseStorage implements IStorage {
       .values(submission)
       .returning();
     return contactSubmission;
+  }
+
+  // Lesson methods implementation
+  async getLessons(language: string, difficulty: string): Promise<Lesson[]> {
+    return await db
+      .select()
+      .from(lessons)
+      .where(and(
+        eq(lessons.language, language),
+        eq(lessons.difficulty, difficulty)
+      ))
+      .orderBy(lessons.order);
+  }
+
+  async getLesson(id: number): Promise<Lesson | undefined> {
+    const [lesson] = await db
+      .select()
+      .from(lessons)
+      .where(eq(lessons.id, id));
+    return lesson || undefined;
+  }
+
+  async createLesson(lesson: InsertLesson): Promise<Lesson> {
+    const [newLesson] = await db
+      .insert(lessons)
+      .values(lesson)
+      .returning();
+    return newLesson;
+  }
+
+  async updateLesson(id: number, updates: Partial<Lesson>): Promise<Lesson> {
+    const [lesson] = await db
+      .update(lessons)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(lessons.id, id))
+      .returning();
+    return lesson;
+  }
+
+  async deleteLesson(id: number): Promise<void> {
+    await db
+      .delete(lessons)
+      .where(eq(lessons.id, id));
+  }
+
+  // Learned lesson methods implementation
+  async getUserCompletedLessons(userId: number): Promise<LearnedLesson[]> {
+    return await db
+      .select()
+      .from(learnedLessons)
+      .where(eq(learnedLessons.userId, userId))
+      .orderBy(learnedLessons.completedAt);
+  }
+
+  async completeLesson(completion: InsertLearnedLesson): Promise<LearnedLesson> {
+    // Check if lesson was already completed
+    const [existing] = await db
+      .select()
+      .from(learnedLessons)
+      .where(and(
+        eq(learnedLessons.userId, completion.userId),
+        eq(learnedLessons.lessonId, completion.lessonId)
+      ));
+
+    if (existing) {
+      // Update existing completion with better score if applicable
+      if (completion.score > existing.score) {
+        const [updated] = await db
+          .update(learnedLessons)
+          .set({ 
+            score: completion.score, 
+            completedAt: new Date() 
+          })
+          .where(eq(learnedLessons.id, existing.id))
+          .returning();
+        return updated;
+      }
+      return existing;
+    }
+
+    // Create new completion
+    const [newCompletion] = await db
+      .insert(learnedLessons)
+      .values(completion)
+      .returning();
+    return newCompletion;
+  }
+
+  async isLessonUnlocked(userId: number, lessonId: number): Promise<boolean> {
+    // Get the lesson to check its order
+    const lesson = await this.getLesson(lessonId);
+    if (!lesson) return false;
+
+    // First lesson is always unlocked
+    if (lesson.order === 1) return true;
+
+    // Check if previous lesson is completed
+    const previousLesson = await db
+      .select()
+      .from(lessons)
+      .where(and(
+        eq(lessons.language, lesson.language),
+        eq(lessons.difficulty, lesson.difficulty),
+        eq(lessons.order, lesson.order - 1)
+      ));
+
+    if (previousLesson.length === 0) return true;
+
+    const [prevLesson] = previousLesson;
+    const [completion] = await db
+      .select()
+      .from(learnedLessons)
+      .where(and(
+        eq(learnedLessons.userId, userId),
+        eq(learnedLessons.lessonId, prevLesson.id),
+        sql`score >= 80` // Require 80% to unlock next lesson
+      ));
+
+    return !!completion;
+  }
+
+  async getUserLessonStats(userId: number): Promise<{
+    totalCompleted: number;
+    averageScore: number;
+    totalWordsLearned: number;
+  }> {
+    const [stats] = await db
+      .select({
+        totalCompleted: sql<number>`count(*)`,
+        averageScore: sql<number>`avg(score)`,
+      })
+      .from(learnedLessons)
+      .where(eq(learnedLessons.userId, userId));
+
+    // Calculate total words learned from completed lessons
+    const completedLessons = await db
+      .select({
+        vocabulary: lessons.vocabulary
+      })
+      .from(learnedLessons)
+      .innerJoin(lessons, eq(learnedLessons.lessonId, lessons.id))
+      .where(eq(learnedLessons.userId, userId));
+
+    const totalWordsLearned = completedLessons.reduce((total, lesson) => {
+      const vocabArray = Array.isArray(lesson.vocabulary) ? lesson.vocabulary : [];
+      return total + vocabArray.length;
+    }, 0);
+
+    return {
+      totalCompleted: stats?.totalCompleted || 0,
+      averageScore: stats?.averageScore || 0,
+      totalWordsLearned
+    };
+  }
+
+  async updateUserWordsLearned(userId: number, additionalWords: number): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        wordsLearned: sql`${users.wordsLearned} + ${additionalWords}`
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 
 }

@@ -40,6 +40,8 @@ import Checkout from "@/pages/checkout";
 import TermsOfService from "@/pages/terms-of-service";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import DMCATakedown from "@/pages/dmca-takedown";
+import LessonsPage from "@/pages/lessons";
+import LessonDetailPage from "@/pages/lesson-detail";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -69,6 +71,7 @@ function Router() {
   const getCurrentPage = () => {
     if (location === '/home') return 'home';
     if (location === '/search') return 'search';
+    if (location === '/lessons') return 'lessons';
     if (location === '/library') return 'library';
     if (location === '/exercise') return 'exercise';
     if (location.startsWith('/exercise')) return 'exercise';
@@ -137,6 +140,16 @@ function Router() {
         <Route path="/exercise/mix">
           <AuthenticatedOnly contextMessage="Login to play mixed exercise sessions">
             <ExerciseMix />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/lessons">
+          <AuthenticatedOnly contextMessage="Login to access your personalized learning path">
+            <LessonsPage />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/lesson/:lessonId">
+          <AuthenticatedOnly contextMessage="Login to access lesson details">
+            <LessonDetailPage />
           </AuthenticatedOnly>
         </Route>
         <Route path="/profile">
