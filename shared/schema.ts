@@ -325,7 +325,7 @@ export const lessons = pgTable("lessons", {
   isFree: boolean("is_free").notNull().default(true),
   title: text("title").notNull(),
   songId: integer("song_id").references(() => songs.id, { onDelete: "cascade" }),
-  vocabulary: jsonb("vocabulary").notNull(), // Array of {word, translation}
+  vocabulary: jsonb("vocabulary").notNull(), // Array of {word, translation, exampleSentence?}
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({

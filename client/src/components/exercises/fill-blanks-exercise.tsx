@@ -13,9 +13,10 @@ interface FillBlanksExerciseProps {
   mixMode?: boolean;
   onMixComplete?: () => void;
   hideHeader?: boolean;
+  hideCard?: boolean;
 }
 
-export function FillBlanksExercise({ vocabulary, targetLanguage, maxExercises = 5, mixMode = false, onMixComplete, hideHeader = false }: FillBlanksExerciseProps) {
+export function FillBlanksExercise({ vocabulary, targetLanguage, maxExercises = 5, mixMode = false, onMixComplete, hideHeader = false, hideCard = false }: FillBlanksExerciseProps) {
   const [, setLocation] = useLocation();
 
   const {
@@ -59,8 +60,8 @@ export function FillBlanksExercise({ vocabulary, targetLanguage, maxExercises = 
         </div>
       )}
 
-      {/* Progress Bar - show when not in mix mode, positioned right after header */}
-      {!mixMode && (
+      {/* Progress Bar - only show in regular mode and when not complete */}
+      {!mixMode && !isComplete && (
         <div className="mb-6">
           <ReviewProgress current={progress.current} total={progress.total} />
         </div>
@@ -69,126 +70,225 @@ export function FillBlanksExercise({ vocabulary, targetLanguage, maxExercises = 
       {/* Game Content */}
       {currentExercise && !isComplete && (
         <div>
-          {/* Card with song header like Vocabulary Review */}
-
-          {/* Exercise card */}
-          <div className="spotify-card p-6 mb-8">
-            {/* Header row: song name left, level/difficulty right */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <Music size={18} className="text-[var(--spotify-green)]" />
-                <span className="spotify-text-muted text-sm">From: {currentExercise.songName}</span>
-              </div>
-              <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-xs font-medium">
-                {(currentExercise.vocabularyItems && currentExercise.vocabularyItems.length > 0)
-                  ? currentExercise.vocabularyItems[0].difficulty
-                  : 'A1'}
-              </div>
-            </div>
-
-            <div className="text-center mb-6">
-               <p className="spotify-text-muted text-sm mb-2">Complete the {targetLanguage === 'es' ? 'Spanish' : targetLanguage === 'fr' ? 'French' : targetLanguage === 'de' ? 'German' : 'target language'} lyrics:</p>
-             </div>
-
-             {/* Lyrics with blanks */}
-             <div className="text-center text-lg leading-relaxed spotify-text-primary">
-               {currentExercise.textWithBlanks.map((part, index) => (
-                 <span key={index}>
-                  {typeof part === 'string' ? (
-                    part
-                  ) : (
-                    <BlankInput
-                      key={`blank-${index}`}
-                      value={userAnswers[part.blankIndex] || ''}
-                      placeholder="..."
-                      isCorrect={showResults ? (correctAnswers[part.blankIndex] ? true : false) : null}
-                      correctAnswer={showResults ? part.answer : undefined}
-                      onChange={(value) => handleAnswerChange(part.blankIndex, value)}
-                      disabled={showResults}
-                    />
-                  )}
-                </span>
-              ))}
-            </div>
-
-            {/* Word hints */}
-            {currentExercise.hints.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-[var(--spotify-border)]">
-                <p className="text-center spotify-text-muted text-sm mb-3">Word bank:</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {currentExercise.hints.map((hint, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        // Find the first empty blank and fill it
-                        const emptyBlankIndex = currentExercise.blanks.findIndex((_, blankIdx) => 
-                          !userAnswers[blankIdx]
-                        );
-                        if (emptyBlankIndex !== -1) {
-                          handleAnswerChange(emptyBlankIndex, hint);
-                        }
-                      }}
-                      disabled={showResults}
-                      className="px-3 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-sm hover:bg-[var(--spotify-border)] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {hint}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Submit button */}
-            {!showResults && (
-              <div className="text-center mb-6 mt-6">
-                <button
-                  onClick={handleSubmit}
-                  className="spotify-btn-primary"
-                  disabled={Object.keys(userAnswers).length === 0}
-                >
-                  Check Answers
-                </button>
-              </div>
-            )}
-
-            {/* Results */}
-            {showResults && (
+          {hideCard ? (
+            /* Content without card wrapper - for use in lessons */
+            <div className="mb-8">
               <div className="text-center mb-6">
-                {isCorrect ? (
-                  <div className="text-green-400 mb-4">
-                    <CheckCircle className="mx-auto mb-2" size={32} />
-                    <p className="spotify-text-primary font-semibold">Excellent! All correct!</p>
-                  </div>
-                ) : (
-                  <div className="text-orange-400 mb-4">
-                    <p className="spotify-text-primary font-semibold">
-                      {Object.values(correctAnswers).filter(Boolean).length} out of {currentExercise.blanks.length} correct
-                    </p>
-                  </div>
-                )}
-                {/* English translation */}
-                <div className="mb-6 p-4 bg-[var(--spotify-light-gray)] rounded-lg">
-                  <p className="spotify-text-muted text-sm mb-2">English translation:</p>
-                  <p className="spotify-text-primary italic">"{currentExercise.englishTranslation}"</p>
-                </div>
-                {isCorrect ? (
-                  <button
-                    onClick={nextExercise}
-                    className="spotify-btn-primary"
-                  >
-                    Next Exercise
-                  </button>
-                ) : (
-                  <button
-                    onClick={tryAgain}
-                    className="spotify-btn-secondary"
-                  >
-                    Try Again
-                  </button>
-                )}
+                <p className="spotify-text-muted text-sm mb-2">Complete the {targetLanguage === 'es' ? 'Spanish' : targetLanguage === 'fr' ? 'French' : targetLanguage === 'de' ? 'German' : 'target language'} lyrics:</p>
               </div>
-            )}
-          </div>
+
+              {/* Lyrics with blanks */}
+              <div className="text-center text-lg leading-relaxed spotify-text-primary">
+                {currentExercise.textWithBlanks.map((part, index) => (
+                  <span key={index}>
+                    {typeof part === 'string' ? (
+                      part
+                    ) : (
+                      <BlankInput
+                        key={`blank-${index}`}
+                        value={userAnswers[part.blankIndex] || ''}
+                        placeholder="..."
+                        isCorrect={showResults ? (correctAnswers[part.blankIndex] ? true : false) : null}
+                        correctAnswer={showResults ? part.answer : undefined}
+                        onChange={(value) => handleAnswerChange(part.blankIndex, value)}
+                        disabled={showResults}
+                      />
+                    )}
+                  </span>
+                ))}
+              </div>
+
+              {/* Word hints */}
+              {currentExercise.hints.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-[var(--spotify-border)]">
+                  <p className="text-center spotify-text-muted text-sm mb-3">Word bank:</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {currentExercise.hints.map((hint, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          const emptyBlankIndex = currentExercise.blanks.findIndex((_, blankIdx) => 
+                            !userAnswers[blankIdx]
+                          );
+                          if (emptyBlankIndex !== -1) {
+                            handleAnswerChange(emptyBlankIndex, hint);
+                          }
+                        }}
+                        disabled={showResults}
+                        className="px-3 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-sm hover:bg-[var(--spotify-border)] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {hint}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Submit button */}
+              {!showResults && (
+                <div className="text-center mb-6 mt-6">
+                  <button
+                    onClick={handleSubmit}
+                    className="spotify-btn-primary"
+                    disabled={Object.keys(userAnswers).length === 0}
+                  >
+                    Check Answers
+                  </button>
+                </div>
+              )}
+
+              {/* Results */}
+              {showResults && (
+                <div className="text-center mb-6">
+                  {isCorrect ? (
+                    <div className="text-green-400 mb-4">
+                      <CheckCircle className="mx-auto mb-2" size={32} />
+                      <p className="spotify-text-primary font-semibold">Excellent! All correct!</p>
+                    </div>
+                  ) : (
+                    <div className="text-orange-400 mb-4">
+                      <p className="spotify-text-primary font-semibold">
+                        {Object.values(correctAnswers).filter(Boolean).length} out of {currentExercise.blanks.length} correct
+                      </p>
+                    </div>
+                  )}
+                  {isCorrect ? (
+                    <button
+                      onClick={nextExercise}
+                      className="spotify-btn-primary"
+                    >
+                      Continue
+                    </button>
+                  ) : (
+                    <button
+                      onClick={tryAgain}
+                      className="spotify-btn-secondary"
+                    >
+                      Try Again
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Content with card wrapper - for standalone use */
+            <div className="spotify-card p-6 mb-8">
+              {/* Header row: song name left, level/difficulty right */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <Music size={18} className="text-[var(--spotify-green)]" />
+                  <span className="spotify-text-muted text-sm">From: {currentExercise.songName}</span>
+                </div>
+                <div className="inline-flex items-center px-2 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-xs font-medium">
+                  {(currentExercise.vocabularyItems && currentExercise.vocabularyItems.length > 0)
+                    ? currentExercise.vocabularyItems[0].difficulty
+                    : 'A1'}
+                </div>
+              </div>
+
+              <div className="text-center mb-6">
+                <p className="spotify-text-muted text-sm mb-2">Complete the {targetLanguage === 'es' ? 'Spanish' : targetLanguage === 'fr' ? 'French' : targetLanguage === 'de' ? 'German' : 'target language'} lyrics:</p>
+              </div>
+
+              {/* Lyrics with blanks */}
+              <div className="text-center text-lg leading-relaxed spotify-text-primary">
+                {currentExercise.textWithBlanks.map((part, index) => (
+                  <span key={index}>
+                    {typeof part === 'string' ? (
+                      part
+                    ) : (
+                      <BlankInput
+                        key={`blank-${index}`}
+                        value={userAnswers[part.blankIndex] || ''}
+                        placeholder="..."
+                        isCorrect={showResults ? (correctAnswers[part.blankIndex] ? true : false) : null}
+                        correctAnswer={showResults ? part.answer : undefined}
+                        onChange={(value) => handleAnswerChange(part.blankIndex, value)}
+                        disabled={showResults}
+                      />
+                    )}
+                  </span>
+                ))}
+              </div>
+
+              {/* Word hints */}
+              {currentExercise.hints.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-[var(--spotify-border)]">
+                  <p className="text-center spotify-text-muted text-sm mb-3">Word bank:</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {currentExercise.hints.map((hint, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          const emptyBlankIndex = currentExercise.blanks.findIndex((_, blankIdx) => 
+                            !userAnswers[blankIdx]
+                          );
+                          if (emptyBlankIndex !== -1) {
+                            handleAnswerChange(emptyBlankIndex, hint);
+                          }
+                        }}
+                        disabled={showResults}
+                        className="px-3 py-1 rounded-full bg-[var(--spotify-light-gray)] spotify-text-secondary text-sm hover:bg-[var(--spotify-border)] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {hint}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Submit button */}
+              {!showResults && (
+                <div className="text-center mb-6 mt-6">
+                  <button
+                    onClick={handleSubmit}
+                    className="spotify-btn-primary"
+                    disabled={Object.keys(userAnswers).length === 0}
+                  >
+                    Check Answers
+                  </button>
+                </div>
+              )}
+
+              {/* Results */}
+              {showResults && (
+                <div className="text-center mb-6">
+                  {isCorrect ? (
+                    <div className="text-green-400 mb-4">
+                      <CheckCircle className="mx-auto mb-2" size={32} />
+                      <p className="spotify-text-primary font-semibold">Excellent! All correct!</p>
+                    </div>
+                  ) : (
+                    <div className="text-orange-400 mb-4">
+                      <p className="spotify-text-primary font-semibold">
+                        {Object.values(correctAnswers).filter(Boolean).length} out of {currentExercise.blanks.length} correct
+                      </p>
+                    </div>
+                  )}
+                  {/* English translation */}
+                  <div className="mb-6 p-4 bg-[var(--spotify-light-gray)] rounded-lg">
+                    <p className="spotify-text-muted text-sm mb-2">English translation:</p>
+                    <p className="spotify-text-primary italic">"{currentExercise.englishTranslation}"</p>
+                  </div>
+                  {isCorrect ? (
+                    <button
+                      onClick={nextExercise}
+                      className="spotify-btn-primary"
+                    >
+                      Continue
+                    </button>
+                  ) : (
+                    <button
+                      onClick={tryAgain}
+                      className="spotify-btn-secondary"
+                    >
+                      Try Again
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -197,7 +297,7 @@ export function FillBlanksExercise({ vocabulary, targetLanguage, maxExercises = 
         <div className="text-center py-8">
           <div className="spotify-card p-8 max-w-md mx-auto">
             <Trophy className="mx-auto spotify-text-accent mb-4" size={64} />
-            <h2 className="spotify-heading-md mb-4">Well Done! 🎉</h2>
+            <h2 className="spotify-heading-md mb-4">Exercise Complete! 🎉</h2>
             
             <div className="mb-6">
               <div className="text-4xl font-bold text-[var(--spotify-green)] mb-2">
@@ -214,7 +314,7 @@ export function FillBlanksExercise({ vocabulary, targetLanguage, maxExercises = 
                 className="flex items-center justify-center space-x-2 spotify-btn-primary"
               >
                 <RotateCcw className="h-4 w-4" />
-                <span>Play Again</span>
+                <span>Try Again</span>
               </button>
               <button
                 onClick={() => window.history.back()}

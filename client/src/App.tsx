@@ -42,6 +42,7 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import DMCATakedown from "@/pages/dmca-takedown";
 import LessonsPage from "@/pages/lessons";
 import LessonDetailPage from "@/pages/lesson-detail";
+import LessonLearningPage from "@/pages/lesson-learning";
 import ProtectedRoute from "@/components/protected-route";
 import AuthenticatedOnly from "@/components/authenticated-only";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -150,6 +151,11 @@ function Router() {
         <Route path="/lesson/:lessonId">
           <AuthenticatedOnly contextMessage="Login to access lesson details">
             <LessonDetailPage />
+          </AuthenticatedOnly>
+        </Route>
+        <Route path="/lesson/:lessonId/learn">
+          <AuthenticatedOnly contextMessage="Login to start learning">
+            <LessonLearningPage />
           </AuthenticatedOnly>
         </Route>
         <Route path="/profile">

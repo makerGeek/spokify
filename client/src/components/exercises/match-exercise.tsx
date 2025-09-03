@@ -11,9 +11,10 @@ interface MatchExerciseProps {
   mixMode?: boolean;
   onMixComplete?: () => void;
   hideHeader?: boolean;
+  hideCard?: boolean;
 }
 
-export function MatchExercise({ vocabulary, targetLanguage, mixMode = false, onMixComplete, hideHeader = false }: MatchExerciseProps) {
+export function MatchExercise({ vocabulary, targetLanguage, mixMode = false, onMixComplete, hideHeader = false, hideCard = false }: MatchExerciseProps) {
   const [, setLocation] = useLocation();
   const [currentRound, setCurrentRound] = useState(1);
   const [totalRounds] = useState(mixMode ? 1 : 4);
@@ -96,7 +97,7 @@ export function MatchExercise({ vocabulary, targetLanguage, mixMode = false, onM
 
       {/* Game Content */}
       {!allRoundsComplete && !isGameComplete && (
-        <div className="spotify-card p-6">
+        hideCard ? (
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-8 max-w-2xl mx-auto">
             {/* Left Column - Foreign Language */}
             <div className="space-y-3">
@@ -136,7 +137,49 @@ export function MatchExercise({ vocabulary, targetLanguage, mixMode = false, onM
               ))}
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="spotify-card p-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-8 max-w-2xl mx-auto">
+              {/* Left Column - Foreign Language */}
+              <div className="space-y-3">
+                <h3 className="text-center spotify-text-muted text-sm font-medium mb-4">
+                  {targetLanguage === 'es' ? 'Spanish' : targetLanguage === 'fr' ? 'French' : targetLanguage === 'de' ? 'German' : targetLanguage === 'it' ? 'Italian' : targetLanguage === 'nl' ? 'Dutch' : targetLanguage === 'pt' ? 'Portuguese' : 'Foreign Language'}
+                </h3>
+                {leftColumn.map((item, index) => (
+                  <MatchingCard
+                    key={item.id}
+                    id={item.id}
+                    text={item.word}
+                    isSelected={selectedLeft === item.id}
+                    isMatched={matches.some(m => m.leftId === item.id)}
+                    isWrongMatch={wrongMatchIds?.leftId === item.id}
+                    side="left"
+                    onClick={() => handleCardSelect(item.id, 'left')}
+                  />
+                ))}
+              </div>
+
+              {/* Right Column - English */}
+              <div className="space-y-3">
+                <h3 className="text-center spotify-text-muted text-sm font-medium mb-4">
+                  English
+                </h3>
+                {rightColumn.map((item, index) => (
+                  <MatchingCard
+                    key={item.id}
+                    id={item.id}
+                    text={item.translation}
+                    isSelected={selectedRight === item.id}
+                    isMatched={matches.some(m => m.rightId === item.id)}
+                    isWrongMatch={wrongMatchIds?.rightId === item.id}
+                    side="right"
+                    onClick={() => handleCardSelect(item.id, 'right')}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )
       )}
 
       {/* Round Complete - show brief message between rounds */}

@@ -7,6 +7,7 @@ import { BookOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import AppHeader from '@/components/app-header';
+import { api } from '@/lib/api-client';
 import LessonCard from '@/components/lesson-card';
 
 interface Lesson {
@@ -84,19 +85,7 @@ export default function LessonsPage() {
   const { data: lessons, isLoading, error } = useQuery({
     queryKey: ['lessons', selectedLanguage, selectedDifficulty],
     queryFn: async () => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(
-        `/api/lessons?language=${selectedLanguage}&difficulty=${selectedDifficulty}`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch lessons');
-      }
-      
-      return response.json() as Promise<Lesson[]>;
+      return api.lessons.getAll(selectedLanguage, selectedDifficulty) as Promise<Lesson[]>;
     },
     enabled: !!user,
   });

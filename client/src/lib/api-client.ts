@@ -165,6 +165,14 @@ export const api = {
       vocabularyReviewed?: number;
     }) => api.post('/activity/track', data),
   },
+
+  lessons: {
+    getAll: (language: string, difficulty: string) => 
+      api.get(`/lessons?language=${language}&difficulty=${difficulty}`),
+    getById: (id: number) => api.get(`/lessons/${id}`),
+    complete: (lessonId: number, score: number) => 
+      api.post(`/lessons/${lessonId}/complete`, { score }),
+  },
 };
 
 export default apiClient;

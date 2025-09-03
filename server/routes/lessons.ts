@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authenticateToken, optionalAuth, validateInput, requireAdmin, type AuthenticatedRequest } from '../middleware/auth';
 import { storage } from '../storage';
 import { insertLessonSchema, insertLearnedLessonSchema } from '@shared/schema';
+import { getExampleSentencesForWords } from '../services/example-sentences.js';
 
 const router = Router();
 
@@ -93,8 +94,36 @@ router.get('/:id', optionalAuth, async (req: AuthenticatedRequest, res) => {
       }
     }
     
+    // Enhance vocabulary with example sentences
+    let enhancedLesson = { ...lesson };
+    
+    if (Array.isArray(lesson.vocabulary) && lesson.vocabulary.length > 0) {
+      try {
+        // Check if any vocabulary items need example sentences
+        const needsExamples = lesson.vocabulary.some(vocab => !vocab.exampleSentence);
+        
+        if (needsExamples) {
+          const vocabularyWithExamples = await getExampleSentencesForWords(
+            lesson.vocabulary,
+            lesson.language
+          );
+          enhancedLesson.vocabulary = vocabularyWithExamples;
+          
+          // Save the enhanced vocabulary back to the database
+          await storage.updateLesson(lesson.id, {
+            vocabulary: vocabularyWithExamples
+          });
+          
+          console.log(`✅ Generated and saved example sentences for lesson ${lesson.id}`);
+        }
+      } catch (error) {
+        console.error('Error enhancing vocabulary with examples:', error);
+        // Continue with original vocabulary if enhancement fails
+      }
+    }
+    
     res.json({
-      ...lesson,
+      ...enhancedLesson,
       canAccess: true
     });
   } catch (error) {
@@ -250,6 +279,88 @@ router.delete('/:id',
     } catch (error) {
       console.error('Delete lesson error:', error);
       res.status(500).json({ error: 'Failed to delete lesson' });
+    }
+  }
+);
+
+// Admin endpoint to regenerate all example sentences
+router.post('/regenerate-examples',
+  authenticateToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      console.log('🔄 Starting regeneration of all lesson example sentences...');
+      
+      // Get all lessons
+      const allLessons = await storage.getAllLessons();
+      
+      console.log(`📚 Found ${allLessons.length} lessons to process`);
+      
+      let processedCount = 0;
+      let updatedCount = 0;
+      
+      for (const lesson of allLessons) {
+        console.log(`\n🎯 Processing lesson ${lesson.id}: "${lesson.title}" (${lesson.language})`);
+        
+        if (!Array.isArray(lesson.vocabulary)) {
+          console.log(`⚠️  Skipping lesson ${lesson.id} - no vocabulary array`);
+          continue;
+        }
+        
+        processedCount++;
+        
+        // Strip existing example sentences to force regeneration
+        const vocabularyWithoutExamples = lesson.vocabulary.map((vocab: any) => ({
+          word: vocab.word,
+          translation: vocab.translation
+        }));
+        
+        console.log(`📝 Regenerating example sentences for ${vocabularyWithoutExamples.length} vocabulary items...`);
+        
+        // Generate new example sentences
+        const vocabularyWithExamples = await getExampleSentencesForWords(
+          vocabularyWithoutExamples,
+          lesson.language
+        );
+        
+        // Update lesson in database
+        await storage.updateLesson(lesson.id, {
+          vocabulary: vocabularyWithExamples
+        });
+        
+        updatedCount++;
+        console.log(`✅ Updated lesson ${lesson.id} with new example sentences`);
+        
+        // Show sample results
+        const sampleSentences = vocabularyWithExamples.slice(0, 2).map(vocab => 
+          `  • "${vocab.word}" → "${vocab.exampleSentence.substring(0, 50)}..."`
+        ).join('\n');
+        console.log(`📖 Sample sentences:\n${sampleSentences}`);
+      }
+      
+      console.log('\n🎉 Successfully regenerated all example sentences!');
+      
+      res.json({
+        success: true,
+        message: 'Successfully regenerated all example sentences',
+        stats: {
+          totalLessons: allLessons.length,
+          processedLessons: processedCount,
+          updatedLessons: updatedCount
+        },
+        improvements: [
+          'Real song lyrics from translations table (when available)',
+          'AI-generated natural sentences (for complex words)',
+          'Improved fallback sentences (for simple words)'
+        ]
+      });
+      
+    } catch (error) {
+      console.error('❌ Error regenerating example sentences:', error);
+      res.status(500).json({ 
+        error: 'Failed to regenerate example sentences',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 );

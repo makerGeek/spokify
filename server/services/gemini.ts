@@ -44,7 +44,7 @@ Guidelines:
 - Return only valid JSON, no additional text`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-2.0-flash",
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -182,6 +182,91 @@ IMPORTANT: Return only valid JSON array format, no additional text or markdown f
 
 
 // Lyrics-based difficulty assessment (for song import scripts)
+export async function generateExampleSentence(
+  word: string,
+  translation: string,
+  language: string
+): Promise<TranslationResult> {
+  try {
+    const languageName = language === 'de' ? 'German' : 
+                        language === 'es' ? 'Spanish' : 
+                        language === 'fr' ? 'French' : 
+                        language === 'it' ? 'Italian' : 
+                        language === 'nl' ? 'Dutch' :
+                        language === 'pt' ? 'Portuguese' : 'German';
+
+    const prompt = `Create a natural, realistic example sentence in ${languageName} that uses the word "${word}" (meaning "${translation}") in context.
+
+Requirements:
+- Write a sentence that sounds like real conversation or everyday writing
+- Use simple grammar appropriate for A1-A2 language learners  
+- Show the word being used naturally in context
+- Make it practical and relatable to daily life
+- DO NOT write definition sentences like "Das Wort X bedeutet Y"
+- DO write context sentences like "Guten Morgen! Wie geht es dir?" for "guten Morgen"
+
+Examples of GOOD sentences:
+- For "hallo": "Hallo Maria! Schön dich zu sehen."
+- For "danke": "Danke für deine Hilfe heute."
+- For "Familie": "Meine Familie kommt aus Deutschland."
+
+Respond with JSON in this exact format:
+{
+  "translation": "natural example sentence in ${languageName}",
+  "confidence": 0.9,
+  "vocabulary": []
+}
+
+Return only valid JSON, no additional text.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            translation: { type: "string" },
+            confidence: { type: "number" },
+            vocabulary: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  word: { type: "string" },
+                  translation: { type: "string" },
+                  difficulty: { type: "string" }
+                },
+                required: ["word", "translation", "difficulty"]
+              }
+            }
+          },
+          required: ["translation", "confidence", "vocabulary"]
+        }
+      },
+      contents: prompt
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    
+    return {
+      success: true,
+      translation: parsed.translation,
+      confidence: Math.round(parsed.confidence * 100),
+      vocabulary: parsed.vocabulary || []
+    };
+
+  } catch (error) {
+    console.error('Generate example sentence error:', error);
+    return {
+      success: false,
+      translation: `Ich lerne das Wort "${word}" heute.`,
+      confidence: 50,
+      vocabulary: []
+    };
+  }
+}
+
 export async function assessLyricsDifficulty(
   lyricsData: Array<{ startMs: number; durMs: number; text: string }>,
   title?: string,

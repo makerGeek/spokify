@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { api } from '@/lib/api-client';
 import AppHeader from '@/components/app-header';
 
 interface Lesson {
@@ -45,42 +46,16 @@ export default function LessonDetailPage() {
   const { data: lesson, isLoading, error } = useQuery({
     queryKey: ['lesson', lessonId],
     queryFn: async () => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/lessons/${lessonId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      
-      if (!response.ok) {
-        if (response.status === 403) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Access denied');
-        }
-        throw new Error('Failed to fetch lesson');
-      }
-      
-      return response.json() as Promise<Lesson>;
+      if (!lessonId) throw new Error('Lesson ID is required');
+      return api.lessons.getById(parseInt(lessonId)) as Promise<Lesson>;
     },
     enabled: !!lessonId && !!user,
   });
 
   const completeLessonMutation = useMutation({
     mutationFn: async (finalScore: number) => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/lessons/${lessonId}/complete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ score: finalScore }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to complete lesson');
-      }
-      
-      return response.json();
+      if (!lessonId) throw new Error('Lesson ID is required');
+      return api.lessons.complete(parseInt(lessonId), finalScore);
     },
     onSuccess: (data) => {
       toast({
@@ -102,16 +77,8 @@ export default function LessonDetailPage() {
   });
 
   const handleStartLesson = () => {
-    // For now, simulate lesson completion with a random score
-    // In a real implementation, this would start the lesson flow
-    setIsCompleting(true);
-    
-    // Simulate lesson completion after 2 seconds
-    setTimeout(() => {
-      const randomScore = Math.floor(Math.random() * 40) + 60; // 60-100%
-      setScore(randomScore);
-      completeLessonMutation.mutate(randomScore);
-    }, 2000);
+    // Navigate to the lesson learning page
+    setLocation(`/lesson/${lessonId}/learn`);
   };
 
   if (!user) {
@@ -187,24 +154,13 @@ export default function LessonDetailPage() {
       {/* Use standard app header */}
       <AppHeader />
       
-      {/* Back button */}
-      <div className="p-4 border-b border-spotify-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setLocation('/lessons')}
-          className="text-spotify-text hover:bg-spotify-hover -ml-2"
-        >
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Back to Lessons
-        </Button>
-      </div>
 
       {/* Main Content */}
       <div className="p-4 pb-20 space-y-6">
         {/* Lesson Header */}
-        <div className="bg-spotify-card rounded-xl p-6">
-          <div className="flex items-center gap-6">
+        <div className="bg-spotify-card rounded-xl p-6 text-center">
+          {/* Icon and Title Row */}
+          <div className="flex items-center justify-center gap-4 mb-4">
             {/* Lesson Icon */}
             <div className="relative flex-shrink-0">
               <div className="lesson-icon lesson-icon-accessible">
@@ -219,34 +175,34 @@ export default function LessonDetailPage() {
               </div>
             </div>
             
-            {/* Lesson Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-2xl font-bold text-spotify-text">{lesson.title}</h1>
-                {!lesson.isFree && (
-                  <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 text-amber-400 fill-current" />
-                    <Badge className="bg-amber-600 hover:bg-amber-700 text-xs">
-                      Premium
-                    </Badge>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-4 text-spotify-muted">
-                <span>Lesson {lesson.order}</span>
-                <span>•</span>
-                <span>{lesson.vocabulary.length} words</span>
-                <span>•</span>
-                <Badge 
-                  className={cn(
-                    "text-xs",
-                    difficultyColors[lesson.difficulty as keyof typeof difficultyColors] || "bg-gray-500"
-                  )}
-                >
-                  {lesson.difficulty}
-                </Badge>
-              </div>
+            {/* Title and Premium Badge */}
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-spotify-text">{lesson.title}</h1>
+              {!lesson.isFree && (
+                <div className="flex items-center gap-1">
+                  <Star className="w-5 h-5 text-amber-400 fill-current" />
+                  <Badge className="bg-amber-600 hover:bg-amber-700 text-xs">
+                    Premium
+                  </Badge>
+                </div>
+              )}
             </div>
+          </div>
+          
+          {/* Lesson Metadata */}
+          <div className="flex items-center justify-center gap-4 text-spotify-muted">
+            <span>Lesson {lesson.order}</span>
+            <span>•</span>
+            <span>{lesson.vocabulary.length} words</span>
+            <span>•</span>
+            <Badge 
+              className={cn(
+                "text-xs",
+                difficultyColors[lesson.difficulty as keyof typeof difficultyColors] || "bg-gray-500"
+              )}
+            >
+              {lesson.difficulty}
+            </Badge>
           </div>
         </div>
 
@@ -334,12 +290,7 @@ export default function LessonDetailPage() {
               </>
             )}
           </Button>
-          
-          <div className="text-center bg-spotify-card rounded-lg p-3 border border-spotify-border">
-            <p className="text-sm text-spotify-muted">
-              💡 Complete with <span className="font-semibold text-spotify-text">80% accuracy</span> to unlock the next lesson
-            </p>
-          </div>
+
         </div>
       </div>
     </div>

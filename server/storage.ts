@@ -84,6 +84,7 @@ export interface IStorage {
 
   // Lesson methods
   getLessons(language: string, difficulty: string): Promise<Lesson[]>;
+  getAllLessons(): Promise<Lesson[]>;
   getLesson(id: number): Promise<Lesson | undefined>;
   createLesson(lesson: InsertLesson): Promise<Lesson>;
   updateLesson(id: number, updates: Partial<Lesson>): Promise<Lesson>;
@@ -741,6 +742,13 @@ export class DatabaseStorage implements IStorage {
         eq(lessons.difficulty, difficulty)
       ))
       .orderBy(lessons.order);
+  }
+
+  async getAllLessons(): Promise<Lesson[]> {
+    return await db
+      .select()
+      .from(lessons)
+      .orderBy(lessons.language, lessons.difficulty, lessons.order);
   }
 
   async getLesson(id: number): Promise<Lesson | undefined> {
