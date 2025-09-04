@@ -234,19 +234,12 @@ export default function LessonDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {lesson.vocabulary.slice(0, 6).map((vocab, index) => (
+              {lesson.vocabulary.map((vocab, index) => (
                 <div key={index} className="flex justify-between items-center p-4 bg-spotify-hover rounded-lg border border-spotify-border/50">
                   <span className="font-medium text-spotify-text text-lg">{vocab.word}</span>
                   <span className="text-spotify-muted">{vocab.translation}</span>
                 </div>
               ))}
-              {lesson.vocabulary.length > 6 && (
-                <div className="text-center py-2">
-                  <p className="text-spotify-muted text-sm">
-                    +{lesson.vocabulary.length - 6} more words to discover...
-                  </p>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -272,7 +265,7 @@ export default function LessonDetailPage() {
         )}
 
         {/* Start Lesson Button */}
-        <div className="space-y-4 pt-4">
+        <div className="space-y-4">
           <Button
             onClick={handleStartLesson}
             disabled={isCompleting || completeLessonMutation.isPending}

@@ -74,8 +74,8 @@ function Router() {
     if (location === '/search') return 'search';
     if (location === '/lessons') return 'lessons';
     if (location === '/library') return 'library';
-    if (location === '/exercise') return 'exercise';
-    if (location.startsWith('/exercise')) return 'exercise';
+    if (location === '/exercise') return 'exercises';
+    if (location.startsWith('/exercise')) return 'exercises';
     if (location === '/profile') return 'profile';
     if (location.startsWith('/lyrics/')) return 'home'; // Lyrics player belongs to home flow
     return 'home';

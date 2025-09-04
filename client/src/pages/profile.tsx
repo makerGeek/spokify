@@ -15,6 +15,7 @@ import {
   Gift,
   Mail,
   Send,
+  BookOpen,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -382,7 +383,27 @@ export default function Profile() {
 
         </div>
 
+        {/* Library Section */}
+        <div className="spotify-card-nohover p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <BookOpen className="h-6 w-6 text-[var(--spotify-green)]" />
+              <div>
+                <h3 className="spotify-heading-md">Library</h3>
+                <p className="spotify-text-secondary text-sm">
+                  Access your songs and vocabulary
+                </p>
+              </div>
+            </div>
+          </div>
 
+          <Link href="/library">
+            <button className="spotify-btn-primary w-full">
+              <BookOpen className="mr-2 h-4 w-4" />
+              Go to Library
+            </button>
+          </Link>
+        </div>
 
         {/* Install App Section - Hidden behind feature flag */}
         {allowAppInstall && (

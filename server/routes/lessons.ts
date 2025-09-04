@@ -7,10 +7,10 @@ import { getExampleSentencesForWords } from '../services/example-sentences.js';
 
 const router = Router();
 
-// Get all lessons for a language/difficulty
+// Get all lessons for a language/difficulty (hierarchical structure)
 router.get('/', optionalAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const { language, difficulty } = req.query;
+    const { language, difficulty, hierarchical } = req.query;
     
     if (!language || !difficulty) {
       return res.status(400).json({ 
@@ -18,6 +18,75 @@ router.get('/', optionalAuth, async (req: AuthenticatedRequest, res) => {
       });
     }
 
+    // If hierarchical=true, return sections -> modules -> lessons structure
+    if (hierarchical === 'true') {
+      try {
+        const sectionsWithContent = await storage.getSectionsWithModulesAndLessons(
+          language as string, 
+          difficulty as string
+        );
+      
+        // Add progress information if user is authenticated
+        if (req.user) {
+          const user = await storage.getUserByUsername(req.user.email);
+          if (user) {
+            const completedLessons = await storage.getUserCompletedLessons(user.id);
+            const completedLessonIds = new Set(completedLessons.map(cl => cl.lessonId));
+            
+            // Process each section/module/lesson to add progress info
+            const enhancedSections = sectionsWithContent.map(section => ({
+              ...section,
+              canAccess: section.isFree || (req.user?.subscriptionStatus === 'active'),
+              modules: section.modules.map((module: any) => ({
+                ...module,
+                canAccess: module.isFree || (req.user?.subscriptionStatus === 'active'),
+                lessons: module.lessons.map((lesson: any, lessonIndex: number) => {
+                  const isCompleted = completedLessonIds.has(lesson.id);
+                  // For hierarchical unlocking, check if previous lesson in the same module is completed
+                  const previousLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null;
+                  const isUnlocked = lessonIndex === 0 || (previousLesson && completedLessonIds.has(previousLesson.id));
+                  
+                  return {
+                    ...lesson,
+                    isCompleted,
+                    isUnlocked,
+                    canAccess: lesson.isFree || (req.user?.subscriptionStatus === 'active')
+                  };
+                })
+              }))
+            }));
+            
+            return res.json(enhancedSections);
+          }
+        }
+        
+        // For unauthenticated users
+        const sectionsWithAccess = sectionsWithContent.map(section => ({
+          ...section,
+          canAccess: section.isFree,
+          modules: section.modules.map((module: any) => ({
+            ...module,
+            canAccess: module.isFree,
+            lessons: module.lessons.map((lesson: any, lessonIndex: number) => ({
+              ...lesson,
+              isCompleted: false,
+              isUnlocked: lessonIndex === 0, // Only first lesson in each module unlocked
+              canAccess: lesson.isFree
+            }))
+          }))
+        }));
+        
+        return res.json(sectionsWithAccess);
+        
+      } catch (error: any) {
+        console.log('Hierarchical lessons not available yet, falling back to flat structure');
+        console.log('Run: npm run db:push && npx tsx scripts/seed-hierarchical-lessons.ts');
+        
+        // Fall through to legacy flat structure instead of erroring
+      }
+    }
+
+    // Legacy flat structure for backward compatibility
     const lessons = await storage.getLessons(language as string, difficulty as string);
     
     // If user is authenticated, include their progress

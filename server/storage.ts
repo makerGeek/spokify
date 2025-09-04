@@ -1,4 +1,4 @@
-import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, dmcaRequests, contactSubmissions, lessons, learnedLessons, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark, type DmcaRequest, type InsertDmcaRequest, type ContactSubmission, type InsertContactSubmission, type Lesson, type InsertLesson, type LearnedLesson, type InsertLearnedLesson } from "@shared/schema";
+import { users, songs, userProgress, vocabulary, featureFlags, translations, bookmarks, dmcaRequests, contactSubmissions, lessons, learnedLessons, sections, modules, type User, type InsertUser, type ActivateUser, type Song, type InsertSong, type UserProgress, type InsertUserProgress, type Vocabulary, type InsertVocabulary, type FeatureFlag, type InsertFeatureFlag, type Translation, type InsertTranslation, type Bookmark, type InsertBookmark, type DmcaRequest, type InsertDmcaRequest, type ContactSubmission, type InsertContactSubmission, type Lesson, type InsertLesson, type LearnedLesson, type InsertLearnedLesson, type Section, type InsertSection, type Module, type InsertModule } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -82,8 +82,24 @@ export interface IStorage {
   getAllDmcaRequests(): Promise<DmcaRequest[]>;
   updateDmcaRequestStatus(id: number, status: string, adminNotes?: string, processedBy?: number): Promise<DmcaRequest>;
 
+  // Section methods
+  getSections(language: string, difficulty: string): Promise<Section[]>;
+  getSection(id: number): Promise<Section | undefined>;
+  createSection(section: InsertSection): Promise<Section>;
+  updateSection(id: number, updates: Partial<Section>): Promise<Section>;
+  deleteSection(id: number): Promise<void>;
+
+  // Module methods  
+  getModules(sectionId: number): Promise<Module[]>;
+  getModule(id: number): Promise<Module | undefined>;
+  createModule(module: InsertModule): Promise<Module>;
+  updateModule(id: number, updates: Partial<Module>): Promise<Module>;
+  deleteModule(id: number): Promise<void>;
+
   // Lesson methods
   getLessons(language: string, difficulty: string): Promise<Lesson[]>;
+  getLessonsByModule(moduleId: number): Promise<Lesson[]>;
+  getSectionsWithModulesAndLessons(language: string, difficulty: string): Promise<any[]>;
   getAllLessons(): Promise<Lesson[]>;
   getLesson(id: number): Promise<Lesson | undefined>;
   createLesson(lesson: InsertLesson): Promise<Lesson>;
@@ -732,6 +748,89 @@ export class DatabaseStorage implements IStorage {
     return contactSubmission;
   }
 
+  // Section methods implementation
+  async getSections(language: string, difficulty: string): Promise<Section[]> {
+    return await db
+      .select()
+      .from(sections)
+      .where(and(
+        eq(sections.language, language),
+        eq(sections.difficulty, difficulty)
+      ))
+      .orderBy(sections.order);
+  }
+
+  async getSection(id: number): Promise<Section | undefined> {
+    const [section] = await db
+      .select()
+      .from(sections)
+      .where(eq(sections.id, id));
+    return section || undefined;
+  }
+
+  async createSection(section: InsertSection): Promise<Section> {
+    const [newSection] = await db
+      .insert(sections)
+      .values(section)
+      .returning();
+    return newSection;
+  }
+
+  async updateSection(id: number, updates: Partial<Section>): Promise<Section> {
+    const [section] = await db
+      .update(sections)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(sections.id, id))
+      .returning();
+    return section;
+  }
+
+  async deleteSection(id: number): Promise<void> {
+    await db
+      .delete(sections)
+      .where(eq(sections.id, id));
+  }
+
+  // Module methods implementation
+  async getModules(sectionId: number): Promise<Module[]> {
+    return await db
+      .select()
+      .from(modules)
+      .where(eq(modules.sectionId, sectionId))
+      .orderBy(modules.order);
+  }
+
+  async getModule(id: number): Promise<Module | undefined> {
+    const [module] = await db
+      .select()
+      .from(modules)
+      .where(eq(modules.id, id));
+    return module || undefined;
+  }
+
+  async createModule(module: InsertModule): Promise<Module> {
+    const [newModule] = await db
+      .insert(modules)
+      .values(module)
+      .returning();
+    return newModule;
+  }
+
+  async updateModule(id: number, updates: Partial<Module>): Promise<Module> {
+    const [module] = await db
+      .update(modules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(modules.id, id))
+      .returning();
+    return module;
+  }
+
+  async deleteModule(id: number): Promise<void> {
+    await db
+      .delete(modules)
+      .where(eq(modules.id, id));
+  }
+
   // Lesson methods implementation
   async getLessons(language: string, difficulty: string): Promise<Lesson[]> {
     return await db
@@ -742,6 +841,45 @@ export class DatabaseStorage implements IStorage {
         eq(lessons.difficulty, difficulty)
       ))
       .orderBy(lessons.order);
+  }
+
+  async getLessonsByModule(moduleId: number): Promise<Lesson[]> {
+    return await db
+      .select()
+      .from(lessons)
+      .where(eq(lessons.moduleId, moduleId))
+      .orderBy(lessons.order);
+  }
+
+  async getSectionsWithModulesAndLessons(language: string, difficulty: string): Promise<any[]> {
+    // Get sections for the language/difficulty
+    const sectionsData = await this.getSections(language, difficulty);
+    
+    const sectionsWithContent = await Promise.all(
+      sectionsData.map(async (section) => {
+        // Get modules for this section
+        const modulesData = await this.getModules(section.id);
+        
+        const modulesWithLessons = await Promise.all(
+          modulesData.map(async (module) => {
+            // Get lessons for this module
+            const lessonsData = await this.getLessonsByModule(module.id);
+            
+            return {
+              ...module,
+              lessons: lessonsData
+            };
+          })
+        );
+        
+        return {
+          ...section,
+          modules: modulesWithLessons
+        };
+      })
+    );
+    
+    return sectionsWithContent;
   }
 
   async getAllLessons(): Promise<Lesson[]> {

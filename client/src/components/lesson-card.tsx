@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, BookOpen, Music, Star, Lock, CheckCircle, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSubscription } from '@/contexts/subscription-context';
 
 interface Lesson {
   id: number;
@@ -35,8 +36,18 @@ const difficultyColors = {
 
 export default function LessonCard({ lesson, index, isLast }: LessonCardProps) {
   const [, setLocation] = useLocation();
+  const { subscription } = useSubscription();
+  
+  // Check if user can access premium content
+  const canAccessPremium = subscription.isPremium;
+  
+  // Check if lesson is premium and user doesn't have premium access
+  const isPremiumBlocked = !lesson.isFree && !canAccessPremium;
+  
   // First lesson should always be accessible
-  const isAccessible = lesson.canAccess && ((lesson.order === 1) || lesson.isUnlocked);
+  // For other lessons, check if they're unlocked through progression OR if it's a premium lesson (show as premium, not locked)
+  const isProgressionAccessible = lesson.canAccess && ((lesson.order === 1) || lesson.isUnlocked);
+  const isAccessible = isProgressionAccessible && !isPremiumBlocked;
   
   // Alternate positions for zigzag pattern
   const isEven = index % 2 === 0;
@@ -65,16 +76,24 @@ export default function LessonCard({ lesson, index, isLast }: LessonCardProps) {
               "lesson-icon cursor-pointer",
               lesson.isCompleted 
                 ? "lesson-icon-completed" 
-                : isAccessible
+                : !lesson.isFree && !canAccessPremium
+                ? "lesson-icon-premium"
+                : !lesson.isFree && canAccessPremium
                 ? "lesson-icon-accessible"
-                : "lesson-icon-locked cursor-not-allowed",
-              !lesson.canAccess && !lesson.isFree && "lesson-icon-premium"
+                : isProgressionAccessible
+                ? "lesson-icon-accessible"  
+                : "lesson-icon-locked cursor-not-allowed"
             )}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Lesson clicked:', lesson.id, 'isAccessible:', isAccessible, 'canAccess:', lesson.canAccess, 'isUnlocked:', lesson.isUnlocked);
-              if (isAccessible) {
+              console.log('Lesson clicked:', lesson.id, 'isAccessible:', isAccessible, 'isProgressionAccessible:', isProgressionAccessible, 'isPremiumBlocked:', isPremiumBlocked);
+              
+              // Allow access if: progression allows it AND not premium blocked
+              // OR if it's premium content and user has premium access
+              const canClick = isAccessible || (!lesson.isFree && canAccessPremium);
+              
+              if (canClick) {
                 console.log('Navigating to lesson:', lesson.id);
                 setLocation(`/lesson/${lesson.id}`);
               } else {
@@ -87,7 +106,7 @@ export default function LessonCard({ lesson, index, isLast }: LessonCardProps) {
             
             {lesson.isCompleted ? (
               <CheckCircle className="w-10 h-10 text-white relative z-10" />
-            ) : !lesson.canAccess && !lesson.isFree ? (
+            ) : !lesson.isFree && !canAccessPremium ? (
               <Lock className="w-8 h-8 text-white relative z-10" />
             ) : lesson.songId ? (
               <Music className="w-8 h-8 text-white relative z-10" />
@@ -129,16 +148,24 @@ export default function LessonCard({ lesson, index, isLast }: LessonCardProps) {
             "p-4 rounded-xl shadow-lg border transition-all duration-200 backdrop-blur-sm flex-1 min-w-0",
             lesson.isCompleted 
               ? "bg-green-900/30 border-green-500/40 text-green-100"
-              : isAccessible
+              : !lesson.isFree && !canAccessPremium
+              ? "bg-amber-900/30 border-amber-500/40 text-amber-100"
+              : !lesson.isFree && canAccessPremium
               ? "bg-blue-900/30 border-blue-500/40 text-blue-100 cursor-pointer hover:bg-blue-900/40"
-              : "bg-gray-900/30 border-gray-500/40 text-gray-300",
-            !lesson.canAccess && !lesson.isFree && "bg-amber-900/30 border-amber-500/40 text-amber-100"
+              : isProgressionAccessible
+              ? "bg-blue-900/30 border-blue-500/40 text-blue-100 cursor-pointer hover:bg-blue-900/40"
+              : "bg-gray-900/30 border-gray-500/40 text-gray-300"
           )}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Card clicked:', lesson.id, 'isAccessible:', isAccessible, 'canAccess:', lesson.canAccess, 'isUnlocked:', lesson.isUnlocked);
-            if (isAccessible) {
+            console.log('Card clicked:', lesson.id, 'isAccessible:', isAccessible, 'isProgressionAccessible:', isProgressionAccessible, 'isPremiumBlocked:', isPremiumBlocked);
+            
+            // Allow access if: progression allows it AND not premium blocked
+            // OR if it's premium content and user has premium access
+            const canClick = isAccessible || (!lesson.isFree && canAccessPremium);
+            
+            if (canClick) {
               console.log('Navigating to lesson from card:', lesson.id);
               setLocation(`/lesson/${lesson.id}`);
             } else {
@@ -181,18 +208,18 @@ export default function LessonCard({ lesson, index, isLast }: LessonCardProps) {
                   Completed
                 </div>
               </div>
-            ) : isAccessible ? (
-              <div className="mt-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30">
-                <div className="text-xs text-blue-300 font-medium flex items-center justify-center gap-1">
-                  <Play className="w-3 h-3" />
-                  Start
-                </div>
-              </div>
-            ) : !lesson.canAccess && !lesson.isFree ? (
+            ) : !lesson.isFree && !canAccessPremium ? (
               <div className="mt-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30">
                 <div className="text-xs text-amber-300 font-medium flex items-center justify-center gap-1">
                   <Star className="w-3 h-3 fill-current" />
                   Premium
+                </div>
+              </div>
+            ) : (!lesson.isFree && canAccessPremium) || isProgressionAccessible ? (
+              <div className="mt-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30">
+                <div className="text-xs text-blue-300 font-medium flex items-center justify-center gap-1">
+                  <Play className="w-3 h-3" />
+                  Start
                 </div>
               </div>
             ) : (

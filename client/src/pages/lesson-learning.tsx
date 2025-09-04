@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, Music, BookOpen, Play, Star, Lock, Volume2, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Music, BookOpen, Play, Star, Lock, Volume2, RotateCcw, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,10 @@ export default function LessonLearningPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [hearts, setHearts] = useState(3);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const MAX_HEARTS = 3;
+  const [isGameOver, setIsGameOver] = useState(false);
 
   const { data: lesson, isLoading, error } = useQuery({
     queryKey: ['lesson', lessonId],
@@ -123,6 +127,10 @@ export default function LessonLearningPage() {
     }
     
     setLessonSteps(steps);
+    
+    // Count total quiz questions for score calculation
+    const quizQuestions = steps.filter(step => step.type === 'quiz-question').length;
+    setTotalQuestions(quizQuestions);
   }, [lesson]);
 
   // Reset quiz question state when step changes
@@ -136,8 +144,10 @@ export default function LessonLearningPage() {
     if (currentStep < lessonSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Lesson completed - redirect with completion
-      completeLessonMutation.mutate(85); // Mock 85% score
+      // Lesson completed - automatically complete
+      // Convert hearts to percentage for backend compatibility
+      const finalScore = Math.round((hearts / MAX_HEARTS) * 100);
+      completeLessonMutation.mutate(finalScore);
     }
   };
 
@@ -162,10 +172,22 @@ export default function LessonLearningPage() {
     const isCorrect = answer === currentStepData.content.correctAnswer;
     setUserAnswers({ ...userAnswers, [currentStep]: isCorrect ? 100 : 0 });
     
-    // Auto advance after 2 seconds
+    // Lose a heart for wrong answers
+    if (!isCorrect && hearts > 0) {
+      const newHearts = hearts - 1;
+      setHearts(newHearts);
+      
+      // Check if game over
+      if (newHearts === 0) {
+        setIsGameOver(true);
+        return; // Don't auto-advance to next question
+      }
+    }
+    
+    // Auto advance after 1.5 seconds for smoother flow
     setTimeout(() => {
       handleNext();
-    }, 2000);
+    }, 1500);
   };
 
   const completeLessonMutation = useMutation({
@@ -176,7 +198,7 @@ export default function LessonLearningPage() {
     onSuccess: (data) => {
       toast({
         title: "Lesson Completed! 🎉",
-        description: `You scored 85% and learned ${lesson?.vocabulary.length} new words!`,
+        description: `You finished with ${hearts}/${MAX_HEARTS} hearts and learned ${lesson?.vocabulary.length} new words!`,
       });
       
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
@@ -266,13 +288,71 @@ export default function LessonLearningPage() {
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Progress value={progress} className="flex-1" />
-            <span className="text-sm text-spotify-muted flex-shrink-0">
-              {currentStep + 1}/{lessonSteps.length}
-            </span>
+            <div className="flex-1 space-y-1">
+              <Progress value={progress} />
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-spotify-muted">
+                  {currentStep + 1}/{lessonSteps.length}
+                </span>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: MAX_HEARTS }, (_, i) => (
+                    <Heart
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < hearts 
+                          ? 'text-red-500 fill-red-500' 
+                          : 'text-gray-400'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Game Over Screen */}
+      {isGameOver && (
+        <div className="fixed inset-0 bg-spotify-bg/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-spotify-card rounded-2xl p-8 max-w-md w-full text-center border border-spotify-border shadow-2xl">
+            <div className="mb-6">
+              <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-spotify-text mb-2">
+                You Lost!
+              </h2>
+              <p className="text-spotify-muted mb-6">
+                You ran out of hearts. Don't worry, you can try again!
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  setIsGameOver(false);
+                  setHearts(MAX_HEARTS);
+                  setCurrentStep(0);
+                  setUserAnswers({});
+                  setSelectedAnswer(null);
+                  setShowResult(false);
+                  setIsAnswered(false);
+                }}
+                className="w-full bg-spotify-green hover:bg-green-600 text-black font-semibold"
+              >
+                Try Again
+              </Button>
+              <button
+                onClick={() => setLocation(`/lesson/${lessonId}`)}
+                className="spotify-btn-secondary w-full"
+              >
+                Back to Lesson
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="p-4 pb-32">
@@ -318,7 +398,7 @@ export default function LessonLearningPage() {
                           : "bg-[var(--spotify-card)] border-[var(--spotify-border)] spotify-text-primary shadow-md"
                       }`}
                       onClick={() => handleAnswerSelect(option)}
-                      disabled={isAnswered}
+                      disabled={isAnswered || isGameOver}
                     >
                       <span className="text-base leading-tight font-semibold">{option}</span>
                     </button>
@@ -375,6 +455,10 @@ export default function LessonLearningPage() {
                       mixMode={true}
                       onMixComplete={() => {
                         setUserAnswers({ ...userAnswers, [currentStep]: 100 });
+                        // Auto advance after completing match exercise
+                        setTimeout(() => {
+                          handleNext();
+                        }, 1000);
                       }}
                       hideHeader={true}
                       hideCard={true}
@@ -477,7 +561,7 @@ export default function LessonLearningPage() {
           <button
             onClick={handleNext}
             className="spotify-btn-primary flex items-center gap-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={(currentStepData.type === 'quiz' && userAnswers[currentStep] === undefined) || (currentStepData.type === 'quiz-question' && !isAnswered)}
+            disabled={isGameOver || (currentStepData.type === 'quiz' && userAnswers[currentStep] === undefined) || (currentStepData.type === 'quiz-question' && !isAnswered)}
           >
             {currentStep === lessonSteps.length - 1 ? 'Complete Lesson' : 'Next'}
             <ChevronRight className="w-4 h-4" />

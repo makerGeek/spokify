@@ -317,11 +317,43 @@ export const insertDmcaRequestSchema = createInsertSchema(dmcaRequests).pick({
 export type InsertDmcaRequest = z.infer<typeof insertDmcaRequestSchema>;
 export type DmcaRequest = typeof dmcaRequests.$inferSelect;
 
-export const lessons = pgTable("lessons", {
+// Sections organize lessons into major topics (e.g., "Basics", "Daily Life", "Travel")
+export const sections = pgTable("sections", {
   id: serial("id").primaryKey(),
   language: text("language").notNull(),
   difficulty: text("difficulty").notNull(),
-  order: integer("order").notNull(),
+  order: integer("order").notNull(), // Order within the course
+  title: text("title").notNull(),
+  description: text("description"),
+  isFree: boolean("is_free").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Index for section ordering by language and difficulty
+  sectionOrderIdx: index("section_order_idx").on(table.language, table.difficulty, table.order),
+}));
+
+// Modules organize lessons within sections (e.g., "Colors & Numbers", "Food & Drinks")
+export const modules = pgTable("modules", {
+  id: serial("id").primaryKey(),
+  sectionId: integer("section_id").notNull().references(() => sections.id, { onDelete: "cascade" }),
+  order: integer("order").notNull(), // Order within the section
+  title: text("title").notNull(),
+  description: text("description"),
+  isFree: boolean("is_free").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Index for module ordering within sections
+  moduleOrderIdx: index("module_order_idx").on(table.sectionId, table.order),
+}));
+
+export const lessons = pgTable("lessons", {
+  id: serial("id").primaryKey(),
+  moduleId: integer("module_id").references(() => modules.id, { onDelete: "cascade" }), // Nullable for backward compatibility
+  language: text("language").notNull(),
+  difficulty: text("difficulty").notNull(),
+  order: integer("order").notNull(), // Order within the module
   isFree: boolean("is_free").notNull().default(true),
   title: text("title").notNull(),
   songId: integer("song_id").references(() => songs.id, { onDelete: "cascade" }),
@@ -329,8 +361,10 @@ export const lessons = pgTable("lessons", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({
-  // Index for lesson ordering by language and difficulty
-  lessonOrderIdx: index("lesson_order_idx").on(table.language, table.difficulty, table.order),
+  // Index for lesson ordering within modules
+  lessonOrderIdx: index("lesson_order_idx").on(table.moduleId, table.order),
+  // Legacy index for backward compatibility
+  legacyOrderIdx: index("legacy_lesson_order_idx").on(table.language, table.difficulty, table.order),
 }));
 
 export const learnedLessons = pgTable("learned_lessons", {
@@ -344,7 +378,25 @@ export const learnedLessons = pgTable("learned_lessons", {
   userLessonIdx: index("user_lesson_idx").on(table.userId, table.lessonId),
 }));
 
+export const insertSectionSchema = createInsertSchema(sections).pick({
+  language: true,
+  difficulty: true,
+  order: true,
+  title: true,
+  description: true,
+  isFree: true,
+});
+
+export const insertModuleSchema = createInsertSchema(modules).pick({
+  sectionId: true,
+  order: true,
+  title: true,
+  description: true,
+  isFree: true,
+});
+
 export const insertLessonSchema = createInsertSchema(lessons).pick({
+  moduleId: true,
   language: true,
   difficulty: true,
   order: true,
@@ -352,7 +404,7 @@ export const insertLessonSchema = createInsertSchema(lessons).pick({
   title: true,
   songId: true,
   vocabulary: true,
-});
+}).partial({ moduleId: true }); // Make moduleId optional for legacy support
 
 export const insertLearnedLessonSchema = createInsertSchema(learnedLessons).pick({
   userId: true,
@@ -360,6 +412,10 @@ export const insertLearnedLessonSchema = createInsertSchema(learnedLessons).pick
   score: true,
 });
 
+export type InsertSection = z.infer<typeof insertSectionSchema>;
+export type Section = typeof sections.$inferSelect;
+export type InsertModule = z.infer<typeof insertModuleSchema>;
+export type Module = typeof modules.$inferSelect;
 export type InsertLesson = z.infer<typeof insertLessonSchema>;
 export type Lesson = typeof lessons.$inferSelect;
 export type InsertLearnedLesson = z.infer<typeof insertLearnedLessonSchema>;
