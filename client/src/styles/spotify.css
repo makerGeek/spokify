@@ -437,6 +437,12 @@
   box-shadow: 0 25px 50px -12px rgba(217, 119, 6, 0.3);
 }
 
+.lesson-icon-song {
+  background: linear-gradient(to bottom right, #a855f7, #7c3aed);
+  border-color: #c4b5fd;
+  box-shadow: 0 25px 50px -12px rgba(124, 58, 237, 0.3);
+}
+
 .lesson-icon:hover.lesson-icon-accessible {
   background: linear-gradient(to bottom right, #3b82f6, #1d4ed8);
   transform: scale(1.1);
@@ -447,7 +453,16 @@
   transform: scale(1.05);
 }
 
+.lesson-icon:hover.lesson-icon-song {
+  background: linear-gradient(to bottom right, #7c3aed, #6d28d9);
+  transform: scale(1.1);
+}
+
 .lesson-icon:active.lesson-icon-accessible {
+  transform: scale(0.95);
+}
+
+.lesson-icon:active.lesson-icon-song {
   transform: scale(0.95);
 }
 

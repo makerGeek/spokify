@@ -36,12 +36,6 @@ interface ModuleCardProps {
 }
 
 export default function ModuleCard({ module, index }: ModuleCardProps) {
-  const [expanded, setExpanded] = useState(true);
-  
-  const handleToggle = () => {
-    setExpanded(!expanded);
-  };
-  
   // Calculate module progress
   const totalLessons = module.lessons.length;
   const completedLessons = module.lessons.filter(lesson => lesson.isCompleted).length;
@@ -50,79 +44,79 @@ export default function ModuleCard({ module, index }: ModuleCardProps) {
   const isCompleted = progressPercent === 100;
   const hasStarted = completedLessons > 0;
   
-  return (
-    <>
-      {/* Module Header - Clean and Bold */}
-      <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={handleToggle}>
-        <div className={cn(
-          "w-10 h-10 rounded-lg flex items-center justify-center shadow-md",
-          isCompleted 
-            ? "bg-gradient-to-br from-green-500 to-green-600 text-white" 
-            : hasStarted
-            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-            : !module.canAccess
-            ? "bg-gradient-to-br from-amber-500 to-amber-600 text-white"
-            : "bg-gradient-to-br from-purple-500 to-purple-600 text-white"
-        )}>
-          {isCompleted ? (
-            <CheckCircle className="w-5 h-5" />
-          ) : !module.canAccess ? (
-            <Lock className="w-4 h-4" />
-          ) : (
-            <BookOpen className="w-5 h-5" />
-          )}
-        </div>
-        
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-spotify-text">{module.title}</h3>
-            
-            {!module.isFree && (
-              <Badge className="bg-amber-600 hover:bg-amber-700 text-xs">
-                <Star className="w-3 h-3 mr-1 fill-current" />
-                Premium
-              </Badge>
-            )}
-          </div>
-          
-          {module.description && (
-            <p className="text-spotify-muted text-sm mt-1">{module.description}</p>
-          )}
-          
-          <div className="flex items-center gap-3 mt-1 text-sm text-spotify-muted">
-            <span className="font-medium">{totalLessons} lessons</span>
-            {hasStarted && (
-              <>
-                <span>•</span>
-                <span className="text-spotify-green font-medium">{progressPercent}% complete</span>
-              </>
-            )}
-          </div>
-        </div>
+  // Different background colors for each module
+  const moduleColors = [
+    'bg-gradient-to-br from-purple-100/10 to-purple-200/5', // Module 1 - Purple
+    'bg-gradient-to-br from-blue-100/10 to-blue-200/5',     // Module 2 - Blue  
+    'bg-gradient-to-br from-pink-100/10 to-pink-200/5',     // Module 3 - Pink
+    'bg-gradient-to-br from-orange-100/10 to-orange-200/5', // Module 4 - Orange
+    'bg-gradient-to-br from-cyan-100/10 to-cyan-200/5',     // Module 5 - Cyan
+    'bg-gradient-to-br from-emerald-100/10 to-emerald-200/5', // Module 6 - Emerald
+  ];
+  
+  const moduleColor = moduleColors[index % moduleColors.length];
 
-        {/* Toggle Icon */}
-        <div className="ml-2">
-          {expanded ? (
-            <ChevronUp className="w-5 h-5 text-spotify-muted" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-spotify-muted" />
+  // Mock songs data for now - in real implementation, this would come from the API
+  const getMockSongForLesson = (lessonIndex: number) => ({
+    id: 1000 + (index * 10) + lessonIndex,
+    title: lessonIndex === 0 ? "Hallo Welt" : "Deutschland Über Alles",
+    artist: lessonIndex === 0 ? "Deutsche Musik" : "Klassik Band",
+    genre: lessonIndex === 0 ? "pop" : "classical", 
+    language: "de",
+    difficulty: "A1",
+    isFree: lessonIndex === 0,
+    albumCover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
+    isCompleted: false,
+    isUnlocked: true,
+    canAccess: true
+  });
+  
+  return (
+    <div className={cn("p-4 -m-4 rounded-lg", moduleColor)}>
+      {/* Ultra-compact Module Header */}
+      <div className="text-center py-2 pb-4">
+        <div className="flex items-center justify-center gap-2">
+          <h3 className="text-sm font-bold text-spotify-text uppercase tracking-wider">
+            {module.title}
+          </h3>
+          
+          {hasStarted && (
+            <span className="text-xs bg-spotify-green/20 text-spotify-green px-2 py-0.5 rounded-full font-medium">
+              {progressPercent}%
+            </span>
           )}
         </div>
       </div>
 
-      {/* Lessons - Flat Layout */}
-      {expanded && (
-        <div className="space-y-6 mb-8">
-          {module.lessons.map((lesson, lessonIndex) => (
-            <LessonCard
-              key={lesson.id}
-              lesson={lesson}
-              index={lessonIndex}
-              isLast={lessonIndex === module.lessons.length - 1}
-            />
-          ))}
-        </div>
-      )}
-    </>
+      {/* Lessons and Songs - Keep vertical spacing */}
+      <div className="space-y-6">
+        {module.lessons.map((lesson, lessonIndex) => {
+          const mockSong = getMockSongForLesson(lessonIndex);
+          const isLastLesson = lessonIndex === module.lessons.length - 1;
+          
+          return (
+            <div key={`lesson-${lesson.id}`}>
+              {/* Lesson Card */}
+              <LessonCard
+                item={lesson}
+                index={lessonIndex * 2} // Even indices for lessons
+                isLast={false} // Never last since song follows
+                type="lesson"
+              />
+              
+              {/* Song Card after each lesson */}
+              <div className="mt-6">
+                <LessonCard
+                  item={mockSong}
+                  index={(lessonIndex * 2) + 1} // Odd indices for songs
+                  isLast={isLastLesson} // Song is last if it's the last lesson's song
+                  type="song"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

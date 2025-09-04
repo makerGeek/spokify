@@ -317,7 +317,6 @@ export default function Profile() {
           {/* Plan and Upgrade */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm spotify-text-secondary">
-              <span>Current plan:</span>
               <span className="font-medium">
                 {subscription.isPremium ? 'Premium' : 'Free'}
               </span>

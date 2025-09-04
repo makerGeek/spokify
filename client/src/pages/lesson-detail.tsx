@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useParams } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ChevronLeft, Music, BookOpen, Play, Star, Lock } from 'lucide-react';
@@ -89,7 +88,7 @@ export default function LessonDetailPage() {
         <p className="text-spotify-muted text-center mb-6">
           Please login to access lessons
         </p>
-        <Button onClick={() => setLocation('/login')}>
+        <Button onClick={() => setLocation('/login')} className="spotify-btn-primary">
           Go to Login
         </Button>
       </div>
@@ -130,7 +129,7 @@ export default function LessonDetailPage() {
         <p className="text-spotify-muted text-center mb-6">
           {error.message}
         </p>
-        <Button onClick={() => setLocation('/lessons')}>
+        <Button onClick={() => setLocation('/lessons')} className="spotify-btn-secondary">
           Back to Lessons
         </Button>
       </div>
@@ -142,7 +141,7 @@ export default function LessonDetailPage() {
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <BookOpen className="w-16 h-16 text-spotify-muted mb-4" />
         <h2 className="text-2xl font-bold text-spotify-text mb-2">Lesson Not Found</h2>
-        <Button onClick={() => setLocation('/lessons')}>
+        <Button onClick={() => setLocation('/lessons')} className="spotify-btn-secondary">
           Back to Lessons
         </Button>
       </div>
@@ -177,11 +176,11 @@ export default function LessonDetailPage() {
             
             {/* Title and Premium Badge */}
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-spotify-text">{lesson.title}</h1>
+              <h1 className="spotify-heading-lg">{lesson.title}</h1>
               {!lesson.isFree && (
                 <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 text-amber-400 fill-current" />
-                  <Badge className="bg-amber-600 hover:bg-amber-700 text-xs">
+                  <Star className="w-5 h-5 text-[var(--spotify-green)] fill-current" />
+                  <Badge className="bg-[var(--spotify-green)] hover:bg-[var(--spotify-green-hover)] text-xs text-black font-bold">
                     Premium
                   </Badge>
                 </div>
@@ -208,60 +207,45 @@ export default function LessonDetailPage() {
 
         {/* Lesson Progress Simulation */}
         {isCompleting && (
-          <Card className="bg-spotify-card border-spotify-border">
-            <CardHeader>
-              <CardTitle className="text-center text-spotify-text">Completing Lesson...</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Progress value={75} className="mb-2" />
-              <p className="text-center text-sm text-spotify-muted">
-                Processing your answers...
-              </p>
-            </CardContent>
-          </Card>
+          <div className="spotify-card-nohover p-6">
+            <h3 className="text-center spotify-heading-md mb-4">Completing Lesson...</h3>
+            <Progress value={75} className="mb-2" />
+            <p className="text-center text-sm text-spotify-muted">
+              Processing your answers...
+            </p>
+          </div>
         )}
 
         {/* Vocabulary Preview */}
-        <Card className="bg-spotify-card border-spotify-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-spotify-text">
-              <BookOpen className="w-5 h-5 text-green-500" />
-              Vocabulary You'll Learn
-            </CardTitle>
-            <CardDescription className="text-spotify-muted">
-              Master these {lesson.vocabulary.length} words in this lesson
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {lesson.vocabulary.map((vocab, index) => (
-                <div key={index} className="flex justify-between items-center p-4 bg-spotify-hover rounded-lg border border-spotify-border/50">
-                  <span className="font-medium text-spotify-text text-lg">{vocab.word}</span>
-                  <span className="text-spotify-muted">{vocab.translation}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="spotify-card-nohover p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen className="w-5 h-5 text-[var(--spotify-green)]" />
+            <h3 className="spotify-heading-md">Vocabulary You'll Learn</h3>
+          </div>
+          <p className="text-spotify-muted mb-4">
+            Master these {lesson.vocabulary.length} words in this lesson
+          </p>
+          <div className="space-y-3">
+            {lesson.vocabulary.map((vocab, index) => (
+              <div key={index} className="flex justify-between items-center p-4 bg-spotify-hover rounded-lg border border-[var(--spotify-border)]">
+                <span className="font-medium text-spotify-text text-lg">{vocab.word}</span>
+                <span className="text-spotify-muted">{vocab.translation}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Song Information */}
         {lesson.songId && (
-          <Card className="bg-spotify-card border-spotify-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-spotify-text">
-                <Music className="w-5 h-5 text-blue-500" />
-                Featured Song
-              </CardTitle>
-              <CardDescription className="text-spotify-muted">
-                Practice vocabulary through music
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-spotify-muted">
-                This lesson includes a carefully selected song to help you learn the vocabulary in context.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="spotify-card-nohover p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Music className="w-5 h-5 text-[var(--spotify-green)]" />
+              <h3 className="spotify-heading-md">Featured Song</h3>
+            </div>
+            <p className="text-spotify-muted">
+              This lesson includes a carefully selected song to help you learn the vocabulary in context.
+            </p>
+          </div>
         )}
 
         {/* Start Lesson Button */}
@@ -269,7 +253,7 @@ export default function LessonDetailPage() {
           <Button
             onClick={handleStartLesson}
             disabled={isCompleting || completeLessonMutation.isPending}
-            className="w-full h-14 text-lg font-semibold bg-spotify-green hover:bg-green-600 text-black rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-50"
+            className="spotify-btn-primary w-full"
           >
             {isCompleting || completeLessonMutation.isPending ? (
               <div className="flex items-center gap-2">

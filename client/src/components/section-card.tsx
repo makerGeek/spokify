@@ -60,62 +60,38 @@ export default function SectionCard({ section, index }: SectionCardProps) {
   
   return (
     <>
-      {/* Section Header - Bold and Vivid */}
-      <div className="flex items-center gap-4 mb-6">
+      {/* Compact Section Divider - Duolingo Style */}
+      <div className="relative flex items-center py-4 mb-4">
+        <div className="flex-1 border-t border-spotify-border"></div>
         <div className={cn(
-          "w-14 h-14 rounded-xl flex items-center justify-center shadow-lg",
+          "mx-4 px-6 py-3 rounded-full font-bold text-sm flex items-center gap-3 shadow-lg",
           isCompleted 
-            ? "bg-gradient-to-br from-green-500 to-green-600 text-white" 
+            ? "bg-gradient-to-r from-green-500 to-green-600 text-white" 
             : hasStarted
-            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-            : !section.canAccess
-            ? "bg-gradient-to-br from-amber-500 to-amber-600 text-white"
-            : "bg-gradient-to-br from-spotify-green to-emerald-500 text-white"
+            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+            : "bg-gradient-to-r from-spotify-green to-emerald-500 text-white"
         )}>
-          {isCompleted ? (
-            <BookOpen className="w-7 h-7" />
-          ) : !section.canAccess ? (
-            <Lock className="w-6 h-6" />
-          ) : (
-            <Layers className="w-7 h-7" />
-          )}
-        </div>
-        
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-spotify-text">{section.title}</h2>
-            
-            {!section.isFree && (
-              <Badge className="bg-amber-600 hover:bg-amber-700 text-xs">
-                <Star className="w-3 h-3 mr-1 fill-current" />
-                Premium
-              </Badge>
+          <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+            {isCompleted ? (
+              <BookOpen className="w-4 h-4" />
+            ) : (
+              <Layers className="w-4 h-4" />
             )}
           </div>
           
-          {section.description && (
-            <p className="text-spotify-muted mt-1">{section.description}</p>
-          )}
+          <span className="uppercase tracking-wider">{section.title}</span>
           
-          <div className="flex items-center gap-4 mt-2 text-sm text-spotify-muted">
-            <span className="font-medium">{section.modules.length} modules</span>
-            <span>•</span>
-            <span className="font-medium">{totalLessons} lessons</span>
-            {hasStarted && (
-              <>
-                <span>•</span>
-                <span className="text-spotify-green font-medium">{progressPercent}% complete</span>
-              </>
-            )}
-          </div>
+          {hasStarted && (
+            <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+              {progressPercent}%
+            </span>
+          )}
         </div>
+        <div className="flex-1 border-t border-spotify-border"></div>
       </div>
 
-      {/* Divider Line */}
-      <hr className="border-spotify-border mb-8" />
-
       {/* Modules - Flat Layout */}
-      <div className="space-y-6 mb-12">
+      <div className="space-y-6 my-2">
         {section.modules.map((module, moduleIndex) => (
           <ModuleCard
             key={module.id}
