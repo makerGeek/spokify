@@ -4,7 +4,7 @@ import { useLocation, useParams } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { ReviewProgress } from '@/components/review/review-progress';
 import { ChevronLeft, ChevronRight, Music, BookOpen, Play, Star, Lock, Volume2, RotateCcw, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
@@ -289,7 +289,7 @@ export default function LessonLearningPage() {
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <div className="flex-1 space-y-1">
-              <Progress value={progress} />
+              <ReviewProgress current={currentStep + 1} total={lessonSteps.length} />
               <div className="flex justify-between items-center">
                 <span className="text-sm text-spotify-muted">
                   {currentStep + 1}/{lessonSteps.length}

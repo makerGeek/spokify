@@ -54,16 +54,12 @@ export default function LessonCard({ item, index, isLast, type = 'lesson' }: Les
   // Check if item is premium and user doesn't have premium access
   const isPremiumBlocked = !item.isFree && !canAccessPremium;
   
-  // For items: First item should always be accessible + check progression
-  // For songs: Always accessible if not premium blocked (no progression unlocking)
-  const isProgressionAccessible = type === 'song' 
-    ? true 
-    : item.canAccess && ((item.order === 1) || item.isUnlocked);
-  const isAccessible = isProgressionAccessible && !isPremiumBlocked;
+  // Items are accessible unless they are premium and user doesn't have premium access
+  const isAccessible = !isPremiumBlocked;
   
   // Alternate positions for zigzag pattern
   const isEven = index % 2 === 0;
-  const position = isEven ? "items-end pr-4" : "items-start pl-4";
+  const position = isEven ? "items-end" : "items-start";
   
   return (
     <div className={`flex flex-col ${position} relative w-full`}>
@@ -82,18 +78,17 @@ export default function LessonCard({ item, index, isLast, type = 'lesson' }: Les
                 ? "lesson-icon-premium"
                 : !item.isFree && canAccessPremium
                 ? type === 'song' ? "lesson-icon-song" : "lesson-icon-accessible"
-                : isProgressionAccessible
+                : isAccessible
                 ? type === 'song' ? "lesson-icon-song" : "lesson-icon-accessible"  
                 : "lesson-icon-locked cursor-not-allowed"
             )}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log(`${type} clicked:`, item.id, 'isAccessible:', isAccessible, 'isProgressionAccessible:', isProgressionAccessible, 'isPremiumBlocked:', isPremiumBlocked);
+              console.log(`${type} clicked:`, item.id, 'isAccessible:', isAccessible, 'isPremiumBlocked:', isPremiumBlocked);
 
-              // Allow access if: progression allows it AND not premium blocked
-              // OR if it's premium content and user has premium access
-              const canClick = isAccessible || (!item.isFree && canAccessPremium);
+              // Allow access if not premium blocked
+              const canClick = isAccessible;
 
               if (canClick) {
                 const route = type === 'song' ? `/lyrics/${item.id}` : `/lesson/${item.id}`;
@@ -159,7 +154,7 @@ export default function LessonCard({ item, index, isLast, type = 'lesson' }: Les
               ? type === 'song'
                 ? "bg-purple-900/30 border-purple-500/40 text-purple-100 cursor-pointer hover:bg-purple-900/40"
                 : "bg-blue-900/30 border-blue-500/40 text-blue-100 cursor-pointer hover:bg-blue-900/40"
-              : isProgressionAccessible
+              : isAccessible
               ? type === 'song'
                 ? "bg-purple-900/30 border-purple-500/40 text-purple-100 cursor-pointer hover:bg-purple-900/40"
                 : "bg-blue-900/30 border-blue-500/40 text-blue-100 cursor-pointer hover:bg-blue-900/40"
@@ -168,11 +163,10 @@ export default function LessonCard({ item, index, isLast, type = 'lesson' }: Les
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Card clicked:', item.id, 'isAccessible:', isAccessible, 'isProgressionAccessible:', isProgressionAccessible, 'isPremiumBlocked:', isPremiumBlocked);
+            console.log('Card clicked:', item.id, 'isAccessible:', isAccessible, 'isPremiumBlocked:', isPremiumBlocked);
 
-            // Allow access if: progression allows it AND not premium blocked
-            // OR if it's premium content and user has premium access
-            const canClick = isAccessible || (!item.isFree && canAccessPremium);
+            // Allow access if not premium blocked
+            const canClick = isAccessible;
 
             if (canClick) {
               const route = type === 'song' ? `/lyrics/${item.id}` : `/lesson/${item.id}`;
@@ -212,8 +206,30 @@ export default function LessonCard({ item, index, isLast, type = 'lesson' }: Les
             {'vocabulary' in item && item.vocabulary.length > 0 && (
               <div className="mb-2">
                 <div className="text-xs font-semibold italic opacity-75">
-                  {item.vocabulary.slice(0, 3).map(vocab => vocab.word).join(' • ')}
-                  {item.vocabulary.length > 3 && ` • +${item.vocabulary.length - 3} words`}
+                  {(() => {
+                    const separator = ' • ';
+                    const maxLength = 40;
+                    const suffix = item.vocabulary.length > 3 ? ` • +${item.vocabulary.length - 3} words` : '';
+                    let result = '';
+                    let count = 0;
+                    
+                    for (const vocab of item.vocabulary) {
+                      const addition = count === 0 ? vocab.word : separator + vocab.word;
+                      if ((result + addition + suffix).length <= maxLength) {
+                        result += addition;
+                        count++;
+                      } else {
+                        break;
+                      }
+                    }
+                    
+                    const remaining = item.vocabulary.length - count;
+                    if (remaining > 0) {
+                      result += `  +${remaining} words`;
+                    }
+                    
+                    return result;
+                  })()}
                 </div>
               </div>
             )}
@@ -233,7 +249,7 @@ export default function LessonCard({ item, index, isLast, type = 'lesson' }: Les
                   Premium
                 </div>
               </div>
-            ) : (!item.isFree && canAccessPremium) || isProgressionAccessible ? (
+            ) : (!item.isFree && canAccessPremium) || isAccessible ? (
               <div className={cn(
                 "mt-2 px-3 py-1 rounded-full border",
                 type === 'song'
