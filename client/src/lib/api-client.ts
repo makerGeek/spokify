@@ -168,10 +168,11 @@ export const api = {
 
   lessons: {
     getAll: (language: string, difficulty: string) => 
-      api.get(`/lessons?language=${language}&difficulty=${difficulty}`),
+      api.get(`/lessons?language=${language}`),
     getById: (id: number) => api.get(`/lessons/${id}`),
     complete: (lessonId: number, score: number) => 
       api.post(`/lessons/${lessonId}/complete`, { score }),
+    getCompleted: () => api.get('/lessons/completed'),
   },
 };
 

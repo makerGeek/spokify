@@ -115,20 +115,6 @@ export default function LessonCard({ item, index, isLast, type = 'lesson' }: Les
             )}
           </button>
 
-          {/* Achievement crown for completed items */}
-          {item.isCompleted && (
-            <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-              <Star className="w-5 h-5 text-yellow-800 fill-current" />
-            </div>
-          )}
-
-          {/* Premium diamond */}
-          {!item.isFree && !item.isCompleted && (
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-amber-300 to-amber-500 rounded-full flex items-center justify-center border-2 border-amber-200">
-              <Star className="w-3 h-3 text-amber-800 fill-current" />
-            </div>
-          )}
-
           {/* Difficulty badge overlapping bottom of circle */}
           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
             <Badge

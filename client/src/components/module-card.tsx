@@ -72,19 +72,13 @@ export default function ModuleCard({ module, index }: ModuleCardProps) {
   });
   
   return (
-    <div className={cn("p-4 -m-4 rounded-lg", moduleColor)}>
+    <div className={cn("p-4 -m-1 rounded-lg", moduleColor)}>
       {/* Ultra-compact Module Header */}
       <div className="text-center py-2 pb-4">
         <div className="flex items-center justify-center gap-2">
           <h3 className="text-sm font-bold text-spotify-text uppercase tracking-wider">
             {module.title}
           </h3>
-          
-          {hasStarted && (
-            <span className="text-xs bg-spotify-green/20 text-spotify-green px-2 py-0.5 rounded-full font-medium">
-              {progressPercent}%
-            </span>
-          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useParams } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,7 @@ export default function LessonLearningPage() {
   const [totalQuestions, setTotalQuestions] = useState(0);
   const MAX_HEARTS = 3;
   const [isGameOver, setIsGameOver] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const { data: lesson, isLoading, error } = useQuery({
     queryKey: ['lesson', lessonId],
@@ -143,11 +144,26 @@ export default function LessonLearningPage() {
   const handleNext = () => {
     if (currentStep < lessonSteps.length - 1) {
       setCurrentStep(currentStep + 1);
-    } else {
-      // Lesson completed - automatically complete
-      // Convert hearts to percentage for backend compatibility
+    } else if (!isCompleting) {
+      // Lesson completed - navigate immediately and complete in background
+      console.log('🚀 Lesson completion triggered, currentStep:', currentStep, 'totalSteps:', lessonSteps.length);
+      setIsCompleting(true);
+      
+      // Show completion toast immediately
+      toast({
+        title: "Lesson Completed! 🎉",
+        description: `You finished with ${hearts}/${MAX_HEARTS} hearts and learned ${lesson?.vocabulary.length} new words!`,
+      });
+      
+      // Navigate immediately for instant UX
+      setLocation('/lessons');
+      
+      // Complete lesson in background
       const finalScore = Math.round((hearts / MAX_HEARTS) * 100);
+      console.log('🚀 Calling completion API with score:', finalScore);
       completeLessonMutation.mutate(finalScore);
+    } else {
+      console.log('⚠️ Completion already in progress, ignoring duplicate call');
     }
   };
 
@@ -196,15 +212,16 @@ export default function LessonLearningPage() {
       return api.lessons.complete(parseInt(lessonId), finalScore);
     },
     onSuccess: (data) => {
-      toast({
-        title: "Lesson Completed! 🎉",
-        description: `You finished with ${hearts}/${MAX_HEARTS} hearts and learned ${lesson?.vocabulary.length} new words!`,
-      });
+      console.log('✅ Lesson completion API successful:', data);
       
+      // Invalidate queries to refresh lesson progress on the lessons page
+      console.log('🔄 Invalidating lesson queries...');
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
-      setLocation('/lessons');
+      queryClient.invalidateQueries({ queryKey: ['lessons-hierarchical'] });
+      queryClient.invalidateQueries({ queryKey: ['lessons-completed'] });
     },
     onError: (error: Error) => {
+      setIsCompleting(false); // Reset completion flag on error
       toast({
         variant: "destructive",
         title: "Error",
@@ -212,6 +229,39 @@ export default function LessonLearningPage() {
       });
     },
   });
+
+  // Memoize the onMixComplete callback to prevent duplicate calls
+  const onMixComplete = useCallback(() => {
+    setUserAnswers(prev => ({ ...prev, [currentStep]: 100 }));
+    // Auto advance after completing match exercise
+    console.log('🎯 Match exercise completed, advancing to next step...');
+    setTimeout(() => {
+      console.log('🎯 Advancing after match completion');
+      if (currentStep < lessonSteps.length - 1) {
+        setCurrentStep(prev => prev + 1);
+      } else if (!isCompleting) {
+        // Lesson completed - navigate immediately and complete in background
+        console.log('🚀 Lesson completion triggered from match exercise');
+        setIsCompleting(true);
+        
+        // Show completion toast immediately
+        toast({
+          title: "Lesson Completed! 🎉",
+          description: `You finished with ${hearts}/${MAX_HEARTS} hearts and learned ${lesson?.vocabulary.length} new words!`,
+        });
+        
+        // Navigate immediately for instant UX
+        setLocation('/lessons');
+        
+        // Complete lesson in background
+        const finalScore = Math.round((hearts / MAX_HEARTS) * 100);
+        console.log('🚀 Calling completion API with score:', finalScore);
+        completeLessonMutation.mutate(finalScore);
+      } else {
+        console.log('⚠️ Completion already in progress, ignoring duplicate call');
+      }
+    }, 100);
+  }, [currentStep, lessonSteps.length, isCompleting, hearts, lesson?.vocabulary.length, toast, setLocation, completeLessonMutation]);
 
   if (!user) {
     return (
@@ -453,13 +503,7 @@ export default function LessonLearningPage() {
                       })) || []}
                       targetLanguage={lesson?.language || 'de'}
                       mixMode={true}
-                      onMixComplete={() => {
-                        setUserAnswers({ ...userAnswers, [currentStep]: 100 });
-                        // Auto advance after completing match exercise
-                        setTimeout(() => {
-                          handleNext();
-                        }, 1000);
-                      }}
+                      onMixComplete={onMixComplete}
                       hideHeader={true}
                       hideCard={true}
                     />
@@ -561,7 +605,7 @@ export default function LessonLearningPage() {
           <button
             onClick={handleNext}
             className="spotify-btn-primary flex items-center gap-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isGameOver || (currentStepData.type === 'quiz' && userAnswers[currentStep] === undefined) || (currentStepData.type === 'quiz-question' && !isAnswered)}
+            disabled={isGameOver || isCompleting || (currentStepData.type === 'quiz' && userAnswers[currentStep] === undefined) || (currentStepData.type === 'quiz-question' && !isAnswered)}
           >
             {currentStep === lessonSteps.length - 1 ? 'Complete Lesson' : 'Next'}
             <ChevronRight className="w-4 h-4" />

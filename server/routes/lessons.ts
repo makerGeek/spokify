@@ -12,9 +12,9 @@ router.get('/', optionalAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const { language, difficulty, hierarchical } = req.query;
     
-    if (!language || !difficulty) {
+    if (!language) {
       return res.status(400).json({ 
-        error: 'Language and difficulty parameters are required' 
+        error: 'Language parameter is required' 
       });
     }
 
@@ -23,55 +23,19 @@ router.get('/', optionalAuth, async (req: AuthenticatedRequest, res) => {
       try {
         const sectionsWithContent = await storage.getSectionsWithModulesAndLessons(
           language as string, 
-          difficulty as string
+          difficulty as string | undefined
         );
       
-        // Add progress information if user is authenticated
-        if (req.user) {
-          const user = await storage.getUserByUsername(req.user.email);
-          if (user) {
-            const completedLessons = await storage.getUserCompletedLessons(user.id);
-            const completedLessonIds = new Set(completedLessons.map(cl => cl.lessonId));
-            
-            // Process each section/module/lesson to add progress info
-            const enhancedSections = sectionsWithContent.map(section => ({
-              ...section,
-              canAccess: section.isFree || (req.user?.subscriptionStatus === 'active'),
-              modules: section.modules.map((module: any) => ({
-                ...module,
-                canAccess: module.isFree || (req.user?.subscriptionStatus === 'active'),
-                lessons: module.lessons.map((lesson: any, lessonIndex: number) => {
-                  const isCompleted = completedLessonIds.has(lesson.id);
-                  // For hierarchical unlocking, check if previous lesson in the same module is completed
-                  const previousLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null;
-                  const isUnlocked = lessonIndex === 0 || (previousLesson && completedLessonIds.has(previousLesson.id));
-                  
-                  return {
-                    ...lesson,
-                    isCompleted,
-                    isUnlocked,
-                    canAccess: lesson.isFree || (req.user?.subscriptionStatus === 'active')
-                  };
-                })
-              }))
-            }));
-            
-            return res.json(enhancedSections);
-          }
-        }
-        
-        // For unauthenticated users
+        // Return sections with access info only (no user-specific progress)
         const sectionsWithAccess = sectionsWithContent.map(section => ({
           ...section,
-          canAccess: section.isFree,
+          canAccess: section.isFree || (req.user?.subscriptionStatus === 'active'),
           modules: section.modules.map((module: any) => ({
             ...module,
-            canAccess: module.isFree,
-            lessons: module.lessons.map((lesson: any, lessonIndex: number) => ({
+            canAccess: module.isFree || (req.user?.subscriptionStatus === 'active'),
+            lessons: module.lessons.map((lesson: any) => ({
               ...lesson,
-              isCompleted: false,
-              isUnlocked: lessonIndex === 0, // Only first lesson in each module unlocked
-              canAccess: lesson.isFree
+              canAccess: lesson.isFree || (req.user?.subscriptionStatus === 'active')
             }))
           }))
         }));
@@ -87,44 +51,40 @@ router.get('/', optionalAuth, async (req: AuthenticatedRequest, res) => {
     }
 
     // Legacy flat structure for backward compatibility
-    const lessons = await storage.getLessons(language as string, difficulty as string);
+    const lessons = await storage.getLessons(language as string, difficulty as string | undefined);
     
-    // If user is authenticated, include their progress
-    if (req.user) {
-      const user = await storage.getUserByUsername(req.user.email);
-      if (user) {
-        const completedLessons = await storage.getUserCompletedLessons(user.id);
-        const completedLessonIds = new Set(completedLessons.map(cl => cl.lessonId));
-        
-        // Add completion status and unlock status to each lesson
-        const lessonsWithProgress = lessons.map((lesson, index) => {
-          const isCompleted = completedLessonIds.has(lesson.id);
-          const isUnlocked = index === 0 || completedLessonIds.has(lessons[index - 1]?.id);
-          
-          return {
-            ...lesson,
-            isCompleted,
-            isUnlocked,
-            canAccess: lesson.isFree || (req.user?.subscriptionStatus === 'active')
-          };
-        });
-        
-        return res.json(lessonsWithProgress);
-      }
-    }
-    
-    // For unauthenticated users, just return lessons with basic access info
-    const lessonsWithAccess = lessons.map((lesson, index) => ({
+    // Return lessons with access info only (no user-specific progress)
+    const lessonsWithAccess = lessons.map((lesson) => ({
       ...lesson,
-      isCompleted: false,
-      isUnlocked: index === 0, // Only first lesson unlocked for anonymous users
-      canAccess: lesson.isFree
+      canAccess: lesson.isFree || (req.user?.subscriptionStatus === 'active')
     }));
     
     res.json(lessonsWithAccess);
   } catch (error) {
     console.error('Get lessons error:', error);
     res.status(500).json({ error: 'Failed to fetch lessons' });
+  }
+});
+
+// Get user's completed lesson IDs only (lightweight)
+router.get('/completed', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const user = await storage.getUserByUsername(req.user.email);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+    
+    const completedLessons = await storage.getUserCompletedLessons(user.id);
+    const completedLessonIds = completedLessons.map(cl => cl.lessonId);
+    
+    res.json({ completedLessonIds });
+  } catch (error) {
+    console.error('Get completed lessons error:', error);
+    res.status(500).json({ error: 'Failed to fetch completed lessons' });
   }
 });
 
@@ -217,6 +177,7 @@ router.post('/:id/complete',
       }
       
       const user = await storage.getUserByUsername(req.user.email);
+      console.log('🔐 Completing lesson for user:', { email: req.user.email, userId: user?.id, lessonId });
       if (!user) {
         return res.status(401).json({ error: 'User not found' });
       }
@@ -247,11 +208,13 @@ router.post('/:id/complete',
       }
       
       // Record lesson completion
+      console.log('💾 Recording lesson completion:', { userId: user.id, lessonId, score });
       const completion = await storage.completeLesson({
         userId: user.id,
         lessonId: lessonId,
         score: score
       });
+      console.log('✅ Completion recorded:', completion);
       
       // Update user's words learned count based on lesson vocabulary
       const vocabularyCount = Array.isArray(lesson.vocabulary) ? lesson.vocabulary.length : 0;
@@ -270,6 +233,7 @@ router.post('/:id/complete',
     }
   }
 );
+
 
 // Get user's lesson progress
 router.get('/progress/:userId', authenticateToken, async (req: AuthenticatedRequest, res) => {

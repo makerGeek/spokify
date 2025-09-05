@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { BookOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/api-client';
 import AppHeader from '@/components/app-header';
 import SectionCard from '@/components/section-card';
 
@@ -58,7 +59,7 @@ function HierarchicalLessons({ sections }: { sections: Section[] }) {
       </div>
       
       {/* Main content */}
-      <div className="relative z-10 w-full mx-auto px-6 pb-12">
+      <div className="relative z-10 w-full mx-auto px-3 pb-12">
         {sections.map((section, index) => (
           <SectionCard
             key={section.id}
@@ -87,23 +88,58 @@ export default function LessonsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Get user's language and level from stored preferences (memoized to prevent re-renders)
+  // Get user's language from stored preferences (memoized to prevent re-renders)
   const [userPreferences] = useState(() => 
     JSON.parse(localStorage.getItem("userPreferences") || "{}")
   );
   const selectedLanguage = userPreferences.targetLanguage || 'de';
-  const selectedDifficulty = userPreferences.level || 'A1';
 
-  // Query for hierarchical data
-  const { data: sectionsData, isLoading, error } = useQuery({
-    queryKey: ['lessons-hierarchical', selectedLanguage, selectedDifficulty],
+  // Query for lessons data (static, cacheable)
+  const { data: sectionsData, isLoading: sectionsLoading, error: sectionsError } = useQuery({
+    queryKey: ['lessons-hierarchical', selectedLanguage],
     queryFn: async () => {
-      const response = await fetch(`/api/lessons?language=${selectedLanguage}&difficulty=${selectedDifficulty}&hierarchical=true`);
+      const response = await fetch(`/api/lessons?language=${selectedLanguage}&hierarchical=true`);
       if (!response.ok) throw new Error('Failed to fetch hierarchical lessons');
       return response.json() as Promise<Section[]>;
     },
     enabled: !!user,
   });
+
+  // Query for user's completed lesson IDs (user-specific, lightweight)
+  const { data: completedData, isLoading: completedLoading } = useQuery({
+    queryKey: ['lessons-completed'],
+    queryFn: () => api.lessons.getCompleted(),
+    enabled: !!user,
+  });
+
+  const isLoading = sectionsLoading || completedLoading;
+  const error = sectionsError;
+  
+  // Merge lessons data with completion status on client side
+  const sectionsWithProgress = React.useMemo(() => {
+    if (!sectionsData || !completedData) return sectionsData;
+    
+    const completedIds = new Set(completedData.completedLessonIds);
+    
+    return sectionsData.map(section => ({
+      ...section,
+      modules: section.modules.map(module => ({
+        ...module,
+        lessons: module.lessons.map((lesson, lessonIndex) => {
+          const isCompleted = completedIds.has(lesson.id);
+          // Progressive unlocking: first lesson or previous lesson completed
+          const previousLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null;
+          const isUnlocked = lessonIndex === 0 || (previousLesson && completedIds.has(previousLesson.id));
+          
+          return {
+            ...lesson,
+            isCompleted,
+            isUnlocked
+          };
+        })
+      }))
+    }));
+  }, [sectionsData, completedData]);
 
   if (!user) {
     return (
@@ -151,14 +187,14 @@ export default function LessonsPage() {
               </div>
             ))}
           </div>
-        ) : sectionsData && sectionsData.length > 0 ? (
-          <HierarchicalLessons sections={sectionsData} />
+        ) : sectionsWithProgress && sectionsWithProgress.length > 0 ? (
+          <HierarchicalLessons sections={sectionsWithProgress} />
         ) : (
           <div className="flex flex-col items-center justify-center p-8">
             <BookOpen className="w-16 h-16 text-spotify-muted mb-4" />
             <h2 className="text-xl font-bold text-spotify-text mb-2">No Sections Yet</h2>
             <p className="text-spotify-muted text-center">
-              Content for {selectedLanguage.toUpperCase()} {selectedDifficulty} is being organized!
+              Course content for {selectedLanguage.toUpperCase()} is being organized!
             </p>
           </div>
         )}

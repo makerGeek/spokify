@@ -64,6 +64,8 @@ export default function LessonDetailPage() {
       
       // Invalidate lessons query to refresh progress
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
+      queryClient.invalidateQueries({ queryKey: ['lessons-hierarchical'] });
+      queryClient.invalidateQueries({ queryKey: ['lessons-completed'] });
       setLocation('/lessons');
     },
     onError: (error: Error) => {
@@ -174,17 +176,9 @@ export default function LessonDetailPage() {
               </div>
             </div>
             
-            {/* Title and Premium Badge */}
+            {/* Title */}
             <div className="flex items-center gap-2">
               <h1 className="spotify-heading-lg">{lesson.title}</h1>
-              {!lesson.isFree && (
-                <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 text-[var(--spotify-green)] fill-current" />
-                  <Badge className="bg-[var(--spotify-green)] hover:bg-[var(--spotify-green-hover)] text-xs text-black font-bold">
-                    Premium
-                  </Badge>
-                </div>
-              )}
             </div>
           </div>
           

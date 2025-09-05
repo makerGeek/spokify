@@ -83,7 +83,7 @@ export interface IStorage {
   updateDmcaRequestStatus(id: number, status: string, adminNotes?: string, processedBy?: number): Promise<DmcaRequest>;
 
   // Section methods
-  getSections(language: string, difficulty: string): Promise<Section[]>;
+  getSections(language: string, difficulty?: string): Promise<Section[]>;
   getSection(id: number): Promise<Section | undefined>;
   createSection(section: InsertSection): Promise<Section>;
   updateSection(id: number, updates: Partial<Section>): Promise<Section>;
@@ -97,9 +97,9 @@ export interface IStorage {
   deleteModule(id: number): Promise<void>;
 
   // Lesson methods
-  getLessons(language: string, difficulty: string): Promise<Lesson[]>;
+  getLessons(language: string, difficulty?: string): Promise<Lesson[]>;
   getLessonsByModule(moduleId: number): Promise<Lesson[]>;
-  getSectionsWithModulesAndLessons(language: string, difficulty: string): Promise<any[]>;
+  getSectionsWithModulesAndLessons(language: string, difficulty?: string): Promise<any[]>;
   getAllLessons(): Promise<Lesson[]>;
   getLesson(id: number): Promise<Lesson | undefined>;
   createLesson(lesson: InsertLesson): Promise<Lesson>;
@@ -749,15 +749,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Section methods implementation
-  async getSections(language: string, difficulty: string): Promise<Section[]> {
+  async getSections(language: string, difficulty?: string): Promise<Section[]> {
+    const conditions = [eq(sections.language, language)];
+    if (difficulty) {
+      conditions.push(eq(sections.difficulty, difficulty));
+    }
+    
     return await db
       .select()
       .from(sections)
-      .where(and(
-        eq(sections.language, language),
-        eq(sections.difficulty, difficulty)
-      ))
-      .orderBy(sections.order);
+      .where(conditions.length === 1 ? conditions[0] : and(...conditions))
+      .orderBy(sections.difficulty, sections.order);
   }
 
   async getSection(id: number): Promise<Section | undefined> {
@@ -832,15 +834,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Lesson methods implementation
-  async getLessons(language: string, difficulty: string): Promise<Lesson[]> {
+  async getLessons(language: string, difficulty?: string): Promise<Lesson[]> {
+    const conditions = [eq(lessons.language, language)];
+    if (difficulty) {
+      conditions.push(eq(lessons.difficulty, difficulty));
+    }
+    
     return await db
       .select()
       .from(lessons)
-      .where(and(
-        eq(lessons.language, language),
-        eq(lessons.difficulty, difficulty)
-      ))
-      .orderBy(lessons.order);
+      .where(conditions.length === 1 ? conditions[0] : and(...conditions))
+      .orderBy(lessons.difficulty, lessons.order);
   }
 
   async getLessonsByModule(moduleId: number): Promise<Lesson[]> {
@@ -851,8 +855,8 @@ export class DatabaseStorage implements IStorage {
       .orderBy(lessons.order);
   }
 
-  async getSectionsWithModulesAndLessons(language: string, difficulty: string): Promise<any[]> {
-    // Get sections for the language/difficulty
+  async getSectionsWithModulesAndLessons(language: string, difficulty?: string): Promise<any[]> {
+    // Get sections for the language/difficulty (or all difficulties if not specified)
     const sectionsData = await this.getSections(language, difficulty);
     
     const sectionsWithContent = await Promise.all(
